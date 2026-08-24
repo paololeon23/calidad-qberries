@@ -61,6 +61,10 @@
         <strong id="qb-sync-version">—</strong>
       </div>
       <div class="qb-sync-actions">
+        <button type="button" class="qb-sync-btn primary" id="qb-sync-install" hidden>
+          Instalar app
+          <small id="qb-sync-install-sub">Agregar a la pantalla de inicio</small>
+        </button>
         <button type="button" class="qb-sync-btn primary" id="qb-sync-update">
           Actualizar app
           <small>Descarga la última versión</small>
@@ -114,6 +118,16 @@
       </header>
 
       <div class="panel-scroll" id="home-scroll">
+      <div class="install-banner" id="install-banner" hidden>
+        <div class="install-banner-copy">
+          <strong id="install-banner-title">Instalar Q Calidad</strong>
+          <p id="install-banner-text">Agrégala a tu inicio para usarla como app en campo.</p>
+        </div>
+        <div class="install-banner-actions">
+          <button type="button" class="install-banner-btn" id="btn-install-app">Instalar</button>
+          <button type="button" class="install-banner-dismiss" id="btn-install-dismiss" aria-label="Cerrar">×</button>
+        </div>
+      </div>
       <div class="home-hero spotlight">
         <h2>Elige tu evaluación</h2>
         <p>Protocolos listos para capturar calidad en segundos</p>

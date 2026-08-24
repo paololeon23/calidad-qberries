@@ -3,12 +3,17 @@
   "short_name": "Q Calidad",
   "description": "Evaluaciones de calidad de fruta en campo — Q Berries",
   "start_url": "./index.html",
+  "id": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#FFFFFF",
   "theme_color": "#1F3D2A",
   "lang": "es",
+  "dir": "ltr",
+  "categories": ["productivity", "business"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/icon-192.png",

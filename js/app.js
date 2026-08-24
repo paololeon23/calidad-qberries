@@ -366,9 +366,125 @@ QB.App = (() => {
     const root = $("#qb-sync");
     const ver = $("#qb-sync-version");
     if (ver) ver.textContent = `v${QB.CONFIG.VERSION || "—"}`;
+    refreshInstallUi_();
     if (!root) return;
     root.hidden = false;
     requestAnimationFrame(() => root.classList.add("open"));
+  }
+
+  /* ——— Instalar PWA (Android) / Anclar al inicio (iPhone) ——— */
+  let deferredInstallPrompt = null;
+  const INSTALL_DISMISS_KEY = "qb_install_dismissed";
+
+  function isAppInstalled_() {
+    if (window.matchMedia("(display-mode: standalone)").matches) return true;
+    if (window.matchMedia("(display-mode: minimal-ui)").matches) return true;
+    if (navigator.standalone === true) return true; // iOS Safari
+    return false;
+  }
+
+  function isIosSafari_() {
+    const ua = navigator.userAgent || "";
+    const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const webkit = /WebKit/i.test(ua);
+    const chromeLike = /CriOS|FxiOS|EdgiOS|OPiOS|Chrome/i.test(ua);
+    return iOS && webkit && !chromeLike;
+  }
+
+  function refreshInstallUi_() {
+    const installed = isAppInstalled_();
+    const banner = $("#install-banner");
+    const syncInstall = $("#qb-sync-install");
+    const title = $("#install-banner-title");
+    const text = $("#install-banner-text");
+    const btn = $("#btn-install-app");
+    const syncSub = $("#qb-sync-install-sub");
+    const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY) === "1";
+
+    if (installed) {
+      if (banner) banner.hidden = true;
+      if (syncInstall) syncInstall.hidden = true;
+      return;
+    }
+
+    const ios = isIosSafari_();
+    const canNative = !!deferredInstallPrompt;
+
+    if (title) {
+      title.textContent = ios ? "Anclar a inicio" : "Instalar Q Calidad";
+    }
+    if (text) {
+      text.textContent = ios
+        ? "En Safari: Compartir → Agregar a pantalla de inicio."
+        : "Agrégala a tu inicio para usarla como app en campo.";
+    }
+    if (btn) btn.textContent = ios ? "Cómo hacerlo" : "Instalar";
+    if (syncInstall) {
+      syncInstall.hidden = false;
+      syncInstall.innerHTML = `${ios ? "Anclar a inicio" : "Instalar app"}<small>${
+        ios ? "Safari → Compartir → Agregar a inicio" : "Agregar a la pantalla de inicio"
+      }</small>`;
+    }
+
+    // Banner: Android con prompt nativo, o tip iOS (si no lo cerraron)
+    const showBanner = !dismissed && (canNative || ios);
+    if (banner) banner.hidden = !showBanner;
+  }
+
+  async function promptInstallApp_() {
+    if (isAppInstalled_()) {
+      toast("Ya está instalada", "ok");
+      return;
+    }
+
+    if (deferredInstallPrompt) {
+      try {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        if (choice && choice.outcome === "accepted") {
+          toast("App instalada ✓", "ok");
+          localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+        }
+      } catch (_) {
+        /* ignore */
+      }
+      refreshInstallUi_();
+      return;
+    }
+
+    if (isIosSafari_()) {
+      closeSyncModal();
+      await feedback({
+        title: "Anclar en iPhone",
+        text: "1) Toca Compartir (□↑) abajo en Safari. 2) Elige «Agregar a pantalla de inicio». 3) Confirma Agregar. Así queda como app.",
+        type: "info",
+        confirmText: "Entendido",
+      });
+      return;
+    }
+
+    await feedback({
+      title: "Instalar desde el menú",
+      text: "En Chrome: menú ⋮ → «Instalar app» o «Agregar a la pantalla de inicio». Debe estar en HTTPS y con internet la primera vez.",
+      type: "info",
+      confirmText: "Entendido",
+    });
+  }
+
+  function setupInstallPrompt_() {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      refreshInstallUi_();
+    });
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+      refreshInstallUi_();
+      toast("App instalada ✓", "ok");
+    });
+    refreshInstallUi_();
   }
 
   function closeSyncModal() {
@@ -1223,6 +1339,16 @@ QB.App = (() => {
     $("#qb-sync-close")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-done")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-update")?.addEventListener("click", updateApp);
+    $("#qb-sync-install")?.addEventListener("click", () => {
+      closeSyncModal();
+      setTimeout(() => promptInstallApp_(), 220);
+    });
+    $("#btn-install-app")?.addEventListener("click", promptInstallApp_);
+    $("#btn-install-dismiss")?.addEventListener("click", () => {
+      localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+      const banner = $("#install-banner");
+      if (banner) banner.hidden = true;
+    });
     $("#qb-sync-cache")?.addEventListener("click", clearAppCache);
     $("#qb-sync-tips")?.addEventListener("click", (e) => {
       const tip = e.target.closest("[data-tip]");
@@ -1282,6 +1408,7 @@ QB.App = (() => {
     }
     renderHome();
     bindChrome();
+    setupInstallPrompt_();
     lockDrag();
     resetViewportLayout();
     if (window.visualViewport) {
