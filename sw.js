@@ -1,5 +1,5 @@
 /* Q Berries Calidad — Service Worker · todo local en caché */
-const CACHE = "qb-calidad-v75";
+const CACHE = "qb-calidad-v79";
 const ASSETS = [
   "./",
   "./index.html",

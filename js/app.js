@@ -171,25 +171,49 @@ QB.App = (() => {
     if (scroller) scroller.scrollTop = 0;
   }
 
+  function isKeyboardOpen_() {
+    const ae = document.activeElement;
+    const typing =
+      ae &&
+      (ae.matches("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea") ||
+        ae.isContentEditable);
+    const vv = window.visualViewport;
+    const gap = vv ? window.innerHeight - vv.height : 0;
+    return !!typing || gap > 100;
+  }
+
+  function setKeyboardUi_(open) {
+    document.body.classList.toggle("kb-open", !!open);
+    document.querySelectorAll(".form-actions").forEach((el) => {
+      el.classList.toggle("kb-hidden", !!open);
+    });
+  }
+
   function resetViewportLayout() {
     // No recalcular mientras un modal está abierto (evita pestañeo al abrir selects)
     if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) return;
+
+    const kb = isKeyboardOpen_();
+    setKeyboardUi_(kb);
+
     const app = document.querySelector(".app");
     const vv = window.visualViewport;
-    const h = Math.round(
-      Math.min(
-        vv && vv.height ? vv.height : window.innerHeight,
-        window.innerHeight
-      )
-    );
+    // Con teclado: no achicar el app (evita subir Cancelar/Ver resumen)
+    const h = kb
+      ? Math.round(window.innerHeight)
+      : Math.round(
+          Math.min(vv && vv.height ? vv.height : window.innerHeight, window.innerHeight)
+        );
     document.documentElement.style.setProperty("--app-h", `${h}px`);
     if (app) {
       app.style.height = `${h}px`;
       app.style.maxHeight = `${h}px`;
     }
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    if (!kb) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
   }
 
   function goHome() {
@@ -731,11 +755,16 @@ QB.App = (() => {
     const type = opts.type || "text";
     const val = state.data[name] ?? opts.value ?? "";
     if (opts.readonly) {
+      const shown = val || opts.placeholder || "Según lote";
       return `
         <div class="field field-locked" data-field="${name}">
           <label>${label}${req}</label>
           <div class="precise-trigger is-locked" id="trig-${name}" aria-readonly="true">
-            <span class="${val ? "value" : "placeholder"}">${val || opts.placeholder || "Auto"}</span>
+            <span class="${val ? "value" : "placeholder"}">${escapeHtml(shown)}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+              <rect x="5" y="11" width="14" height="10" rx="2"/>
+              <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+            </svg>
           </div>
           <input type="hidden" name="${name}" id="field-${name}" value="${escapeAttr(val)}" ${opts.required ? "required" : ""} />
         </div>`;
@@ -876,8 +905,8 @@ QB.App = (() => {
         <div class="lote-block">
           ${fieldHtml("lote", "Lote", { precise: true, required: true, placeholder: "Seleccionar lote..." })}
           <div class="field-row field-row-auto">
-            ${fieldHtml("modulo", "Módulo", { readonly: true, required: true, placeholder: "Auto" })}
-            ${fieldHtml("turno", "Turno", { readonly: true, required: true, placeholder: "Auto" })}
+            ${fieldHtml("modulo", "Módulo", { readonly: true, required: true, placeholder: "Según lote" })}
+            ${fieldHtml("turno", "Turno", { readonly: true, required: true, placeholder: "Según lote" })}
           </div>
         </div>
       </div>
@@ -936,7 +965,7 @@ QB.App = (() => {
         span.textContent = value;
       } else {
         span.className = "placeholder";
-        span.textContent = "Auto";
+        span.textContent = "Según lote";
       }
     }
   }
@@ -1417,6 +1446,18 @@ QB.App = (() => {
     }
     window.addEventListener("resize", resetViewportLayout);
     window.addEventListener("orientationchange", () => setTimeout(resetViewportLayout, 120));
+    document.addEventListener("focusin", (e) => {
+      if (e.target?.matches?.("input, textarea")) {
+        setKeyboardUi_(true);
+        setTimeout(resetViewportLayout, 50);
+      }
+    });
+    document.addEventListener("focusout", () => {
+      setTimeout(() => {
+        setKeyboardUi_(isKeyboardOpen_());
+        resetViewportLayout();
+      }, 80);
+    });
     updateStatusUI();
     renderOpsPanel();
     const foot = $("#home-foot");
@@ -1466,6 +1507,65 @@ QB.App = (() => {
         }
       },
       { capture: true }
+    );
+
+    // Anti rubber-band (iOS / Android): no jalar más allá del scroll
+    let touchStartY = 0;
+    document.addEventListener(
+      "touchstart",
+      (e) => {
+        if (e.touches && e.touches.length === 1) {
+          touchStartY = e.touches[0].clientY;
+        }
+      },
+      { passive: true, capture: true }
+    );
+
+    document.addEventListener(
+      "touchmove",
+      (e) => {
+        if (!e.touches || e.touches.length !== 1) return;
+        const target = e.target;
+        if (!target || !target.closest) return;
+        if (target.closest("input, textarea, [contenteditable=true]")) return;
+
+        const dy = e.touches[0].clientY - touchStartY;
+        const scrollEl = target.closest(".panel-scroll, .overlay-body, .qb-sync-sheet, .precise-list");
+
+        if (!scrollEl) {
+          e.preventDefault();
+          return;
+        }
+
+        const atTop = scrollEl.scrollTop <= 0;
+        const atBottom =
+          scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
+
+        // Jalando hacia abajo en el tope, o hacia arriba al final → bloquear rebote
+        if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+          e.preventDefault();
+        }
+      },
+      { passive: false, capture: true }
+    );
+
+    // Mouse drag rubber-band en algunos browsers
+    document.addEventListener(
+      "wheel",
+      (e) => {
+        const scrollEl = e.target?.closest?.(".panel-scroll, .overlay-body, .qb-sync-sheet, .precise-list");
+        if (!scrollEl) {
+          e.preventDefault();
+          return;
+        }
+        const atTop = scrollEl.scrollTop <= 0;
+        const atBottom =
+          scrollEl.scrollTop + scrollEl.clientHeight >= scrollEl.scrollHeight - 1;
+        if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+          e.preventDefault();
+        }
+      },
+      { passive: false, capture: true }
     );
   }
 
