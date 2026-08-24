@@ -1720,7 +1720,14 @@ body.is-desktop .qb-toast-stack {
 }
 body.kb-open .form-body,
 body.kb-open .resumen-wrap {
-  padding-bottom: calc(28px + var(--safe-bottom));
+  padding-bottom: calc(20px + var(--safe-bottom));
+}
+body.kb-open .app {
+  /* el JS fija height al visualViewport — sin saltos blancos */
+  overflow: hidden;
+}
+body.kb-open .field textarea:focus {
+  max-height: 72px;
 }
 
 .btn {

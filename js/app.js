@@ -171,15 +171,25 @@ QB.App = (() => {
     if (scroller) scroller.scrollTop = 0;
   }
 
+  function isTypingField_(el) {
+    return !!(
+      el &&
+      el.matches &&
+      (el.matches("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea") ||
+        el.isContentEditable)
+    );
+  }
+
   function isKeyboardOpen_() {
-    const ae = document.activeElement;
-    const typing =
-      ae &&
-      (ae.matches("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea") ||
-        ae.isContentEditable);
+    if (isTypingField_(document.activeElement)) return true;
     const vv = window.visualViewport;
-    const gap = vv ? window.innerHeight - vv.height : 0;
-    return !!typing || gap > 100;
+    if (!vv) return false;
+    // iOS y Android: teclado reduce el viewport visible
+    const gap = Math.max(
+      window.innerHeight - vv.height,
+      (window.outerHeight || window.innerHeight) - vv.height
+    );
+    return gap > 80;
   }
 
   function setKeyboardUi_(open) {
@@ -189,30 +199,63 @@ QB.App = (() => {
     });
   }
 
+  function scrollFieldIntoView_(el) {
+    if (!el) return;
+    try {
+      const scroller = el.closest(".panel-scroll");
+      if (!scroller) return;
+      requestAnimationFrame(() => {
+        const er = el.getBoundingClientRect();
+        const sr = scroller.getBoundingClientRect();
+        const pad = 20;
+        if (er.bottom > sr.bottom - pad) {
+          scroller.scrollTop += er.bottom - sr.bottom + pad + 24;
+        } else if (er.top < sr.top + pad) {
+          scroller.scrollTop -= sr.top - er.top + pad;
+        }
+      });
+    } catch (_) {}
+  }
+
+  /** Viewport real (iOS + Android): siempre seguir visualViewport — sin huecos blancos */
   function resetViewportLayout() {
-    // No recalcular mientras un modal está abierto (evita pestañeo al abrir selects)
-    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) return;
+    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open, .date-overlay.open")) {
+      return;
+    }
 
     const kb = isKeyboardOpen_();
     setKeyboardUi_(kb);
 
     const app = document.querySelector(".app");
     const vv = window.visualViewport;
-    // Con teclado: no achicar el app (evita subir Cancelar/Ver resumen)
-    const h = kb
-      ? Math.round(window.innerHeight)
-      : Math.round(
-          Math.min(vv && vv.height ? vv.height : window.innerHeight, window.innerHeight)
-        );
+    const layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+    const vvH = vv ? Math.round(vv.height) : layoutH;
+    const vvTop = vv ? Math.round(vv.offsetTop || 0) : 0;
+
+    // Altura visible real (teclado abierto o cerrado)
+    const h = Math.max(180, Math.min(vvH, layoutH));
     document.documentElement.style.setProperty("--app-h", `${h}px`);
+
     if (app) {
       app.style.height = `${h}px`;
       app.style.maxHeight = `${h}px`;
+      // Android a veces no usa offsetTop; iOS sí — ambos quedan bien
+      if (kb && vvTop > 0) {
+        app.style.transform = `translateY(${vvTop}px)`;
+      } else {
+        app.style.transform = "";
+      }
     }
+
+    if (kb && isTypingField_(document.activeElement)) {
+      scrollFieldIntoView_(document.activeElement);
+    }
+
     if (!kb) {
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
+      if (app) app.style.transform = "";
     }
   }
 
@@ -1447,16 +1490,24 @@ QB.App = (() => {
     window.addEventListener("resize", resetViewportLayout);
     window.addEventListener("orientationchange", () => setTimeout(resetViewportLayout, 120));
     document.addEventListener("focusin", (e) => {
-      if (e.target?.matches?.("input, textarea")) {
-        setKeyboardUi_(true);
-        setTimeout(resetViewportLayout, 50);
-      }
+      if (!isTypingField_(e.target)) return;
+      setKeyboardUi_(true);
+      // iOS y Android abren el teclado a ritmos distintos
+      [50, 150, 350].forEach((ms) => setTimeout(resetViewportLayout, ms));
     });
     document.addEventListener("focusout", () => {
       setTimeout(() => {
-        setKeyboardUi_(isKeyboardOpen_());
+        if (!isKeyboardOpen_()) {
+          setKeyboardUi_(false);
+          const app = document.querySelector(".app");
+          if (app) app.style.transform = "";
+        }
         resetViewportLayout();
-      }, 80);
+      }, 150);
+    });
+    // Android Chrome a veces dispara resize de window al abrir teclado
+    window.addEventListener("resize", () => {
+      if (isKeyboardOpen_()) setTimeout(resetViewportLayout, 30);
     });
     updateStatusUI();
     renderOpsPanel();
@@ -1528,6 +1579,8 @@ QB.App = (() => {
         const target = e.target;
         if (!target || !target.closest) return;
         if (target.closest("input, textarea, [contenteditable=true]")) return;
+        // Con teclado abierto no bloquear gestos (iOS necesita mover el caret/scroll)
+        if (document.body.classList.contains("kb-open")) return;
 
         const dy = e.touches[0].clientY - touchStartY;
         const scrollEl = target.closest(".panel-scroll, .overlay-body, .qb-sync-sheet, .precise-list");
@@ -1553,6 +1606,7 @@ QB.App = (() => {
     document.addEventListener(
       "wheel",
       (e) => {
+        if (document.body.classList.contains("kb-open")) return;
         const scrollEl = e.target?.closest?.(".panel-scroll, .overlay-body, .qb-sync-sheet, .precise-list");
         if (!scrollEl) {
           e.preventDefault();
