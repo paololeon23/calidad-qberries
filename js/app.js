@@ -432,7 +432,7 @@ QB.App = (() => {
   function openSyncModal() {
     const root = $("#qb-sync");
     const ver = $("#qb-sync-version");
-    if (ver) ver.textContent = `v${QB.CONFIG.VERSION || "—"}`;
+    if (ver) ver.textContent = `v${QB.CONFIG.VERSION || "1.1.0"}`;
     refreshInstallUi_();
     if (!root) return;
     root.hidden = false;

@@ -5,7 +5,7 @@ QB.CONFIG = {
   /** Endpoint codificado (uso interno) */
   _ep: "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4cnI3NGV4a2RnNUtQLURkR3FXWEpWMFNYUFdGOFlac3BDUXdIam4zX2NCQjJGTWk0eURPNTR6Ykk4bElmWS1qajkvZXhlYw==",
   APP_NAME: "Q Berries · Calidad",
-  VERSION: "1.0.5",
+  VERSION: "1.1.0",
 };
 
 QB.CATALOG = {
