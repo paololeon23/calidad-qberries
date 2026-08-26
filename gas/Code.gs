@@ -32,11 +32,11 @@ var SHEETS = {
       'Puntos Calidad', 'Puntos Condición', 'Puntos Calidad def.'
     ], COL.resultado, [
       'Cal. Blando', 'Cal. Desgarro', 'Cal. Deshidratado', 'Cal. Rojizo',
-      'Cal. Resto floral', 'Cal. Excreta', 'Cal. Pedicelo', 'Cal. Cicatriz',
+      'Cal. Resto floral', 'Cal. Polen', 'Cal. Pedicelo', 'Cal. Cicatriz',
       'Cal. Polvo', 'Cal. Herida', 'Cal. Ave', 'Cal. Sin Bloom',
       'Cal. Plagas', 'Cal. Inserción pedicelar',
       '% Blando', '% Desgarro', '% Deshidratado', '% Rojizo', '% Resto floral',
-      '% Excreta abeja', '% Pedicelo', '% Cicatriz', '% Polvo', '% Herida abierta',
+      '% Polen', '% Pedicelo', '% Cicatriz', '% Polvo', '% Herida abierta',
       '% Picadura ave', '% Sin Bloom', '% Plagas e insectos', '% Inserción pedicelar',
       '% Suma def. calidad', '% Suma def. condición', '% Tot. defectos', '% Calidad'
     ], COL.cierre)
@@ -48,9 +48,9 @@ var SHEETS = {
     ], COL.resultado, [
       'Cal. Fruta buena', 'Cal. Deshidratada', 'Cal. Rojiza', 'Cal. Pedicelo',
       'Cal. Resto floral', 'Cal. Cicatriz', 'Cal. Polvo', 'Cal. Desgarro',
-      'Cal. Ave', 'Cal. Sin Bloom', 'Cal. Excreta',
+      'Cal. Ave', 'Cal. Sin Bloom', 'Cal. Polen',
       '% Fruta buena', '% Deshidratada', '% Rojiza', '% Pedicelo', '% Resto floral',
-      '% Cicatriz', '% Polvo', '% Desgarro', '% Picadura ave', '% Sin Bloom', '% Excreta abeja',
+      '% Cicatriz', '% Polvo', '% Desgarro', '% Picadura ave', '% Sin Bloom', '% Polen',
       '% Suma def. calidad', '% Suma def. condición', '% Tot. defectos', '% Calidad'
     ], COL.cierre)
   },
@@ -90,9 +90,9 @@ function doGet(e) {
   e = e || { parameter: {} };
   var action = String((e.parameter && e.parameter.action) || 'ping').trim();
   if (action === 'ping') {
-    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.11' });
+    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.13' });
   }
-  return json_({ ok: true, api: 'calidad', version: '1.1.11', sheets: Object.keys(SHEETS) });
+  return json_({ ok: true, api: 'calidad', version: '1.1.13', sheets: Object.keys(SHEETS) });
 }
 
 function doPost(e) {
@@ -169,7 +169,8 @@ function saveEvaluation_(body) {
 
     removeColumnByHeader_(sheet, 'Marca temporal');
     syncHeaders_(sheet, def.headers);
-    var headers = getHeaders_(sheet);
+    // Siempre escribir en el orden oficial (Puntos totales + Nota incluidos)
+    var headers = def.headers;
     var row = headers.map(function (h) {
       return rowMap.hasOwnProperty(h) ? rowMap[h] : '';
     });
@@ -234,7 +235,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       '% Deshidratado': p('deshidratado'),
       '% Rojizo': p('rojizo'),
       '% Resto floral': p('resto_floral'),
-      '% Excreta abeja': p('excreta_abeja'),
+      '% Polen': p('polen'),
       '% Pedicelo': p('pedicelo'),
       '% Cicatriz': p('cicatriz'),
       '% Polvo': p('polvo'),
@@ -255,7 +256,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       'Cal. Deshidratado': cal('deshidratado'),
       'Cal. Rojizo': cal('rojizo'),
       'Cal. Resto floral': cal('resto_floral'),
-      'Cal. Excreta': cal('excreta_abeja'),
+      'Cal. Polen': cal('polen'),
       'Cal. Pedicelo': cal('pedicelo'),
       'Cal. Cicatriz': cal('cicatriz'),
       'Cal. Polvo': cal('polvo'),
@@ -280,7 +281,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       '% Desgarro': p('desgarro'),
       '% Picadura ave': p('picadura_ave'),
       '% Sin Bloom': p('sin_bloom'),
-      '% Excreta abeja': p('excreta_abeja'),
+      '% Polen': p('polen'),
       '% Suma def. calidad': score.sumaDefCal != null ? score.sumaDefCal : '',
       '% Suma def. condición': score.sumaDefCon != null ? score.sumaDefCon : '',
       '% Tot. defectos': score.sumaDefectos != null ? score.sumaDefectos : '',
@@ -295,7 +296,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       'Cal. Desgarro': cal('desgarro'),
       'Cal. Ave': cal('picadura_ave'),
       'Cal. Sin Bloom': cal('sin_bloom'),
-      'Cal. Excreta': cal('excreta_abeja')
+      'Cal. Polen': cal('polen')
     });
   }
 
@@ -366,20 +367,38 @@ function ensureHeaders_(sheet, headers) {
   sheet.getRange(1, start, 1, missing.length).setValues([missing]);
 }
 
-/** Renombra aliases, agrega faltantes y deja el orden oficial */
+/** Renombra/fusiona aliases viejos, elimina columnas obsoletas y deja SOLO el orden oficial */
 function syncHeaders_(sheet, headers) {
-  renameHeader_(sheet, 'Ptos. Tot', 'Puntos totales');
-  renameHeader_(sheet, 'Pun. Calidad', 'Puntos Calidad');
-  renameHeader_(sheet, 'Ptos. Condición', 'Puntos Condición');
-  renameHeader_(sheet, 'Ptos. Calidad def.', 'Puntos Calidad def.');
+  mergeRenameColumn_(sheet, 'Ptos. Tot', 'Puntos totales');
+  mergeRenameColumn_(sheet, 'Pun. Calidad', 'Puntos Calidad');
+  mergeRenameColumn_(sheet, 'Ptos. Condición', 'Puntos Condición');
+  mergeRenameColumn_(sheet, 'Ptos. Calidad def.', 'Puntos Calidad def.');
+  mergeRenameColumn_(sheet, '% Excreta abeja', '% Polen');
+  mergeRenameColumn_(sheet, 'Cal. Excreta', 'Cal. Polen');
+
+  var obsolete = [
+    'Ptos. Tot',
+    'Pun. Calidad',
+    'Ptos. Condición',
+    'Ptos. Calidad def.',
+    'Marca temporal'
+  ];
+  for (var o = 0; o < obsolete.length; o++) {
+    if (headers.indexOf(obsolete[o]) === -1) {
+      removeColumnByHeader_(sheet, obsolete[o]);
+    }
+  }
+
   ensureHeaders_(sheet, headers);
 
   var existing = getHeaders_(sheet);
-  var ordered = true;
-  for (var i = 0; i < headers.length; i++) {
-    if (existing[i] !== headers[i]) {
-      ordered = false;
-      break;
+  var ordered = existing.length === headers.length;
+  if (ordered) {
+    for (var i = 0; i < headers.length; i++) {
+      if (existing[i] !== headers[i]) {
+        ordered = false;
+        break;
+      }
     }
   }
   if (ordered) return;
@@ -388,13 +407,13 @@ function syncHeaders_(sheet, headers) {
   var lastCol = Math.max(existing.length, 1);
   var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
   var colIndex = {};
-  for (var c = 0; c < existing.length; c++) colIndex[existing[c]] = c;
-
-  var extras = [];
-  for (var e = 0; e < existing.length; e++) {
-    if (headers.indexOf(existing[e]) === -1 && existing[e]) extras.push(existing[e]);
+  for (var c = 0; c < existing.length; c++) {
+    // Si hay duplicados, preferir la primera columna con ese nombre
+    if (colIndex[existing[c]] == null) colIndex[existing[c]] = c;
   }
-  var newOrder = headers.concat(extras);
+
+  // Solo columnas oficiales — no dejar "Ptos. Tot" ni extras viejos al final
+  var newOrder = headers.slice();
   var newValues = [];
   for (var r = 0; r < values.length; r++) {
     var row = values[r];
@@ -408,20 +427,52 @@ function syncHeaders_(sheet, headers) {
 
   if (lastCol > newOrder.length) {
     sheet.deleteColumns(newOrder.length + 1, lastCol - newOrder.length);
+  } else if (lastCol < newOrder.length) {
+    // ensureHeaders ya agregó; el setValues amplia
   }
   sheet.getRange(1, 1, lastRow, newOrder.length).setValues(newValues);
 }
 
-function renameHeader_(sheet, fromName, toName) {
+/**
+ * Si solo existe el nombre viejo → renombra.
+ * Si existen ambos → copia valores faltantes al nuevo y borra el viejo.
+ */
+function mergeRenameColumn_(sheet, fromName, toName) {
+  fromName = String(fromName || '').trim();
+  toName = String(toName || '').trim();
   var headers = getHeaders_(sheet);
-  var idx = headers.indexOf(String(fromName || '').trim());
-  if (idx === -1) return;
-  if (headers.indexOf(String(toName || '').trim()) !== -1) {
-    // Ya existe el nuevo nombre: quitar la columna vieja
-    sheet.deleteColumn(idx + 1);
+  var fromIdx = headers.indexOf(fromName);
+  if (fromIdx === -1) return;
+  var toIdx = headers.indexOf(toName);
+
+  if (toIdx === -1) {
+    sheet.getRange(1, fromIdx + 1).setValue(toName);
     return;
   }
-  sheet.getRange(1, idx + 1).setValue(toName);
+
+  var lastRow = Math.max(sheet.getLastRow(), 1);
+  if (lastRow >= 2) {
+    // getRange(fila, col, numFilas, numCols) — no coordenadas finales
+    var numDataRows = lastRow - 1;
+    var fromVals = sheet.getRange(2, fromIdx + 1, numDataRows, 1).getValues();
+    var toVals = sheet.getRange(2, toIdx + 1, numDataRows, 1).getValues();
+    var merged = [];
+    for (var i = 0; i < fromVals.length; i++) {
+      var t = toVals[i][0];
+      var f = fromVals[i][0];
+      var tEmpty = t === '' || t === null || typeof t === 'undefined';
+      merged.push([tEmpty ? f : t]);
+    }
+    sheet.getRange(2, toIdx + 1, numDataRows, 1).setValues(merged);
+  }
+
+  headers = getHeaders_(sheet);
+  fromIdx = headers.indexOf(fromName);
+  if (fromIdx !== -1) sheet.deleteColumn(fromIdx + 1);
+}
+
+function renameHeader_(sheet, fromName, toName) {
+  mergeRenameColumn_(sheet, fromName, toName);
 }
 
 function getHeaders_(sheet) {

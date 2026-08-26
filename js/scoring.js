@@ -28,31 +28,87 @@ QB.Scoring = (() => {
     };
   }
 
+  function inBand_(v, band) {
+    if (!band) return false;
+    const [min, max] = band;
+    return v >= min && v <= max;
+  }
+
+  function resolveThreshold_(key) {
+    const t = QB.THRESHOLDS[key] || QB.THRESHOLDS.default_cal;
+    return t;
+  }
+
+  /** Calificación por bandas oficiales (% o conteo según threshold) */
   function rate(value, key) {
-    const t = QB.THRESHOLDS[key] || QB.THRESHOLDS.default;
+    const t = resolveThreshold_(key);
     const v = Number(value) || 0;
+
+    // Conteo por bayas / promedio planta (legacy buenoMax/regularMax)
+    if (t.byCount) {
+      if (v <= 0) return "Excelente";
+      if (v <= t.buenoMax) return "Bueno";
+      if (v <= t.regularMax) return "Regular";
+      return "Malo";
+    }
+
     if (t.invert) {
-      // Mayor % = mejor (ej. fruta buena)
       if (v >= t.buenoMax) return "Excelente";
       if (v >= t.regularMax) return "Bueno";
       if (v >= t.regularMax * 0.85) return "Regular";
       return "Malo";
     }
-    // Menor % defecto = mejor (tabla oficial)
+
     if (v <= 0) return "Excelente";
-    if (v <= t.buenoMax) return "Bueno";
-    if (v <= t.regularMax) return "Regular";
+
+    const [bMin, bMax] = t.bueno || [0, 0];
+    const [rMin, rMax] = t.regular || [999, 999];
+    const [mMin, mMax] = t.malo || [999, 999];
+
+    // Solape en límite (ej. suma cal 12): prioriza Bueno
+    if (t.overlapBuenoWins && inBand_(v, t.regular) && inBand_(v, t.bueno)) {
+      return "Bueno";
+    }
+
+    // Solape en límite (ej. blando en 2): prioriza peor (Malo)
+    if (t.overlapWorst && inBand_(v, t.regular) && inBand_(v, t.malo)) {
+      return "Malo";
+    }
+
+    if (inBand_(v, t.malo)) return "Malo";
+    if (inBand_(v, t.regular)) return "Regular";
+    if (inBand_(v, t.bueno)) return "Bueno";
+
+    // Entre bueno y regular (ej. desgarro 2.33%): Bueno
+    if (t.gapAsBueno && v > bMax && v < rMin) return "Bueno";
+
+    // Entre regular y malo (ej. picadura 1.5%, desgarro 5.5%)
+    if (v > rMax && v < mMin) return "Regular";
+
+    // > 0 pero por debajo del mínimo bueno (solo bueno desde 1)
+    if (v > 0 && v < bMin) return "Bueno";
+
     return "Malo";
   }
 
+  function bandLabel_(band) {
+    if (!band) return "—";
+    const [min, max] = band;
+    return min === max ? String(min) : `${min} a ${max}`;
+  }
+
   function rateWhy(value, key) {
-    const t = QB.THRESHOLDS[key] || QB.THRESHOLDS.default;
+    const t = resolveThreshold_(key);
     const v = Number(value) || 0;
     const cal = rate(v, key);
+
+    if (t.byCount) {
+      return `${cal}: 0 Excelente · ≤${t.buenoMax} Bueno · ≤${t.regularMax} Regular · >${t.regularMax} Malo`;
+    }
     if (t.invert) {
       return `${cal}: ≥${t.buenoMax}% Excelente · ≥${t.regularMax}% Bueno`;
     }
-    return `${cal}: 0 Excelente · ≤${t.buenoMax}% Bueno · ≤${t.regularMax}% Regular · >${t.regularMax}% Malo`;
+    return `${cal}: 0 Excelente · ${bandLabel_(t.bueno)}% Bueno · ${bandLabel_(t.regular)}% Regular · ${bandLabel_(t.malo)}% Malo`;
   }
 
   function pillClass(cal) {
@@ -81,10 +137,29 @@ QB.Scoring = (() => {
     return worst;
   }
 
-  /** % mostrado + % para calificar (tabla oficial; fruta buena = complemento) */
+  /** % mostrado + calificación (fruta buena en descarte = por bayas/conteo) */
   function defectRating(count, sample, def) {
     const countPct = pct(count, sample);
+    if (def.noRate) {
+      return {
+        countPct,
+        ratePct: countPct,
+        cal: null,
+        why: "",
+        byCount: !!def.rateByCount,
+      };
+    }
     const rateKey = def.thresholdKey || def.id;
+    if (def.rateByCount) {
+      const cal = rate(count, rateKey);
+      return {
+        countPct,
+        ratePct: count,
+        cal,
+        why: rateWhy(count, rateKey),
+        byCount: true,
+      };
+    }
     const ratePct = def.invert ? round2(Math.max(0, 100 - countPct)) : countPct;
     const key = def.invert ? def.thresholdKey || "default" : rateKey;
     const cal = rate(ratePct, key);
@@ -93,6 +168,7 @@ QB.Scoring = (() => {
       ratePct,
       cal,
       why: rateWhy(ratePct, key),
+      byCount: false,
     };
   }
 
@@ -137,18 +213,24 @@ QB.Scoring = (() => {
       const dr = defectRating(count, sample, d);
       const p = dr.countPct;
       const cal = dr.cal;
-      const pts = pointsFromRate(cal);
-      const itemLabel = d.invert ? `% ${d.label}` : `${d.grupo}-% ${d.label}`;
+      const pts = cal ? pointsFromRate(cal) : 0;
+      const itemLabel = d.rateByCount
+        ? d.label
+        : d.invert
+          ? `% ${d.label}`
+          : `${d.grupo}-% ${d.label}`;
 
       rows.push({
         id: d.id,
         item: itemLabel,
         count,
-        pct: p,
-        calc: f.text,
-        formula: d.invert
-          ? `${p.toFixed(2)}% buena · ${dr.ratePct.toFixed(2)}% no buena`
-          : f.detail,
+        pct: d.rateByCount ? count : p,
+        calc: d.rateByCount ? String(count) : f.text,
+        formula: d.rateByCount
+          ? `${count} bayas${dr.why ? ` · ${dr.why}` : ""}`
+          : d.invert
+            ? `${p.toFixed(2)}% buena · ${dr.ratePct.toFixed(2)}% no buena`
+            : f.detail,
         calificacion: cal,
         why: dr.why,
         puntos: pts,
@@ -157,11 +239,15 @@ QB.Scoring = (() => {
       });
 
       if (d.invert) sumaOk += p;
-      else if (d.grupo === "CAL") sumaCal += p;
+      else if (d.rateByCount) {
+        /* conteo por bayas (fruta buena / pedicelo): no suma a % defectos */
+      } else if (d.grupo === "CAL") sumaCal += p;
       else if (d.grupo === "CON") sumaCon += p;
 
-      ptsSum += pts;
-      ptsCount += 1;
+      if (cal) {
+        ptsSum += pts;
+        ptsCount += 1;
+      }
     }
 
     const sumaDefCal = round2(sumaCal);
@@ -203,7 +289,8 @@ QB.Scoring = (() => {
     const plantas = Number(data.plantas_evaluadas) || 0;
     const frutos = Number(data.frutos_caidos) || 0;
     const frutosVerdes = Number(data.frutos_caidos_verdes) || 0;
-    const promedio = plantas > 0 ? round2(frutos / plantas) : 0;
+    const frutosTot = frutos + frutosVerdes;
+    const promedio = plantas > 0 ? round2(frutosTot / plantas) : 0;
     const cal = rate(promedio, "promedio_caida");
     const pts = pointsFromRate(cal);
     const nota = pointsFromRate(cal);
@@ -212,6 +299,7 @@ QB.Scoring = (() => {
       plantas,
       frutos,
       frutosVerdes,
+      frutosTot,
       promedio,
       rows: [
         {
@@ -250,7 +338,10 @@ QB.Scoring = (() => {
           count: null,
           pct: promedio,
           calc: promedio.toFixed(2),
-          formula: plantas > 0 ? `${frutos} ÷ ${plantas} = ${promedio.toFixed(2)}` : "Sin plantas",
+          formula:
+            plantas > 0
+              ? `(${frutos} + ${frutosVerdes}) ÷ ${plantas} = ${promedio.toFixed(2)}`
+              : "Sin plantas",
           calificacion: cal,
           why: rateWhy(promedio, "promedio_caida"),
           puntos: pts,
@@ -262,8 +353,8 @@ QB.Scoring = (() => {
       pctCalidad: null,
       sumaDefectos: promedio,
       explain: {
-        base: `Promedio = frutos caídos ÷ plantas evaluadas`,
-        muestra: `Plantas = ${plantas} · Frutos = ${frutos}`,
+        base: `Promedio = (frutos caídos + frutos caídos verdes) ÷ plantas`,
+        muestra: `Plantas = ${plantas} · Caídos = ${frutos} · Verdes = ${frutosVerdes}`,
         tot: `Promedio = ${promedio.toFixed(2)}`,
         calidad: null,
         nota: `Nota ${nota} (${cal}): ${rateWhy(promedio, "promedio_caida")}`,

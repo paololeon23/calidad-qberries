@@ -8,11 +8,48 @@ QB.API = (() => {
   const CUSTOM_VALUES_KEY = "qb_custom_values";
   const ACTIVITY_KEY = "qb_activity";
   const HISTORY_TTL_MS = 48 * 60 * 60 * 1000; // 48 h
+  const EVAL_TYPES = ["calidad", "descarte", "caida", "planta"];
+  const TZ_OPS = "America/Lima";
 
   function isFresh_(iso) {
     const t = new Date(iso || 0).getTime();
     if (!t || Number.isNaN(t)) return false;
     return Date.now() - t <= HISTORY_TTL_MS;
+  }
+
+  /** Día operativo Perú (YYYY-MM-DD). Evita desfases UTC de noche. */
+  function dayKeyLima_(iso) {
+    const d = iso ? new Date(iso) : new Date();
+    if (Number.isNaN(d.getTime())) return "";
+    try {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: TZ_OPS,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(d);
+    } catch {
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+  }
+
+  function todayKey() {
+    return dayKeyLima_();
+  }
+
+  function localDayKey(iso) {
+    return dayKeyLima_(iso);
+  }
+
+  function normEvalType_(t) {
+    const k = String(t || "").trim().toLowerCase();
+    return EVAL_TYPES.includes(k) ? k : "";
+  }
+
+  function emptyByType_() {
+    return { calidad: 0, descarte: 0, caida: 0, planta: 0 };
   }
 
   /** Limpia historial > 48 h (no toca cola pendiente) */
@@ -162,7 +199,7 @@ QB.API = (() => {
       const clientId = String(record.clientId || "").trim();
       const entry = {
         clientId,
-        type: record.type,
+        type: normEvalType_(record.type) || record.type,
         nota: record.score?.nota,
         calidadGlobal: record.score?.calidadGlobal,
         evaluador: data.evaluador || "",
@@ -195,17 +232,28 @@ QB.API = (() => {
   function queueToHistoryEntry(item) {
     const d = item.data || {};
     const s = item.score || {};
+    const at = item.submittedAt || item.at || "";
+    const type = normEvalType_(item.type) || item.type || "";
+    let lote = d.lote || "";
+    let modulo = d.modulo || "";
+    let turno = d.turno != null && d.turno !== "" ? String(d.turno) : "";
+    if (lote && window.QB?.Data?.loteMeta) {
+      const meta = QB.Data.loteMeta(lote);
+      if (meta.modulo) modulo = meta.modulo;
+      if (meta.turno) turno = meta.turno;
+      if (meta.lote) lote = meta.lote;
+    }
     return {
-      id: item.clientId || item.submittedAt,
+      id: item.clientId || at || `pending_${Math.random().toString(36).slice(2, 8)}`,
       clientId: item.clientId || "",
-      type: item.type,
-      at: item.submittedAt || new Date().toISOString(),
+      type,
+      at,
       evaluador: d.evaluador || "",
       cosechador: d.cosechador || "",
       variedad: d.variedad || "",
-      lote: d.lote || "",
-      modulo: d.modulo || "",
-      turno: d.turno || "",
+      lote,
+      modulo,
+      turno,
       nota: s.nota,
       calidadGlobal: s.calidadGlobal || "",
       status: "pending",
@@ -214,21 +262,68 @@ QB.API = (() => {
 
   /** Pendientes (cola) + enviados (últimas 48 h), sin duplicar clientId */
   function getUploadHistory() {
-    const queue = getQueue().map(queueToHistoryEntry);
-    const pendingIds = new Set(queue.map((q) => String(q.clientId || "")).filter(Boolean));
+    const seen = new Set();
+    const queue = [];
+    getQueue().forEach((item) => {
+      const entry = queueToHistoryEntry(item);
+      const id = String(entry.clientId || "").trim();
+      if (id) {
+        if (seen.has(id)) return;
+        seen.add(id);
+      }
+      queue.push(entry);
+    });
     const activity = getActivity()
       .filter((a) => {
-        const id = String(a.clientId || "");
-        return !id || !pendingIds.has(id);
+        const id = String(a.clientId || "").trim();
+        return !id || !seen.has(id);
       })
-      .map((a, i) => ({
-        ...a,
-        id: a.clientId || `${a.at || i}|${a.type}|${a.evaluador || ""}`,
-        status: "sent",
-      }));
+      .map((a, i) => {
+        const id = String(a.clientId || "").trim();
+        if (id) seen.add(id);
+        return {
+          ...a,
+          type: normEvalType_(a.type) || a.type || "",
+          id: id || `${a.at || i}|${a.type}|${a.evaluador || ""}`,
+          status: "sent",
+        };
+      });
     return [...queue, ...activity].sort(
       (a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime()
     );
+  }
+
+  /**
+   * Conteos del día operativo (América/Lima).
+   * Total = enviados hoy + pendientes hoy (sin doble conteo por clientId).
+   */
+  function getTodayOpsStats() {
+    const day = todayKey();
+    const byType = emptyByType_();
+    const items = getUploadHistory();
+    const todayItems = [];
+    for (let i = 0; i < items.length; i += 1) {
+      const a = items[i];
+      const t = normEvalType_(a.type);
+      if (!t) continue; // solo protocolos conocidos
+      const key = dayKeyLima_(a.at);
+      if (!day || key !== day) continue;
+      todayItems.push(a);
+      byType[t] += 1;
+    }
+    const pendingAll = getQueue().length;
+    let pendingToday = 0;
+    getQueue().forEach((q) => {
+      if (dayKeyLima_(q.submittedAt || q.at) === day) pendingToday += 1;
+    });
+    return {
+      day,
+      total: todayItems.length,
+      byType,
+      pending: pendingAll,
+      pendingToday,
+      last: todayItems[0] || items[0] || null,
+    };
   }
 
   /** Limpieza en segundo plano cada hora */
@@ -254,12 +349,21 @@ QB.API = (() => {
     }
   }
 
+  function dequeueByClientId_(clientId) {
+    const id = String(clientId || "").trim();
+    if (!id) return;
+    const q = getQueue();
+    const next = q.filter((x) => String(x.clientId || "") !== id);
+    if (next.length !== q.length) setQueue(next);
+  }
+
   async function submit(payload) {
     const url = apiUrl_();
     const record = {
       ...payload,
+      type: normEvalType_(payload.type) || payload.type,
       clientId: payload.clientId || cryptoRandom(),
-      submittedAt: new Date().toISOString(),
+      submittedAt: payload.submittedAt || new Date().toISOString(),
     };
 
     if (record.data) {
@@ -270,6 +374,7 @@ QB.API = (() => {
     }
 
     if (!url) {
+      dequeueByClientId_(record.clientId);
       const demo = JSON.parse(localStorage.getItem("qb_demo_saves") || "[]");
       demo.unshift(record);
       localStorage.setItem("qb_demo_saves", JSON.stringify(demo.slice(0, 200)));
@@ -277,6 +382,7 @@ QB.API = (() => {
       return { ok: true, mode: "demo", message: "Guardado local" };
     }
 
+    let settled = false;
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -307,11 +413,13 @@ QB.API = (() => {
         );
       }
 
+      // Éxito: salir de cola (reintento) y registrar una sola vez
+      dequeueByClientId_(record.clientId);
       logActivity(record);
+      settled = true;
       return json;
     } catch (err) {
-      // Si ya está en cola (fallo de red / servidor), no volver a encolar ciegamente
-      enqueue(record);
+      if (!settled) enqueue(record);
       throw err;
     }
   }
@@ -325,9 +433,16 @@ QB.API = (() => {
   }
 
   function enqueue(record) {
+    const id = String(record?.clientId || "").trim();
     const q = getQueue();
-    if (q.some((x) => x.clientId === record.clientId)) return;
-    q.push(record);
+    if (id && q.some((x) => String(x.clientId || "") === id)) return;
+    const entry = {
+      ...record,
+      clientId: id || cryptoRandom(),
+      type: normEvalType_(record?.type) || record?.type,
+      submittedAt: record?.submittedAt || new Date().toISOString(),
+    };
+    q.push(entry);
     setQueue(q);
   }
 
@@ -387,5 +502,8 @@ QB.API = (() => {
     getActivity,
     logActivity,
     getUploadHistory,
+    getTodayOpsStats,
+    todayKey,
+    localDayKey,
   };
 })();

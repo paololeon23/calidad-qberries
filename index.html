@@ -96,17 +96,13 @@
         <strong id="qb-sync-version">v1.1.0</strong>
       </div>
       <div class="qb-sync-actions">
-        <button type="button" class="qb-sync-btn primary" id="qb-sync-install" hidden>
-          Instalar app
-          <small id="qb-sync-install-sub">Agregar a la pantalla de inicio</small>
+        <button type="button" class="qb-sync-btn primary" id="qb-sync-clear">
+          Eliminar caché
+          <small>Limpia formularios, borradores y errores pegados</small>
         </button>
         <button type="button" class="qb-sync-btn primary" id="qb-sync-update">
           Actualizar app
           <small>Descarga la última versión</small>
-        </button>
-        <button type="button" class="qb-sync-btn" id="qb-sync-cache">
-          Borrar caché
-          <small>Limpia formularios y datos temporales</small>
         </button>
       </div>
       <p class="qb-sync-tips-label">Recomendaciones de uso</p>
@@ -175,26 +171,45 @@
       </div>
       <div class="eval-grid" id="eval-grid"></div>
 
-      <section class="ops-panel" id="ops-panel" aria-label="Resumen local">
+      <section class="ops-panel" id="ops-panel" aria-label="Resumen del día">
         <div class="ops-head">
           <div>
             <p class="ops-kicker">Operaciones de campo</p>
-            <h3>Panel del día</h3>
+            <h3>Resumen del día</h3>
           </div>
           <span class="ops-date" id="ops-date"></span>
         </div>
         <div class="ops-kpis">
-          <div class="kpi">
+          <div class="kpi kpi-sum">
             <span class="kpi-val" id="kpi-hoy">0</span>
-            <span class="kpi-label">Hoy</span>
+            <span class="kpi-label">Total del día</span>
           </div>
-          <div class="kpi kpi-grade">
-            <span class="kpi-val" id="kpi-nota">—</span>
-            <span class="kpi-label kpi-label-sr" id="kpi-nota-label">Calificación del día</span>
-          </div>
-          <div class="kpi">
+          <div class="kpi" id="kpi-pend-wrap">
             <span class="kpi-val" id="kpi-pend">0</span>
             <span class="kpi-label">Pendientes</span>
+          </div>
+        </div>
+        <p class="ops-section-label">Por protocolo</p>
+        <div class="ops-by-type" id="ops-by-type" aria-label="Evaluaciones por tipo hoy">
+          <div class="ops-type" data-type="calidad">
+            <span class="ops-type-code">QC-01</span>
+            <span class="ops-type-val" id="kpi-tipo-calidad">0</span>
+            <span class="ops-type-label">Calidad</span>
+          </div>
+          <div class="ops-type" data-type="descarte">
+            <span class="ops-type-code">QC-02</span>
+            <span class="ops-type-val" id="kpi-tipo-descarte">0</span>
+            <span class="ops-type-label">Descarte</span>
+          </div>
+          <div class="ops-type" data-type="caida">
+            <span class="ops-type-code">QC-03</span>
+            <span class="ops-type-val" id="kpi-tipo-caida">0</span>
+            <span class="ops-type-label">Fruta caída</span>
+          </div>
+          <div class="ops-type" data-type="planta">
+            <span class="ops-type-code">QC-04</span>
+            <span class="ops-type-val" id="kpi-tipo-planta">0</span>
+            <span class="ops-type-label">En planta</span>
           </div>
         </div>
         <div class="ops-last" id="ops-last"></div>

@@ -223,6 +223,7 @@ QB.App = (() => {
   }
 
   function todayISO() {
+    if (QB.API?.todayKey) return QB.API.todayKey();
     const d = new Date();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
@@ -249,8 +250,9 @@ QB.App = (() => {
     return hoy;
   }
 
-  /** Día local (no UTC) — evita que de noche “Hoy” quede en 0 */
+  /** Día operativo América/Lima — el conteo “hoy” no debe fallar de noche */
   function localDayISO(iso) {
+    if (QB.API?.localDayKey) return QB.API.localDayKey(iso);
     const d = iso ? new Date(iso) : new Date();
     if (Number.isNaN(d.getTime())) return "";
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -470,57 +472,65 @@ QB.App = (() => {
     const dateEl = $("#ops-date");
     if (!dateEl) return;
 
+    let stats;
+    try {
+      stats = QB.API.getTodayOpsStats
+        ? QB.API.getTodayOpsStats()
+        : null;
+    } catch (_) {
+      stats = null;
+    }
+
     const now = new Date();
     dateEl.textContent = now.toLocaleDateString("es-PE", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
+      timeZone: "America/Lima",
+      weekday: "long",
+      day: "numeric",
+      month: "long",
     });
 
-    const today = todayISO();
-    // Enviados + pendientes de HOY (hora local Perú)
-    const todayItems = QB.API.getUploadHistory().filter(
-      (a) => localDayISO(a.at) === today
-    );
-    const sentToday = todayItems.filter((a) => a.status !== "pending");
-    const notas = sentToday
-      .map((a) => Number(a.nota))
-      .filter((n) => !Number.isNaN(n));
-    const avg = notas.length
-      ? Math.round((notas.reduce((s, n) => s + n, 0) / notas.length) * 10) / 10
-      : null;
-    const pend = QB.API.pendingCount();
+    const byType = stats?.byType || { calidad: 0, descarte: 0, caida: 0, planta: 0 };
+    const total = Number(stats?.total) || 0;
+    const pend = Number(stats?.pending ?? QB.API.pendingCount()) || 0;
+    const last = stats?.last || null;
 
-    $("#kpi-hoy").textContent = String(todayItems.length);
-    $("#kpi-nota").textContent =
-      avg != null && QB.Scoring?.gradeLabel ? QB.Scoring.gradeLabel(avg) : "—";
-    $("#kpi-pend").textContent = String(pend);
-    $("#kpi-pend").parentElement?.classList.toggle("warn", pend > 0);
+    const hoyEl = $("#kpi-hoy");
+    const pendEl = $("#kpi-pend");
+    if (hoyEl) hoyEl.textContent = String(total);
+    if (pendEl) pendEl.textContent = String(pend);
+    $("#kpi-pend-wrap")?.classList.toggle("warn", pend > 0);
+
+    ["calidad", "descarte", "caida", "planta"].forEach((t) => {
+      const n = Number(byType[t]) || 0;
+      const el = $(`#kpi-tipo-${t}`);
+      if (el) el.textContent = String(n);
+      $(`.ops-type[data-type="${t}"]`)?.classList.toggle("has-count", n > 0);
+    });
 
     const lastWrap = $("#ops-last");
-    const last = todayItems[0] || QB.API.getUploadHistory()[0];
+    if (!lastWrap) return;
+
     if (!last) {
-      const tips = [
-        "Tip: usa el select con búsqueda para ir más rápido.",
-        "Tip: sin red, los registros se reenvían al volver la señal.",
-        "Tip: el resumen muestra nota y calificación al instante.",
-      ];
-      const tip = tips[now.getHours() % tips.length];
       lastWrap.innerHTML = `
+        <p class="ops-section-label">Actividad reciente</p>
         <div class="ops-brief">
           <div class="ops-brief-row"><span>Estado</span><strong>Listo para evaluar</strong></div>
           <div class="ops-brief-row"><span>Conexión</span><strong>${navigator.onLine ? "En línea" : "Sin conexión"}</strong></div>
-          <p class="ops-tip">${tip}</p>
+          <p class="ops-tip">Seleccione un protocolo, complete la evaluación y pulse GUARDAR. Sin conexión, el registro queda en cola.</p>
         </div>`;
       return;
     }
 
     const evalDef = QB.EVALS[last.type];
-    const title = evalDef ? evalDef.title : last.type;
+    const title = evalDef ? evalDef.title : last.type || "—";
     const who = personDisplay(last.cosechador || last.evaluador || "—");
-    const meta = last.variedad || "";
+    const variedad = last.variedad || "";
     const time = last.at
-      ? new Date(last.at).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })
+      ? new Date(last.at).toLocaleTimeString("es-PE", {
+          timeZone: "America/Lima",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
       : "";
     const loteBig =
       last.lote != null && last.lote !== ""
@@ -529,24 +539,25 @@ QB.App = (() => {
     let modSm = "—";
     let turSm = "—";
     if ((last.codLote || last.lote) && QB.Data?.loteMeta) {
-      const meta = QB.Data.loteMeta(last.codLote || last.lote);
-      modSm = meta.modulo || last.modulo || "—";
-      turSm = meta.turno ? `T${meta.turno}` : last.turno ? `T${last.turno}` : "—";
+      const loteMeta = QB.Data.loteMeta(last.codLote || last.lote);
+      modSm = loteMeta.modulo || last.modulo || "—";
+      turSm = loteMeta.turno ? `T${loteMeta.turno}` : last.turno ? `T${last.turno}` : "—";
     } else {
       modSm = last.modulo || "—";
       turSm = last.turno != null && last.turno !== "" ? `T${last.turno}` : "—";
     }
 
     lastWrap.innerHTML = `
+      <p class="ops-section-label">Actividad reciente</p>
       <div class="ops-last-card">
         <div class="ops-last-top">
-          <span class="ops-last-tag">Última evaluación</span>
+          <span class="ops-last-tag">Último registro</span>
           <span class="ops-last-time">${escapeHtml(time)}</span>
         </div>
         <div class="ops-last-body">
           <div class="ops-last-info">
             <strong>${escapeHtml(title)}</strong>
-            <p>${escapeHtml(who)}${meta ? ` · ${escapeHtml(meta)}` : ""}</p>
+            <p>${escapeHtml(who)}${variedad ? ` · ${escapeHtml(variedad)}` : ""}</p>
           </div>
           <div class="ops-last-score" title="Lote · Módulo · Turno">
             <span class="big">${escapeHtml(loteBig)}</span>
@@ -595,16 +606,13 @@ QB.App = (() => {
   function refreshInstallUi_() {
     const installed = isAppInstalled_();
     const banner = $("#install-banner");
-    const syncInstall = $("#qb-sync-install");
     const title = $("#install-banner-title");
     const text = $("#install-banner-text");
     const btn = $("#btn-install-app");
-    const syncSub = $("#qb-sync-install-sub");
     const dismissed = localStorage.getItem(INSTALL_DISMISS_KEY) === "1";
 
     if (installed) {
       if (banner) banner.hidden = true;
-      if (syncInstall) syncInstall.hidden = true;
       return;
     }
 
@@ -620,14 +628,7 @@ QB.App = (() => {
         : "Agrégala a tu inicio para usarla como app en campo.";
     }
     if (btn) btn.textContent = ios ? "Cómo hacerlo" : "Instalar";
-    if (syncInstall) {
-      syncInstall.hidden = false;
-      syncInstall.innerHTML = `${ios ? "Anclar a inicio" : "Instalar app"}<small>${
-        ios ? "Safari → Compartir → Agregar a inicio" : "Agregar a la pantalla de inicio"
-      }</small>`;
-    }
 
-    // Banner: Android con prompt nativo, o tip iOS (si no lo cerraron)
     const showBanner = !dismissed && (canNative || ios);
     if (banner) banner.hidden = !showBanner;
   }
@@ -723,47 +724,51 @@ QB.App = (() => {
   }
 
   async function clearAppCache() {
+    closeSyncModal();
+    await new Promise((r) => setTimeout(r, 240));
+
     const ok = await feedback({
-      title: "¿Borrar caché?",
-      text: "Limpia formularios temporales. No borra pendientes por enviar, borradores ni el historial local.",
+      title: "¿Eliminar caché?",
+      text: "Limpia borradores, formularios abiertos, caché del navegador y datos temporales. Conserva la cola pendiente y el historial de envíos.",
       type: "warn",
-      confirmText: "Borrar",
+      confirmText: "Eliminar",
       cancelText: "Cancelar",
     });
     if (!ok) return;
 
     setLoading(true, "Limpiando…");
     try {
-      // No tocar cola pendiente ni activity
-      const keep = new Set([
-        "qb_pending_queue",
-        "qb_activity",
-        "qb_people_history",
-        "qb_custom_people",
-        "qb_custom_values",
-        "qb_eval_drafts",
-      ]);
+      const keep = new Set(["qb_pending_queue", "qb_activity"]);
       const toRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
         if (k && !keep.has(k) && (k.startsWith("qb_") || k.startsWith("QB_"))) toRemove.push(k);
       }
       toRemove.forEach((k) => localStorage.removeItem(k));
-      // Limpiar sessionStorage de drafts
       try {
         sessionStorage.clear();
       } catch (_) {}
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister().catch(() => {})));
+      }
       if (window.caches) {
         const keys = await caches.keys();
         await Promise.all(keys.map((k) => caches.delete(k)));
       }
+      clearEvalSession();
+      goHome();
     } catch (_) {
       /* ignore */
     }
     setLoading(false);
     closeSyncModal();
-    toast("Caché limpia ✓", "ok");
-    setTimeout(() => window.location.reload(), 400);
+    toast("Caché eliminada ✓", "ok");
+    setTimeout(() => {
+      const url = new URL(window.location.href);
+      url.searchParams.set("_v", String(Date.now()));
+      window.location.replace(url.toString());
+    }, 400);
   }
 
   function showTipAdvice(tip) {
@@ -1067,8 +1072,26 @@ QB.App = (() => {
         const live = root.querySelector(`[data-live="${d.id}"]`);
         if (!live) continue;
         const input = root.querySelector(`[name="${d.id}"]`);
-        const count = Number(input?.value) || 0;
-        if (sample <= 0) {
+        const rawVal = input?.value;
+        const hasInput = rawVal !== undefined && rawVal !== null && String(rawVal).trim() !== "";
+        if (!hasInput) {
+          live.hidden = true;
+          continue;
+        }
+        const count = Number(rawVal) || 0;
+        const needsSample = !d.rateByCount && !d.noRate;
+        if (needsSample && sample <= 0) {
+          const pctEl = live.querySelector(".defect-live-pct");
+          const pillEl = live.querySelector(".pill");
+          if (pctEl) pctEl.textContent = `${count} u. · ingrese tamaño de muestra`;
+          if (pillEl) {
+            pillEl.hidden = true;
+            pillEl.textContent = "";
+          }
+          live.hidden = false;
+          continue;
+        }
+        if (!d.rateByCount && sample <= 0) {
           live.hidden = true;
           continue;
         }
@@ -1076,13 +1099,19 @@ QB.App = (() => {
         const pctEl = live.querySelector(".defect-live-pct");
         const pillEl = live.querySelector(".pill");
         if (pctEl) {
-          pctEl.textContent = d.invert
-            ? `${dr.countPct.toFixed(2)}% buena`
-            : `${dr.countPct.toFixed(2)}%`;
+          if (d.rateByCount) pctEl.textContent = `${count} bayas`;
+          else if (d.invert) pctEl.textContent = `${dr.countPct.toFixed(2)}% buena`;
+          else pctEl.textContent = `${dr.countPct.toFixed(2)}%`;
         }
         if (pillEl) {
-          pillEl.className = `pill ${QB.Scoring.pillClass(dr.cal)}`;
-          pillEl.textContent = dr.cal;
+          if (d.noRate || !dr.cal) {
+            pillEl.hidden = true;
+            pillEl.textContent = "";
+          } else {
+            pillEl.hidden = false;
+            pillEl.className = `pill ${QB.Scoring.pillClass(dr.cal)}`;
+            pillEl.textContent = dr.cal;
+          }
         }
         live.hidden = false;
       }
@@ -1092,15 +1121,36 @@ QB.App = (() => {
     if (state.type === "caida" || state.type === "planta") {
       const live = root.querySelector('[data-live="promedio"]');
       if (!live) return;
-      const plantas = Number(root.querySelector('[name="plantas_evaluadas"]')?.value) || 0;
-      const frutosName = state.type === "caida" ? "frutos_caidos" : "frutos_planta";
-      const frutos = Number(root.querySelector(`[name="${frutosName}"]`)?.value) || 0;
-      if (plantas <= 0) {
+      const plantasRaw = root.querySelector('[name="plantas_evaluadas"]')?.value;
+      const hasPlantas = plantasRaw !== undefined && plantasRaw !== null && String(plantasRaw).trim() !== "";
+      const plantas = Number(plantasRaw) || 0;
+      if (!hasPlantas || plantas <= 0) {
+        live.hidden = true;
+        return;
+      }
+      let frutos = 0;
+      let key = "promedio_planta";
+      let hasFrutos = false;
+      if (state.type === "caida") {
+        const caidosRaw = root.querySelector('[name="frutos_caidos"]')?.value;
+        const verdesRaw = root.querySelector('[name="frutos_caidos_verdes"]')?.value;
+        hasFrutos =
+          (caidosRaw !== undefined && caidosRaw !== null && String(caidosRaw).trim() !== "") ||
+          (verdesRaw !== undefined && verdesRaw !== null && String(verdesRaw).trim() !== "");
+        const caidos = Number(caidosRaw) || 0;
+        const verdes = Number(verdesRaw) || 0;
+        frutos = caidos + verdes;
+        key = "promedio_caida";
+      } else {
+        const frutosRaw = root.querySelector('[name="frutos_planta"]')?.value;
+        hasFrutos = frutosRaw !== undefined && frutosRaw !== null && String(frutosRaw).trim() !== "";
+        frutos = Number(frutosRaw) || 0;
+      }
+      if (!hasFrutos) {
         live.hidden = true;
         return;
       }
       const promedio = QB.Scoring.round2(frutos / plantas);
-      const key = state.type === "caida" ? "promedio_caida" : "promedio_planta";
       const cal = QB.Scoring.rate(promedio, key);
       const pctEl = live.querySelector(".defect-live-pct");
       const pillEl = live.querySelector(".pill");
@@ -1316,7 +1366,24 @@ QB.App = (() => {
   }
 
   function personDisplay(val) {
-    return QB.Data ? QB.Data.formatStoredPerson(val) : val;
+    if (val == null || val === "") return "";
+    const shown = QB.Data ? QB.Data.formatStoredPerson(val) : String(val);
+    return shown || String(val).trim();
+  }
+
+  /** Lee persona del hidden, del trigger visible o del state (evita meta vacío) */
+  function readPersonField_(name) {
+    const hidden = $(`#field-${name}`);
+    let v = hidden && hidden.value != null ? String(hidden.value).trim() : "";
+    if (!v) {
+      const trig = $(`#trig-${name}`);
+      const span = trig?.querySelector(".value");
+      if (span) v = String(span.textContent || "").trim();
+    }
+    if (!v && state.data && state.data[name]) {
+      v = String(state.data[name]).trim();
+    }
+    return v;
   }
 
   function buildCustomPerson(dni, nombre) {
@@ -1494,6 +1561,11 @@ QB.App = (() => {
         data[el.name] = el.value.trim();
       }
     });
+    // Personas: no perder valor si el hidden quedó vacío pero el trigger/state sí lo tiene
+    ["evaluador", "supervisor", "cosechador"].forEach((name) => {
+      const v = readPersonField_(name);
+      if (v) data[name] = v;
+    });
     // Lote en formulario guarda codLote único → expandir a lote/módulo/turno/etapa
     if (data.lote && QB.Data?.findLote) {
       const L = QB.Data.findLote(data.lote);
@@ -1619,11 +1691,13 @@ QB.App = (() => {
 
   function goResumen() {
     syncFechaHoy();
-    const data = applyLoteMetaToData(readForm());
+    const data = validate(readForm(), { feedback: true, markFields: true });
+    if (!data) return;
     data.fecha = todayISO();
     state.data = data;
     state.score = QB.Scoring.compute(state.type, data);
-    state.clientId = QB.API.newClientId();
+    // Mismo clientId en editar→resumen: evita duplicar conteo / filas
+    if (!state.clientId) state.clientId = QB.API.newClientId();
     state.saving = false;
     $("#progress-fill").style.width = "100%";
     renderResumen();
@@ -1641,11 +1715,11 @@ QB.App = (() => {
     updateStatusUI();
 
     const metaRows = [
-      ["Evaluador", personDisplay(d.evaluador)],
-      ["Supervisor", personDisplay(d.supervisor)],
+      d.evaluador ? ["Evaluador", personDisplay(d.evaluador)] : null,
+      d.supervisor ? ["Supervisor", personDisplay(d.supervisor)] : null,
       d.cosechador ? ["Cosechador", personDisplay(d.cosechador)] : null,
       ["Fecha y hora", nowStamp()],
-      ["Variedad", d.variedad],
+      d.variedad ? ["Variedad", d.variedad] : null,
       (d.lote || d.modulo || d.turno)
         ? [
             "Lote · Módulo · Turno",
@@ -1698,32 +1772,80 @@ QB.App = (() => {
       ? `<tr><th>Ítem</th><th>Cálculo</th><th>Calificación</th></tr>`
       : `<tr><th>Ítem</th><th>Valor</th><th>Calificación</th></tr>`;
 
-    const body = s.rows
-      .filter((r) => {
-        if (r.grupo === "SUM") return false;
-        const item = String(r.item || "").toLowerCase();
-        return !item.includes("suma def") && !item.includes("tot. defectos");
-      })
-      .map((r) => {
-        const calc =
-          r.pct != null
-            ? Number(r.pct).toFixed(2)
-            : r.count != null
-              ? r.count
-              : "—";
-        let pillHtml = "";
-        if (r.calificacion) {
-          pillHtml = `<span class="pill ${QB.Scoring.pillClass(r.calificacion)}">${r.calificacion}</span>`;
-        }
-        return `<tr>
-          <td>${escapeHtml(r.item)}</td>
-          <td>${calc}</td>
-          <td>${pillHtml}</td>
-        </tr>`;
-      })
-      .join("");
+    const filtered = s.rows.filter((r) => {
+      if (r.grupo === "SUM") return false;
+      const item = String(r.item || "").toLowerCase();
+      return !item.includes("suma def") && !item.includes("tot. defectos");
+    });
 
-    $("#resumen-table").innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+    const rowHtml = (r) => {
+      const calc =
+        r.pct != null
+          ? Number(r.pct).toFixed(2)
+          : r.count != null
+            ? r.count
+            : "—";
+      let pillHtml = "";
+      if (r.calificacion) {
+        pillHtml = `<span class="pill ${QB.Scoring.pillClass(r.calificacion)}">${r.calificacion}</span>`;
+      }
+      return `<tr>
+        <td>${escapeHtml(r.item)}</td>
+        <td>${calc}</td>
+        <td>${pillHtml}</td>
+      </tr>`;
+    };
+
+    const always = [];
+    const bueno = [];
+    const excelente = [];
+    for (const r of filtered) {
+      if (r.calificacion === "Bueno") bueno.push(r);
+      else if (r.calificacion === "Excelente") excelente.push(r);
+      else always.push(r);
+    }
+
+    const accBlock = (key, label, rows, pillClass) => {
+      // Solo acordeón si hay varios (ayuda a capturar); 1 ítem se muestra directo
+      if (!rows.length) return "";
+      if (rows.length === 1) {
+        return `<table><tbody>${rows.map(rowHtml).join("")}</tbody></table>`;
+      }
+      return `
+        <div class="resumen-acc" data-acc="${key}">
+          <button type="button" class="resumen-acc-btn" aria-expanded="false">
+            <span class="resumen-acc-left">
+              <span class="pill ${pillClass}">${label}</span>
+              <span class="resumen-acc-count">${rows.length} ítem${rows.length === 1 ? "" : "s"}</span>
+            </span>
+            <span class="resumen-acc-chevron" aria-hidden="true">${ICONS.caret}</span>
+          </button>
+          <div class="resumen-acc-panel" hidden>
+            <table><tbody>${rows.map(rowHtml).join("")}</tbody></table>
+          </div>
+        </div>`;
+    };
+
+    $("#resumen-table").innerHTML = `
+      <table>
+        <thead>${head}</thead>
+        <tbody>${always.map(rowHtml).join("") || `<tr><td colspan="3" class="resumen-empty-hint">Sin ítems críticos</td></tr>`}</tbody>
+      </table>
+      ${accBlock("bueno", "Bueno", bueno, "bueno")}
+      ${accBlock("excelente", "Excelente", excelente, "excelente")}
+    `;
+
+    $("#resumen-table").querySelectorAll(".resumen-acc-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const wrap = btn.closest(".resumen-acc");
+        const panel = wrap?.querySelector(".resumen-acc-panel");
+        if (!panel) return;
+        const open = panel.hidden;
+        panel.hidden = !open;
+        btn.setAttribute("aria-expanded", open ? "true" : "false");
+        wrap.classList.toggle("is-open", open);
+      });
+    });
   }
 
   async function save() {
@@ -1815,8 +1937,10 @@ QB.App = (() => {
     $("#btn-back-form").addEventListener("click", goHomeSafe);
     $("#btn-cancel")?.addEventListener("click", goHomeSafe);
     $("#btn-back-resumen").addEventListener("click", () => {
+      renderForm();
       showScreen("form");
       $("#progress-fill").style.width = "45%";
+      saveDraft_();
     });
     $("#btn-review").addEventListener("click", goResumen);
     $("#btn-save").addEventListener("click", save);
@@ -1825,9 +1949,10 @@ QB.App = (() => {
     $("#qb-sync-close")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-done")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-update")?.addEventListener("click", updateApp);
-    $("#qb-sync-install")?.addEventListener("click", () => {
-      closeSyncModal();
-      setTimeout(() => promptInstallApp_(), 220);
+    $("#qb-sync-clear")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      clearAppCache();
     });
     $("#btn-install-app")?.addEventListener("click", promptInstallApp_);
     $("#btn-install-dismiss")?.addEventListener("click", () => {
@@ -1835,7 +1960,6 @@ QB.App = (() => {
       const banner = $("#install-banner");
       if (banner) banner.hidden = true;
     });
-    $("#qb-sync-cache")?.addEventListener("click", clearAppCache);
     $("#qb-sync-tips")?.addEventListener("click", (e) => {
       const tip = e.target.closest("[data-tip]");
       if (!tip) return;
@@ -1858,8 +1982,10 @@ QB.App = (() => {
       document.querySelector("#screen-uploads .panel-scroll")?.scrollTo(0, 0);
     });
     $("#btn-edit").addEventListener("click", () => {
+      renderForm();
       showScreen("form");
       $("#progress-fill").style.width = "45%";
+      saveDraft_();
     });
 
     document.querySelectorAll("#chip-pending, [data-chip-pending]").forEach((btn) => {

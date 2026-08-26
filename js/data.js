@@ -101,16 +101,29 @@ QB.Data = (() => {
     }
   }
 
+  /** Corrige UTF-8 leído como Latin-1 (ej. MÃ¡gica → Mágica) */
+  function fixMojibake_(s) {
+    const t = String(s || "");
+    if (!t || !/[\u00C3\u00C2]/.test(t)) return t;
+    try {
+      const bytes = Uint8Array.from(t, (ch) => ch.charCodeAt(0) & 0xff);
+      return new TextDecoder("utf-8").decode(bytes);
+    } catch {
+      return t;
+    }
+  }
+
   const VARIEDAD_MAP = {
     "SEKOYA POP": "S. Pop",
     "S. POP": "S. Pop",
     "S. Pop": "S. Pop",
     "Sekoya Pop": "S. Pop",
-    MAGICA: "M\u00e1gica",
-    "MAGICA": "M\u00e1gica",
-    "M\u00c1GICA": "M\u00e1gica",
-    "M\u00e1gica": "M\u00e1gica",
-    Magica: "M\u00e1gica",
+    MAGICA: "Mágica",
+    "MAGICA": "Mágica",
+    "MÁGICA": "Mágica",
+    "Mágica": "Mágica",
+    Magica: "Mágica",
+    "MÃ¡gica": "Mágica",
   };
 
   function etapaKind(etapa) {
@@ -231,7 +244,8 @@ QB.Data = (() => {
 
   function mapVariedad(raw) {
     if (!raw) return "";
-    return VARIEDAD_MAP[String(raw).trim()] || String(raw).trim();
+    const key = fixMojibake_(String(raw).trim());
+    return VARIEDAD_MAP[key] || VARIEDAD_MAP[key.toUpperCase()] || key;
   }
 
   /**
