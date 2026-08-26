@@ -645,8 +645,14 @@ QB.App = (() => {
         const choice = await deferredInstallPrompt.userChoice;
         deferredInstallPrompt = null;
         if (choice && choice.outcome === "accepted") {
-          toast("App instalada ✓", "ok");
           localStorage.setItem(INSTALL_DISMISS_KEY, "1");
+          toast("App instalada ✓ — abriendo…", "ok");
+          // Refuerza apertura en modo app
+          setTimeout(() => {
+            try {
+              window.location.replace("./index.html?source=pwa");
+            } catch (_) {}
+          }, 350);
         }
       } catch (_) {
         /* ignore */
@@ -655,6 +661,8 @@ QB.App = (() => {
       return;
     }
 
+    // Sin evento nativo aún → ir a página de instalación (QR / Netlify)
+    const installPage = "install.html";
     if (isIosSafari_()) {
       closeSyncModal();
       await feedback({
@@ -666,12 +674,7 @@ QB.App = (() => {
       return;
     }
 
-    await feedback({
-      title: "Instalar desde el menú",
-      text: "En Chrome: menú ⋮ → «Instalar app» o «Agregar a la pantalla de inicio». Debe estar en HTTPS y con internet la primera vez.",
-      type: "info",
-      confirmText: "Entendido",
-    });
+    window.location.href = installPage;
   }
 
   function setupInstallPrompt_() {
@@ -685,6 +688,14 @@ QB.App = (() => {
       localStorage.setItem(INSTALL_DISMISS_KEY, "1");
       refreshInstallUi_();
       toast("App instalada ✓", "ok");
+      // Abrir en modo instalado
+      setTimeout(() => {
+        if (!isAppInstalled_()) {
+          try {
+            window.location.replace("./index.html?source=pwa");
+          } catch (_) {}
+        }
+      }, 400);
     });
     refreshInstallUi_();
   }
@@ -773,6 +784,10 @@ QB.App = (() => {
 
   function showTipAdvice(tip) {
     const tips = {
+      instalar: {
+        title: "Instalar en Android",
+        text: "Escanea el QR o abre https://calidad-qberries.netlify.app/install.html en Chrome. Pulsa Instalar aplicación → confirma en la pestaña de Chrome → la app se abre sola.",
+      },
       lote: {
         title: "Lote primero",
         text: "Elige el lote y el app completa módulo y turno. Así evitas errores en campo.",

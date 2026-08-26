@@ -44,7 +44,7 @@ QB.Scoring = (() => {
     const t = resolveThreshold_(key);
     const v = Number(value) || 0;
 
-    // Conteo por bayas / promedio planta (legacy buenoMax/regularMax)
+    // Conteo por bayas / promedio planta
     if (t.byCount) {
       if (v <= 0) return "Excelente";
       if (v <= t.buenoMax) return "Bueno";
@@ -59,34 +59,50 @@ QB.Scoring = (() => {
       return "Malo";
     }
 
-    if (v <= 0) return "Excelente";
-
-    const [bMin, bMax] = t.bueno || [0, 0];
+    const exc = t.excelente || [0, 0];
+    const [eMin, eMax] = exc;
+    const [bMin, bMax] = t.bueno || [999, 999];
     const [rMin, rMax] = t.regular || [999, 999];
     const [mMin, mMax] = t.malo || [999, 999];
 
-    // Solape en límite (ej. suma cal 12): prioriza Bueno
-    if (t.overlapBuenoWins && inBand_(v, t.regular) && inBand_(v, t.bueno)) {
-      return "Bueno";
+    // Tolerancia 0 (plagas / polvo): solo 0 = Excelente
+    if (t.zeroTolerance) {
+      if (v <= 0) return "Excelente";
+      if (inBand_(v, t.regular) && !inBand_(v, t.malo)) return "Regular";
+      return "Malo";
     }
 
-    // Solape en límite (ej. blando en 2): prioriza peor (Malo)
+    // Exactamente en Excelente
+    if (inBand_(v, exc)) {
+      // Solape Excelente ↔ Bueno → Excelente
+      if (t.overlapExcelenteWins || inBand_(v, t.bueno)) return "Excelente";
+      return "Excelente";
+    }
+
+    // Solape Regular ↔ Malo → Malo
     if (t.overlapWorst && inBand_(v, t.regular) && inBand_(v, t.malo)) {
       return "Malo";
+    }
+
+    // Solape Bueno ↔ Regular → Bueno
+    if (t.overlapBuenoWins && inBand_(v, t.regular) && inBand_(v, t.bueno)) {
+      return "Bueno";
     }
 
     if (inBand_(v, t.malo)) return "Malo";
     if (inBand_(v, t.regular)) return "Regular";
     if (inBand_(v, t.bueno)) return "Bueno";
 
-    // Entre bueno y regular (ej. desgarro 2.33%): Bueno
-    if (t.gapAsBueno && v > bMax && v < rMin) return "Bueno";
-
-    // Entre regular y malo (ej. picadura 1.5%, desgarro 5.5%)
+    // Huecos entre bandas → grado anterior (mejor)
+    if (v > eMax && v < bMin) return "Excelente";
+    if (v > bMax && v < rMin) return t.gapAsBueno !== false ? "Bueno" : "Regular";
     if (v > rMax && v < mMin) return "Regular";
 
-    // > 0 pero por debajo del mínimo bueno (solo bueno desde 1)
-    if (v > 0 && v < bMin) return "Bueno";
+    // Por encima del máximo malo
+    if (v > mMax) return "Malo";
+
+    // Por debajo del mínimo excelente (raro)
+    if (v < eMin) return "Excelente";
 
     return "Malo";
   }
@@ -94,7 +110,7 @@ QB.Scoring = (() => {
   function bandLabel_(band) {
     if (!band) return "—";
     const [min, max] = band;
-    return min === max ? String(min) : `${min} a ${max}`;
+    return min === max ? String(min) : `${min}–${max}`;
   }
 
   function rateWhy(value, key) {
@@ -108,7 +124,8 @@ QB.Scoring = (() => {
     if (t.invert) {
       return `${cal}: ≥${t.buenoMax}% Excelente · ≥${t.regularMax}% Bueno`;
     }
-    return `${cal}: 0 Excelente · ${bandLabel_(t.bueno)}% Bueno · ${bandLabel_(t.regular)}% Regular · ${bandLabel_(t.malo)}% Malo`;
+    const exc = t.excelente || [0, 0];
+    return `${cal}: Exc ${bandLabel_(exc)}% · Bueno ${bandLabel_(t.bueno)}% · Reg ${bandLabel_(t.regular)}% · Malo ${bandLabel_(t.malo)}%`;
   }
 
   function pillClass(cal) {

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1F3D2A" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Q Calidad" />
+  <title>Instalar Q Calidad · Android</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+  <style>
+    :root {
+      --forest: #1F3D2A;
+      --green: #2F8F46;
+      --muted: #6B7570;
+      --line: #E3E8E4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100%;
+      min-height: 100dvh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 55% at 12% -10%, rgba(93, 178, 75, 0.22), transparent 55%),
+        linear-gradient(168deg, #F4FAF5 0%, #FFFFFF 55%);
+      color: var(--forest);
+    }
+    body {
+      padding: 28px 18px calc(28px + env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 14px 40px rgba(31, 61, 42, 0.12);
+      padding: 28px 22px 22px;
+      text-align: center;
+    }
+    .logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 14px;
+      border-radius: 18px;
+      object-fit: cover;
+      box-shadow: 0 8px 20px rgba(31, 61, 42, 0.12);
+    }
+    .brand {
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      color: #E31E24;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .sub {
+      font-size: 0.92rem;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.45;
+      margin-bottom: 20px;
+    }
+    .status {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 14px;
+      min-height: 1.2em;
+    }
+    .status.warn { color: #9A6F12; }
+    .status.err { color: #C62828; }
+    .cta {
+      display: block;
+      width: 100%;
+      min-height: 56px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #1F3D2A, #2F8F46);
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(31, 61, 42, 0.22);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cta:disabled {
+      opacity: 0.55;
+      cursor: wait;
+      box-shadow: none;
+    }
+    .cta.secondary {
+      margin-top: 10px;
+      background: #fff;
+      color: var(--forest);
+      border: 1.5px solid var(--line);
+      box-shadow: none;
+      min-height: 48px;
+      font-size: 0.95rem;
+    }
+    .steps {
+      text-align: left;
+      margin-top: 18px;
+      padding: 14px 14px 12px;
+      background: #F4FAF5;
+      border-radius: 16px;
+    }
+    .steps h2 {
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .steps ol {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .steps li {
+      font-size: 0.86rem;
+      font-weight: 650;
+      line-height: 1.35;
+      color: #2C3330;
+    }
+    .qr-mini {
+      margin-top: 16px;
+      opacity: 0.9;
+    }
+    .qr-mini img {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    .note {
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img class="logo" src="assets/icon-192.png" alt="Q Calidad" width="72" height="72" />
+    <p class="brand">Q BERRIES</p>
+    <h1>Instalar aplicación</h1>
+    <p class="sub">Pulsa el botón para abrir la pestaña de instalación de Chrome. Al aceptar, la app se abre sola.</p>
+
+    <p class="status" id="status">Preparando instalación…</p>
+
+    <button type="button" class="cta" id="btn-install" disabled>Instalar aplicación</button>
+    <button type="button" class="cta secondary" id="btn-open" hidden>Abrir Q Calidad</button>
+
+    <div class="steps">
+      <h2>Android · Chrome</h2>
+      <ol>
+        <li>Pulsa <strong>Instalar aplicación</strong>.</li>
+        <li>En la pestaña de Chrome, confirma <strong>Instalar</strong>.</li>
+        <li>La app se abre en pantalla completa (sin barra del navegador).</li>
+      </ol>
+    </div>
+
+    <div class="qr-mini">
+      <img src="assets/qr-install.png" width="120" height="120" alt="QR instalar" />
+    </div>
+    <p class="note">Usa Chrome. Si abriste desde WhatsApp, toca ⋮ → Abrir en Chrome.</p>
+  </div>
+
+  <script>
+    (function () {
+      var APP = "./index.html?source=pwa";
+      var INSTALL_URL = "https://calidad-qberries.netlify.app/install.html";
+      var deferred = null;
+      var statusEl = document.getElementById("status");
+      var btn = document.getElementById("btn-install");
+      var btnOpen = document.getElementById("btn-open");
+
+      function setStatus(msg, kind) {
+        statusEl.textContent = msg;
+        statusEl.className = "status" + (kind ? " " + kind : "");
+      }
+
+      function isInstalled() {
+        if (window.matchMedia("(display-mode: standalone)").matches) return true;
+        if (window.matchMedia("(display-mode: minimal-ui)").matches) return true;
+        if (navigator.standalone === true) return true;
+        return false;
+      }
+
+      function openApp() {
+        // Tras instalar, abrir la app (standalone o misma pestaña)
+        try {
+          window.location.replace(APP);
+        } catch (_) {
+          window.location.href = APP;
+        }
+      }
+
+      function readyToInstall() {
+        btn.disabled = false;
+        btn.textContent = "Instalar aplicación";
+        setStatus("Listo — pulsa para ver la pestaña de instalación");
+      }
+
+      async function doInstall() {
+        if (isInstalled()) {
+          setStatus("Ya está instalada — abriendo…");
+          openApp();
+          return;
+        }
+
+        if (!deferred) {
+          setStatus("Aún preparando… espera 2 s o usa Chrome ⋮ → Instalar app", "warn");
+          return;
+        }
+
+        btn.disabled = true;
+        setStatus("Abriendo pestaña de instalación…");
+        try {
+          deferred.prompt();
+          var choice = await deferred.userChoice;
+          deferred = null;
+          if (choice && choice.outcome === "accepted") {
+            setStatus("Instalada ✓ — abriendo app…");
+            // Chrome en Android suele abrir sola; reforzamos navegación
+            setTimeout(openApp, 400);
+          } else {
+            setStatus("Instalación cancelada. Puedes intentar de nuevo.", "warn");
+            btn.disabled = false;
+          }
+        } catch (err) {
+          setStatus("No se pudo mostrar el instalador. Usa Chrome ⋮ → Instalar app.", "err");
+          btn.disabled = false;
+        }
+      }
+
+      if (isInstalled()) {
+        setStatus("App ya instalada");
+        btn.hidden = true;
+        btnOpen.hidden = false;
+        btnOpen.addEventListener("click", openApp);
+        setTimeout(openApp, 600);
+        return;
+      }
+
+      window.addEventListener("beforeinstallprompt", function (e) {
+        e.preventDefault();
+        deferred = e;
+        readyToInstall();
+      });
+
+      window.addEventListener("appinstalled", function () {
+        deferred = null;
+        setStatus("Instalada ✓ — abriendo app…");
+        setTimeout(openApp, 300);
+      });
+
+      btn.addEventListener("click", doInstall);
+      btnOpen.addEventListener("click", openApp);
+
+      // Registrar SW pronto para que Chrome ofrezca instalar
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").then(function () {
+          setStatus("Casi listo…");
+          // Si el evento ya llegó o llega tarde
+          setTimeout(function () {
+            if (!deferred && !isInstalled()) {
+              setStatus("Si el botón sigue inactivo: Chrome ⋮ → Instalar app", "warn");
+              btn.disabled = false;
+              btn.textContent = "Reintentar / Instrucciones";
+              btn.onclick = function () {
+                if (deferred) doInstall();
+                else {
+                  setStatus("En Chrome: menú ⋮ → Instalar aplicación", "warn");
+                  btnOpen.hidden = false;
+                }
+              };
+            }
+          }, 4500);
+        }).catch(function () {
+          setStatus("Sin service worker — abre en Chrome con internet", "err");
+          btn.disabled = false;
+        });
+      } else {
+        setStatus("Este navegador no permite instalar PWA", "err");
+      }
+    })();
+  </script>
+</body>
+</html>
