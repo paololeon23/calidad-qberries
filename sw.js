@@ -1,11 +1,12 @@
 /* Q Berries Calidad — Service Worker · todo local en caché */
-const CACHE = "qb-calidad-v82";
+const CACHE = "qb-calidad-v119";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/fonts.css",
   "./css/styles.css",
   "./js/config.js",
+  "./js/catalog-seed.js",
   "./js/data.js",
   "./js/scoring.js",
   "./js/select.js",
@@ -20,6 +21,7 @@ const ASSETS = [
   "./data/lotes-licapa.json",
   "./data/trabajadores.json",
   "./data/supervisores-cosecha.json",
+  "./data/evaluadores.json",
   "./fonts/plus-jakarta-sans-500.woff2",
   "./fonts/plus-jakarta-sans-600.woff2",
   "./fonts/plus-jakarta-sans-700.woff2",

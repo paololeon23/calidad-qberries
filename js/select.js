@@ -2,7 +2,7 @@
 window.QB = window.QB || {};
 
 QB.PreciseSelect = (() => {
-  let overlay, modal, titleEl, searchEl, listEl, addBtn;
+  let overlay, modal, titleEl, searchEl, listEl, addBtn, addPanel, addDniEl, addNameEl, addSaveBtn, addErrEl;
   let state = {
     open: false,
     options: [],
@@ -14,9 +14,11 @@ QB.PreciseSelect = (() => {
     emptyHint: "Sin resultados",
     getOptions: null,
     onSelect: null,
+    buildCustomPerson: null,
     title: "",
     placeholder: "Buscar...",
     inputmode: "",
+    listColumns: false,
   };
 
   function ensureDom() {
@@ -37,6 +39,19 @@ QB.PreciseSelect = (() => {
           <input type="search" id="precise-search" placeholder="Buscar..." autocomplete="off" enterkeyhint="search" />
         </div>
         <div class="precise-list" id="precise-list"></div>
+        <div class="precise-add-panel" id="precise-add-panel" hidden>
+          <p class="precise-add-note">No encontrado — agregar solo en este dispositivo</p>
+          <label class="precise-add-field">
+            <span>DNI / Código</span>
+            <input type="text" id="precise-add-dni" inputmode="numeric" maxlength="8" pattern="[0-9]*" autocomplete="off" enterkeyhint="next" />
+          </label>
+          <label class="precise-add-field">
+            <span>Nombre completo</span>
+            <input type="text" id="precise-add-name" autocomplete="off" enterkeyhint="done" />
+          </label>
+          <p class="precise-add-error" id="precise-add-error" hidden></p>
+          <button type="button" class="precise-add-save" id="precise-add-save">Guardar y usar</button>
+        </div>
         <button type="button" class="precise-add" id="precise-add" hidden>Agregar uno</button>
       </div>
     `;
@@ -47,6 +62,11 @@ QB.PreciseSelect = (() => {
     searchEl = overlay.querySelector("#precise-search");
     listEl = overlay.querySelector("#precise-list");
     addBtn = overlay.querySelector("#precise-add");
+    addPanel = overlay.querySelector("#precise-add-panel");
+    addDniEl = overlay.querySelector("#precise-add-dni");
+    addNameEl = overlay.querySelector("#precise-add-name");
+    addSaveBtn = overlay.querySelector("#precise-add-save");
+    addErrEl = overlay.querySelector("#precise-add-error");
 
     overlay.querySelector("#precise-close").addEventListener("click", close);
     overlay.addEventListener("click", (e) => {
@@ -54,16 +74,30 @@ QB.PreciseSelect = (() => {
     });
     searchEl.addEventListener("input", () => {
       filter(searchEl.value);
-      updateAddVisibility();
+      updateAddUi();
     });
-    addBtn.addEventListener("click", () => {
-      const q = searchEl.value.trim();
-      if (!q) return;
-      pick({ id: q, label: q, meta: "Nuevo" });
+    addDniEl.addEventListener("input", () => {
+      addDniEl.value = String(addDniEl.value || "").replace(/\D/g, "").slice(0, 8);
+    });
+    addBtn.addEventListener("click", submitCustomText);
+    addSaveBtn.addEventListener("click", submitCustomPerson);
+    addNameEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submitCustomPerson();
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && state.open) close();
     });
+  }
+
+  function resetAddForm() {
+    if (addDniEl) addDniEl.value = "";
+    if (addNameEl) addNameEl.value = "";
+    if (addErrEl) {
+      addErrEl.hidden = true;
+      addErrEl.textContent = "";
+    }
+    if (addPanel) addPanel.hidden = true;
+    if (addBtn) addBtn.hidden = true;
   }
 
   function resolveOptions(q) {
@@ -89,15 +123,21 @@ QB.PreciseSelect = (() => {
       }
       state.options = resolveOptions(raw);
       state.filtered = [...state.options];
-      state.emptyHint = s
-        ? state.allowCustom
-          ? "Sin resultados — usa Agregar"
-          : "Sin resultados"
-        : state.minHint || "Escribe para buscar";
+      if (s) {
+        state.emptyHint = state.allowCustom
+          ? "Sin resultados — puedes agregar abajo"
+          : "Sin resultados";
+      } else if (state.minQuery > 0) {
+        state.emptyHint =
+          state.minHint || `Escribe al menos ${state.minQuery} caracteres`;
+      } else {
+        state.emptyHint = state.minHint || "Sin datos en el catálogo";
+      }
       renderList();
       return;
     }
 
+    state.options = resolveOptions(raw);
     state.filtered = !s
       ? [...state.options]
       : state.options.filter(
@@ -106,35 +146,120 @@ QB.PreciseSelect = (() => {
             String(o.meta || "").toLowerCase().includes(s) ||
             String(o.id).toLowerCase().includes(s)
         );
-    state.emptyHint = "Sin resultados";
+    state.emptyHint = s
+      ? state.allowCustom
+        ? "Sin resultados — puedes agregar abajo"
+        : "Sin resultados"
+      : "Sin resultados";
     renderList();
   }
 
-  function updateAddVisibility() {
+  function canShowAdd(q) {
+    if (!state.allowCustom || !q) return false;
+    if (state.filtered.length) return false;
+    if (state.minQuery) {
+      const digits = q.replace(/\D/g, "");
+      const qLen = state.inputmode === "numeric" ? digits.length : q.length;
+      if (qLen < state.minQuery) return false;
+    }
+    return true;
+  }
+
+  function updateAddUi() {
     const q = searchEl.value.trim();
-    const exists = (state.options || []).some(
-      (o) => String(o.label).toLowerCase() === q.toLowerCase() || String(o.id) === q
-    );
-    addBtn.hidden = !(state.allowCustom && q && !exists);
-    addBtn.textContent = q ? `Agregar “${q}”` : "Agregar uno";
+    const show = canShowAdd(q);
+
+    if (state.allowCustom === "person") {
+      addBtn.hidden = true;
+      addPanel.hidden = !show;
+      if (show) {
+        const digits = q.replace(/\D/g, "").slice(0, 8);
+        if (digits && !addDniEl.value) addDniEl.value = digits;
+        else if (!digits && q && !addNameEl.value && !/^\d/.test(q)) addNameEl.value = q;
+      }
+      return;
+    }
+
+    if (state.allowCustom === "text") {
+      addPanel.hidden = true;
+      addBtn.hidden = !show;
+      addBtn.textContent = show ? `Agregar “${q}” (local)` : "Agregar uno";
+      return;
+    }
+
+    addPanel.hidden = true;
+    addBtn.hidden = true;
+  }
+
+  function submitCustomText() {
+    const q = searchEl.value.trim();
+    if (!q) return;
+    pick({ id: q, label: q, meta: "Local · emergencia", customText: true });
+  }
+
+  function submitCustomPerson() {
+    const dni = String(addDniEl.value || "").replace(/\D/g, "").slice(0, 8).trim();
+    const nombre = String(addNameEl.value || "").trim();
+    if (!dni || dni.length !== 8) {
+      addErrEl.textContent = "El DNI / código debe tener 8 dígitos.";
+      addErrEl.hidden = false;
+      addDniEl.focus();
+      return;
+    }
+    if (!nombre || nombre.length < 3) {
+      addErrEl.textContent = "Ingresa el nombre completo.";
+      addErrEl.hidden = false;
+      addNameEl.focus();
+      return;
+    }
+    addErrEl.hidden = true;
+    const opt =
+      typeof state.buildCustomPerson === "function"
+        ? state.buildCustomPerson(dni, nombre)
+        : {
+            id: `${dni} — ${nombre}`,
+            label: nombre,
+            meta: "Local · emergencia",
+            dni,
+            nombre,
+            local: true,
+          };
+    pick({ ...opt, local: true });
   }
 
   function renderList() {
+    listEl.classList.toggle("has-columns", !!state.listColumns);
     if (!state.filtered.length) {
       listEl.innerHTML = `<div class="precise-empty">${escapeHtml(state.emptyHint || "Sin resultados")}</div>`;
+      updateAddUi();
       return;
     }
-    listEl.innerHTML = state.filtered
-      .map((o) => {
-        const sel = state.selected && String(state.selected) === String(o.id);
-        const meta = o.meta
-          ? `<span class="opt-meta">${escapeHtml(o.meta)}</span>`
-          : "";
-        return `<button type="button" class="precise-option${sel ? " selected" : ""}" data-id="${escapeAttr(o.id)}">
+    const head = state.listColumns
+      ? `<div class="precise-columns-head" aria-hidden="true">
+          <span class="col-name">Nombre</span>
+          <span class="col-dni">DNI</span>
+        </div>`
+      : "";
+    listEl.innerHTML =
+      head +
+      state.filtered
+        .map((o) => {
+          const sel = state.selected && String(state.selected) === String(o.id);
+          if (state.listColumns) {
+            const dni = o.dni || String(o.id).replace(/\D.*/, "") || o.id;
+            return `<button type="button" class="precise-option precise-row${sel ? " selected" : ""}" data-id="${escapeAttr(o.id)}">
+          <span class="opt-title col-name">${escapeHtml(o.label)}</span>
+          <span class="opt-dni col-dni">${escapeHtml(String(dni))}</span>
+        </button>`;
+          }
+          const meta = o.meta
+            ? `<span class="opt-meta">${escapeHtml(o.meta)}</span>`
+            : "";
+          return `<button type="button" class="precise-option${sel ? " selected" : ""}" data-id="${escapeAttr(o.id)}">
           <span class="opt-title">${escapeHtml(o.label)}</span>${meta}
         </button>`;
-      })
-      .join("");
+        })
+        .join("");
 
     listEl.querySelectorAll(".precise-option").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -144,6 +269,7 @@ QB.PreciseSelect = (() => {
         if (opt) pick(opt);
       });
     });
+    updateAddUi();
   }
 
   function pick(opt) {
@@ -154,12 +280,14 @@ QB.PreciseSelect = (() => {
 
   function open(opts) {
     ensureDom();
+    resetAddForm();
     state.open = true;
     state.getOptions = opts.getOptions || null;
     state.dynamic = !!opts.dynamic || typeof opts.getOptions === "function";
     state.options = state.dynamic ? [] : opts.options || [];
     state.selected = opts.value ?? null;
-    state.allowCustom = !!opts.allowCustom;
+    state.allowCustom = opts.allowCustom || false;
+    state.buildCustomPerson = opts.buildCustomPerson || null;
     state.onSelect = opts.onSelect || null;
     state.title = opts.title || "Buscar";
     state.placeholder = opts.placeholder || "Buscar...";
@@ -167,8 +295,10 @@ QB.PreciseSelect = (() => {
     state.minHint = opts.minHint || "";
     state.emptyHint = opts.emptyHint || "Sin resultados";
     state.inputmode = opts.inputmode || "";
+    state.listColumns = !!opts.listColumns;
 
     titleEl.textContent = state.title;
+    if (modal) modal.classList.toggle("has-columns", state.listColumns);
     searchEl.placeholder = state.placeholder;
     searchEl.value = "";
     if (state.inputmode) searchEl.setAttribute("inputmode", state.inputmode);
@@ -178,9 +308,18 @@ QB.PreciseSelect = (() => {
       state.options = opts.options || [];
     }
     filter("");
-    updateAddVisibility();
     overlay.classList.add("open");
-    // No auto-focus: en móvil abre el teclado y pestañea con visualViewport
+
+    // Si el listado sale vacío, reintentar catálogos y refrescar
+    if (!state.filtered.length && window.QB?.Data) {
+      listEl.innerHTML = `<div class="precise-empty">Cargando listado…</div>`;
+      Promise.resolve(QB.Data.ensureCatalogs ? QB.Data.ensureCatalogs() : QB.Data.load()).then(
+        () => {
+          if (!state.open) return;
+          filter(searchEl.value || "");
+        }
+      );
+    }
   }
 
   let activeTrigger = null;
@@ -188,7 +327,10 @@ QB.PreciseSelect = (() => {
   function close() {
     state.open = false;
     if (searchEl && document.activeElement === searchEl) searchEl.blur();
+    resetAddForm();
     if (overlay) overlay.classList.remove("open");
+    if (modal) modal.classList.remove("has-columns");
+    if (listEl) listEl.classList.remove("has-columns");
     if (activeTrigger) {
       activeTrigger.classList.remove("open");
       activeTrigger.blur();
@@ -250,7 +392,16 @@ QB.PreciseSelect = (() => {
         inputmode: config.inputmode || "",
         value: hiddenInput.value || null,
         allowCustom: config.allowCustom,
+        listColumns: config.listColumns,
+        buildCustomPerson: config.buildCustomPerson,
         onSelect: (opt) => {
+          if (config.customKind) {
+            if (opt?.local && opt.dni && opt.nombre) {
+              QB.API?.rememberCustomPerson?.(config.customKind, opt.dni, opt.nombre);
+            } else if (opt?.customText) {
+              QB.API?.rememberCustomValue?.(config.customKind, opt.id || opt.label);
+            }
+          }
           const store = config.storeValue ? config.storeValue(opt) : opt.id;
           hiddenInput.value = store;
           hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));

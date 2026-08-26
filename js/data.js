@@ -8,40 +8,223 @@ QB.Data = (() => {
   let lotesById = {};
   let trabajadores = {};
   let supervisores = {};
+  /** Catálogo fijo embebido — siempre disponible (no depende de fetch) */
+  let evaluadores = {
+    "18078464": { nombre: "LOYOLA DOMINGUEZ OSWALDO ELMER" },
+    "40354659": { nombre: "REYES JAVE LOURDES LIZETH" },
+    "44262821": { nombre: "CHAVEZ CABRERA MARIBEL VICENTA" },
+    "45123552": { nombre: "LINARES CERNA OSCAR PAUL" },
+    "45305359": { nombre: "URTEAGA SHIMIZU YEHAN EVELYN" },
+    "45608103": { nombre: "GAVIDIA RAMIREZ LUIGI ANDERSON" },
+    "46819781": { nombre: "PEREZ LEON SALLY ELIZABETH" },
+    "47188311": { nombre: "PEREIRA VASQUEZ LUCELIA LEONORA" },
+    "47407697": { nombre: "ROLDAN PEREZ JULIO ANTONIO" },
+    "48962428": { nombre: "CALVANAPON LOPEZ CARLOS MAGNO" },
+    "60036529": { nombre: "CHUAN MIRANDA DANIELA MILAGRITOS" },
+    "60293807": { nombre: "QUIROZ MEDINA QUELUBIA" },
+    "60412486": { nombre: "LEON CARRANZA YHULEISY ALEXANDRA" },
+    "60412552": { nombre: "TAMARIZ LOPEZ VICTOR JANPIER" },
+    "60412805": { nombre: "DIAZ SOTO SANDRA GRABIELA" },
+    "60461272": { nombre: "NOE LEZAMA DANNER JANO" },
+    "60461291": { nombre: "PAISIG ALFARO WILMER MANUEL" },
+    "60461308": { nombre: "ALCANTARA VIGO DANIEL ELIAS" },
+    "60532091": { nombre: "CARRANZA MAMANI LUIS ANDERSON" },
+    "60554649": { nombre: "CARRANZA DIAZ ARIANA JESUSANITA" },
+    "60600072": { nombre: "VIGO PAREDES GABRIELA ANAIS" },
+    "60633034": { nombre: "SANGAY CABANILLAS RICARDO FRANCO" },
+    "60740851": { nombre: "HORNA JUAREZ ROSALINA NOEMI" },
+    "61256413": { nombre: "SALDANA POEMAPE JULEISY ALEXANDRA" },
+    "61256447": { nombre: "RUMAY DIAZ LAZARO RENE" },
+    "61669930": { nombre: "SEGURA NEYRA YENNY LISET" },
+    "62162097": { nombre: "LLANOS SANCHEZ DAYANA NICOLE" },
+    "62585049": { nombre: "RODRIGUEZ DAGA ERICKA ELIZABETH" },
+    "62749305": { nombre: "ARANDA SOLIS VALERIA YAMILET" },
+    "62894779": { nombre: "VILLALOBOS CARRANZA YURICO NATALY" },
+    "70134863": { nombre: "RIMACHE RAVINES GERSON ELIEZER" },
+    "70142292": { nombre: "YRRIBARREN MERCEDES PEDRO JESUS" },
+    "70550707": { nombre: "REYES SANGAY JUAN SAMUEL" },
+    "70650830": { nombre: "LIMA PALOMINO MAURICIO RENATO" },
+    "70658198": { nombre: "FLORES MARINOS ELIZA GIANELLA" },
+    "70667311": { nombre: "ALCANTARA VIGO BELCY GABRIELITA" },
+    "70735997": { nombre: "DIAZ SOTO MARIA FERNANDA" },
+    "71149417": { nombre: "CABRERA PEREZ CARLOS SAUL" },
+    "71327899": { nombre: "MURGA CASTILLO KEVIN WILLIAMS" },
+    "71327907": { nombre: "HUACCHA TERRONES FRANCO EMANUEL" },
+    "71367059": { nombre: "MELON VILLANUEVA KARINA ELIZABETH" },
+    "71509838": { nombre: "CANO OLIVARES FATIMA DANIELA" },
+    "72743323": { nombre: "VILLANUEVA CAYPO ELIZABETH NOEMI" },
+    "72795195": { nombre: "QUISPE ZERPA MARIA ELENA" },
+    "72799496": { nombre: "VASQUEZ CARDENAS CRISTIAN OLIVER" },
+    "72967660": { nombre: "LLANOS SANCHEZ NAYELI DE LOS ANGELES" },
+    "74292255": { nombre: "ESTACIO HUAMAN CLAUDIA LUCIA" },
+    "74662085": { nombre: "OLGUIN OVALLE BRAYAN GIOVANI" },
+    "74969230": { nombre: "MONTALVO PEREZ SAIDY PATRICIA" },
+    "75023790": { nombre: "BUENO VELEZMORO DEYSI ELIZABETH" },
+    "75023887": { nombre: "SIPIRAN BAUTISTA OSCAR RUBEN" },
+    "75078526": { nombre: "LOZADA PAJARES JOSE JULIAN" },
+    "75138175": { nombre: "RUGEL AVILA CYNTHIA ELIZABETH" },
+    "75278098": { nombre: "MACHUCA ALVAREZ LUIGUI JANPIER" },
+    "75501379": { nombre: "SALVADOR FLOREANO LUZ DEL ROCIO" },
+    "75901806": { nombre: "PLASENCIA GASTOPE ESMERALDA ALEXANDRA" },
+    "76173220": { nombre: "GUTIERREZ VALQUI ETHEL YAMELI" },
+    "76313065": { nombre: "RODRIGUEZ AGUILAR ARIANA MILAGROS" },
+    "76371313": { nombre: "CORTEZ PAJARES PERLA MABEL" },
+    "76418254": { nombre: "BALERIO CARRANZA ERICK IVAN" },
+    "76977945": { nombre: "CASTRO SANCHEZ MARIA VALENTINA" },
+    "77418497": { nombre: "DIAZ SOTO ROXANA" },
+    "77679860": { nombre: "COTRINA ABANTO ESMELA LIZBETH" },
+    "77799828": { nombre: "ZAVALETA IGLESIAS KAHORY MARIANELA" },
+  };
+
+  /** Semilla embebida (supervisores / preview cosecha) si falla fetch */
+  function applySeed_() {
+    const seed = (window.QB && window.QB.SEED) || {};
+    if (seed.evaluadores) {
+      for (const dni of Object.keys(seed.evaluadores)) {
+        if (!evaluadores[dni]) evaluadores[dni] = seed.evaluadores[dni];
+      }
+    }
+    if (seed.supervisores && Object.keys(supervisores).length === 0) {
+      supervisores = Object.assign({}, seed.supervisores);
+    }
+    if (seed.trabajadoresPreview && Object.keys(trabajadores).length === 0) {
+      trabajadores = Object.assign({}, seed.trabajadoresPreview);
+    }
+  }
+  applySeed_();
+
+  function dataUrl_(rel) {
+    try {
+      return new URL(rel, document.baseURI || location.href).href;
+    } catch {
+      return rel;
+    }
+  }
 
   const VARIEDAD_MAP = {
     "SEKOYA POP": "S. Pop",
     "S. POP": "S. Pop",
     "S. Pop": "S. Pop",
-    MAGICA: "Mágica",
-    MÁGICA: "Mágica",
-    Mágica: "Mágica",
+    "Sekoya Pop": "S. Pop",
+    MAGICA: "M\u00e1gica",
+    "MAGICA": "M\u00e1gica",
+    "M\u00c1GICA": "M\u00e1gica",
+    "M\u00e1gica": "M\u00e1gica",
+    Magica: "M\u00e1gica",
   };
+
+  function etapaKind(etapa) {
+    const e = String(etapa || "")
+      .trim()
+      .toUpperCase();
+    if (e.includes("II")) return "II";
+    if (e.includes("I") || e.includes("LICAPA")) return "I";
+    return "";
+  }
+
+  /** Un lote por número: si hay I+II → etiqueta Licapa I/II y datos de Licapa I */
+  function buildLoteCatalog(raw) {
+    const all = Array.isArray(raw) ? raw : [];
+    const groups = new Map();
+    all.forEach((l) => {
+      const n = String(l.lote ?? "").trim();
+      if (!n) return;
+      if (!groups.has(n)) groups.set(n, []);
+      groups.get(n).push(l);
+    });
+
+    lotesById = {};
+    lotes = [];
+
+    all.forEach((l) => {
+      const cod = String(l.codLote || "").trim();
+      if (cod) lotesById[cod] = l;
+    });
+
+    groups.forEach((group, num) => {
+      const licapaI = group.find((l) => etapaKind(l.etapa) === "I");
+      const licapaII = group.find((l) => etapaKind(l.etapa) === "II");
+      let pick;
+      let etapaLabel;
+      if (licapaI && licapaII) {
+        pick = licapaI;
+        etapaLabel = "Licapa I/II";
+      } else if (licapaI) {
+        pick = licapaI;
+        etapaLabel = "Licapa I";
+      } else if (licapaII) {
+        pick = licapaII;
+        etapaLabel = "Licapa II";
+      } else {
+        pick = group[0];
+        etapaLabel = String(pick.etapa || "").trim();
+      }
+      const entry = { ...pick, lote: num, etapa: etapaLabel };
+      lotes.push(entry);
+      lotesById[num] = entry;
+      lotesById[`Q${num}`] = entry;
+      if (pick.codLote) lotesById[String(pick.codLote)] = entry;
+      group.forEach((l) => {
+        const cod = String(l.codLote || "").trim();
+        if (cod) lotesById[cod] = entry;
+      });
+    });
+
+    lotes.sort((a, b) => {
+      const na = Number(a.lote) || 0;
+      const nb = Number(b.lote) || 0;
+      return na !== nb ? na - nb : String(a.etapa).localeCompare(String(b.etapa));
+    });
+  }
 
   async function load() {
     if (ready) return true;
     if (loading) return loading;
+
+    applySeed_();
+
+    const fetchJson = (url, fallback) =>
+      fetch(dataUrl_(url), { cache: "no-cache" })
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.json();
+        })
+        .catch(() => fallback);
+
     loading = Promise.all([
-      fetch("./data/lotes-licapa.json").then((r) => r.json()),
-      fetch("./data/trabajadores.json").then((r) => r.json()),
-      fetch("./data/supervisores-cosecha.json").then((r) => r.json()),
+      fetchJson("./data/lotes-licapa.json", []),
+      fetchJson("./data/trabajadores.json", null),
+      fetchJson("./data/supervisores-cosecha.json", null),
+      fetchJson("./data/evaluadores.json", null),
     ])
-      .then(([lotesJson, trabJson, supJson]) => {
-        lotes = Array.isArray(lotesJson) ? lotesJson : [];
-        lotesById = {};
-        lotes.forEach((l) => {
-          lotesById[String(l.lote)] = l;
-          if (l.codLote) lotesById[String(l.codLote)] = l;
-        });
-        trabajadores = trabJson?.byDni || {};
-        supervisores = supJson?.byDni || {};
+      .then(([lotesJson, trabJson, supJson, evalJson]) => {
+        buildLoteCatalog(lotesJson);
+        // Solo reemplazar si el fetch trajo datos reales
+        if (trabJson?.byDni && Object.keys(trabJson.byDni).length) {
+          trabajadores = trabJson.byDni;
+        }
+        if (supJson?.byDni && Object.keys(supJson.byDni).length) {
+          supervisores = { ...supervisores, ...supJson.byDni };
+        }
+        if (evalJson?.byDni && Object.keys(evalJson.byDni).length) {
+          // Fusionar, no reemplazar (nunca dejar vacío el catálogo embebido)
+          evaluadores = Object.assign({}, evaluadores, evalJson.byDni);
+        }
+        // Si el fetch falló, conservar la semilla embebida
+        applySeed_();
         ready = true;
         loading = null;
-        return true;
+        return (
+          Object.keys(evaluadores).length > 0 ||
+          Object.keys(trabajadores).length > 0 ||
+          lotes.length > 0
+        );
       })
       .catch(() => {
+        applySeed_();
+        ready = true;
         loading = null;
-        return false;
+        return Object.keys(evaluadores).length > 0;
       });
     return loading;
   }
@@ -71,55 +254,83 @@ QB.Data = (() => {
     return dni ? `${dni} — ${short}` : short;
   }
 
+  function loteLabel(l) {
+    if (!l) return "";
+    const etapa = String(l.etapa || "").trim();
+    const n = String(l.lote ?? "").trim();
+    return etapa ? `Lote ${n} - ${etapa}` : `Lote ${n}`;
+  }
+
+  function loteShortLabel(l) {
+    if (!l) return "";
+    const n = String(l.lote ?? "").trim();
+    return n ? `Lote ${n}` : "";
+  }
+
   function loteOptions(query) {
     const q = String(query || "")
       .trim()
       .toLowerCase();
     const list = lotes.map((l) => ({
-      id: String(l.lote),
-      label: `Lote ${l.lote}`,
-      meta: `${l.modulo} · Turno ${l.turno} · ${l.variedad}`,
+      id: String(l.codLote || l.lote),
+      label: loteLabel(l),
+      meta: `${l.modulo || "—"} · Turno ${l.turno ?? "—"}`,
       raw: l,
     }));
-    if (!q) return list;
-    return list.filter(
-      (o) =>
-        o.id.includes(q) ||
-        o.label.toLowerCase().includes(q) ||
-        String(o.raw.codLote || "")
-          .toLowerCase()
-          .includes(q) ||
-        o.meta.toLowerCase().includes(q)
-    );
+    if (!q) {
+      // Previsualización: primeros lotes (el resto se busca)
+      return list.slice(0, 80);
+    }
+    return list
+      .filter(
+        (o) =>
+          o.id.toLowerCase().includes(q) ||
+          o.label.toLowerCase().includes(q) ||
+          String(o.raw.lote || "")
+            .toLowerCase()
+            .includes(q) ||
+          String(o.raw.etapa || "")
+            .toLowerCase()
+            .includes(q) ||
+          String(o.raw.modulo || "")
+            .toLowerCase()
+            .includes(q) ||
+          o.meta.toLowerCase().includes(q)
+      )
+      .slice(0, 80);
   }
 
   function findLote(id) {
     const raw = String(id ?? "").trim();
     if (!raw) return null;
     if (lotesById[raw]) return lotesById[raw];
-    const digits = raw.replace(/^lote\s*/i, "").replace(/^q/i, "").trim();
-    if (digits && lotesById[digits]) return lotesById[digits];
-    if (digits && lotesById[`Q${digits}`]) return lotesById[`Q${digits}`];
+    // "Lote 6 - Licapa I" o "6"
+    const fromLabel = raw.match(/^lote\s*([^\s-]+)/i);
+    const digits = raw.replace(/^lote\s*/i, "").replace(/^q/i, "").split(/\s*-\s*/)[0].trim();
+    const loteNum = fromLabel ? fromLabel[1] : digits;
+    if (loteNum && lotesById[loteNum]) return lotesById[loteNum];
     return (
       lotes.find(
         (l) =>
-          String(l.lote) === raw ||
-          String(l.lote) === digits ||
           String(l.codLote || "") === raw ||
-          String(l.codLote || "") === `Q${digits}`
+          String(l.lote) === raw ||
+          String(l.lote) === loteNum ||
+          loteLabel(l).toLowerCase() === raw.toLowerCase()
       ) || null
     );
   }
 
-  /** Módulo + turno siempre desde catálogo de lotes */
+  /** Módulo + turno (+ etapa) siempre desde catálogo de lotes */
   function loteMeta(loteId) {
     const L = findLote(loteId);
-    if (!L) return { modulo: "", turno: "", lote: String(loteId || "") };
+    if (!L) return { modulo: "", turno: "", lote: String(loteId || ""), etapa: "" };
     return {
       lote: String(L.lote),
       modulo: L.modulo || "",
       turno: L.turno != null && L.turno !== "" ? String(L.turno) : "",
+      etapa: L.etapa || "",
       variedad: L.variedad || "",
+      codLote: L.codLote || "",
       raw: L,
     };
   }
@@ -147,8 +358,8 @@ QB.Data = (() => {
 
   function personOptions(map, query, opts = {}) {
     const metaLabel = opts.metaLabel || "";
-    const minList = opts.minList || 12;
-    const limit = opts.limit || 40;
+    const minList = opts.minList || 40;
+    const limit = opts.limit || 60;
     const q = String(query || "").trim().toLowerCase();
     const digits = String(query || "").replace(/\D/g, "");
     const out = [];
@@ -159,24 +370,30 @@ QB.Data = (() => {
         id: dni,
         label: full || dni,
         meta: metaLabel
-          ? `${metaLabel} · DNI ${dni}`
-          : `DNI ${dni}${p.cargo ? ` · ${p.cargo}` : ""}`,
+          ? `${metaLabel} · DNI - ${dni}`
+          : `DNI - ${dni}`,
         nombre: full,
         nombreCorto: shortName(full),
         cargo: p.cargo || "",
+        dni: String(dni),
       });
     };
 
-    // Sin búsqueda: listado mínimo para que el select se vea lleno
+    const dnis = Object.keys(map || {});
+
+    // Sin búsqueda: listado de previsualización (ordenado por nombre)
     if (!q) {
-      for (const dni of Object.keys(map)) {
-        push(dni, map[dni]);
+      const preview = dnis
+        .map((dni) => ({ dni, p: map[dni], nom: (map[dni]?.nombre || "").trim() }))
+        .sort((a, b) => a.nom.localeCompare(b.nom, "es") || a.dni.localeCompare(b.dni));
+      for (const row of preview) {
+        push(row.dni, row.p);
         if (out.length >= minList) break;
       }
       return out;
     }
 
-    for (const dni of Object.keys(map)) {
+    for (const dni of dnis) {
       const p = map[dni];
       const nombre = (p.nombre || "").toLowerCase();
       const byDni = digits.length >= 2 && dni.includes(digits);
@@ -190,11 +407,17 @@ QB.Data = (() => {
   }
 
   function searchTrabajadores(q) {
-    return personOptions(trabajadores, q, { metaLabel: "Cosecha", minList: 12 });
+    return personOptions(trabajadores, q, {
+      minList: 50,
+      limit: 80,
+    });
   }
 
   function searchSupervisores(q) {
-    return personOptions(supervisores, q, { metaLabel: "Supervisor", minList: 12 });
+    return personOptions(supervisores, q, {
+      minList: 40,
+      limit: 60,
+    });
   }
 
   function mapToOpts(map, limit, metaLabel) {
@@ -215,55 +438,42 @@ QB.Data = (() => {
     return out;
   }
 
-  /** Cualquiera puede evaluar: lista inicial (≥10) + búsqueda por nombre/DNI + Agregar */
-  function evaluadorOptions(query, recent = []) {
+  /** Lista fija de evaluadores (código + nombre). Solo catálogo oficial. */
+  function evaluadorOptions(query) {
+    applySeed_();
     const q = String(query || "").trim().toLowerCase();
     const digits = String(query || "").replace(/\D/g, "");
-    const seen = new Set();
     const out = [];
+    const map = evaluadores || {};
 
-    const push = (o) => {
-      const key = String(o.id).toLowerCase();
-      if (seen.has(key)) return;
-      seen.add(key);
-      out.push(o);
-    };
-
-    (recent || []).forEach((n) => {
-      if (!n) return;
-      push({ id: n, label: formatStoredPerson(n), meta: "Reciente" });
+    const dnis = Object.keys(map).sort(function (a, b) {
+      const na = ((map[a] && map[a].nombre) || "").localeCompare((map[b] && map[b].nombre) || "", "es");
+      return na || a.localeCompare(b);
     });
-
-    if (!q) {
-      mapToOpts(supervisores, 12, "Supervisor").forEach(push);
-      if (out.length < 12) mapToOpts(trabajadores, 12 - out.length, "Campo").forEach(push);
-      return out.slice(0, Math.max(12, out.length));
-    }
-
-    const scan = (map, metaLabel) => {
-      for (const dni of Object.keys(map)) {
-        const p = map[dni];
-        const nombre = (p.nombre || "").toLowerCase();
-        const short = shortName(p.nombre);
-        if (
-          nombre.includes(q) ||
-          short.toLowerCase().includes(q) ||
-          (digits.length >= 2 && dni.includes(digits))
-        ) {
-          push({
-            id: personLabel(dni, p.nombre),
-            label: (p.nombre || "").trim() || dni,
-            meta: `${metaLabel} · DNI ${dni}`,
-            nombre: p.nombre || "",
-            nombreCorto: short,
-            dni,
-          });
-        }
-        if (out.length >= 40) break;
+    for (let i = 0; i < dnis.length; i++) {
+      const dni = dnis[i];
+      const p = map[dni] || {};
+      const full = String(p.nombre || "").trim();
+      if (!full || full === dni) continue;
+      const nombre = full.toLowerCase();
+      const short = shortName(full).toLowerCase();
+      if (
+        q &&
+        nombre.indexOf(q) === -1 &&
+        short.indexOf(q) === -1 &&
+        !(digits.length >= 2 && dni.indexOf(digits) !== -1)
+      ) {
+        continue;
       }
-    };
-    scan(supervisores, "Supervisor");
-    if (out.length < 40) scan(trabajadores, "Campo");
+      out.push({
+        id: personLabel(dni, full),
+        label: full || dni,
+        meta: "DNI - " + dni,
+        nombre: full,
+        nombreCorto: shortName(full),
+        dni: String(dni),
+      });
+    }
     return out;
   }
 
@@ -276,6 +486,7 @@ QB.Data = (() => {
   }
 
   function personByDni(kind, dni) {
+    if (kind === "evaluador") return evaluadores[String(dni)] || null;
     const map = kind === "supervisor" ? supervisores : trabajadores;
     return map[String(dni)] || null;
   }
@@ -284,12 +495,40 @@ QB.Data = (() => {
     return ready;
   }
 
+  /** Reintenta cargar catálogos si quedaron vacíos */
+  async function ensureEvaluadores() {
+    applySeed_();
+    if (Object.keys(evaluadores).length > 0) return true;
+    ready = false;
+    loading = null;
+    const ok = await load();
+    return ok && Object.keys(evaluadores).length > 0;
+  }
+
+  async function ensureCatalogs() {
+    applySeed_();
+    if (
+      Object.keys(evaluadores).length > 0 ||
+      Object.keys(trabajadores).length > 0 ||
+      Object.keys(supervisores).length > 0
+    ) {
+      return true;
+    }
+    ready = false;
+    loading = null;
+    return load();
+  }
+
   return {
     load,
     isReady,
+    ensureEvaluadores,
+    ensureCatalogs,
     loteOptions,
     findLote,
     loteMeta,
+    loteLabel,
+    loteShortLabel,
     mapVariedad,
     shortName,
     personLabel,

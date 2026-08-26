@@ -15,18 +15,53 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   <link rel="stylesheet" href="css/fonts.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    /* Bloqueo inmediato: solo celular / tablet (sin flash de la app en PC) */
+    (function () {
+      function allowMobileOrTablet() {
+        var ua = navigator.userAgent || "";
+        var touch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet|Kindle|Silk/i.test(ua)) {
+          return true;
+        }
+        if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) return true;
+        var w = Math.min(window.innerWidth || 0, screen.width || 9999);
+        var h = Math.min(window.innerHeight || 0, screen.height || 9999);
+        var shortSide = Math.min(w, h);
+        var longSide = Math.max(w, h);
+        // Tablets táctiles sin UA “móvil”
+        if (touch && shortSide <= 900 && longSide <= 1400) return true;
+        return false;
+      }
+      if (!allowMobileOrTablet()) {
+        document.documentElement.classList.add("is-desktop");
+      }
+    })();
+  </script>
 </head>
 <body>
-  <div class="desktop-gate" id="desktop-gate" hidden>
-    <div class="desktop-gate-card">
-      <img class="desktop-gate-logo" src="assets/logo-qberries.png" alt="Q Berries" width="72" height="72" />
+  <div class="desktop-gate" id="desktop-gate" aria-live="polite">
+    <div class="desktop-gate-bg" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+      <span class="orb orb-c"></span>
+    </div>
+    <div class="desktop-gate-inner">
+      <img class="desktop-gate-logo" src="assets/logo-qberries.png" alt="Q Berries" width="88" height="88" />
       <p class="desktop-gate-brand">Q BERRIES</p>
-      <h1>App solo para celular y tablet</h1>
-      <p>Control de calidad está pensado para campo. Ábrela desde tu teléfono o tablet.</p>
-      <ul class="desktop-gate-steps">
-        <li>Usa el mismo enlace en el celular</li>
-        <li>O instala la app (Agregar a inicio)</li>
-      </ul>
+      <h1>Solo en celular o tablet</h1>
+      <p class="desktop-gate-lead">Quality Ops está hecha para campo. En computadora no se puede usar.</p>
+      <div class="desktop-gate-devices" aria-hidden="true">
+        <span class="desktop-gate-device phone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+          Celular
+        </span>
+        <span class="desktop-gate-device tablet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M11 17h2"/></svg>
+          Tablet
+        </span>
+      </div>
+      <p class="desktop-gate-hint">Abre el mismo enlace desde tu teléfono o tablet e instálala en la pantalla de inicio.</p>
     </div>
   </div>
   <div class="qb-loader" id="qb-loader" hidden aria-live="polite">
@@ -80,6 +115,7 @@
         <button type="button" class="qb-sync-tip" data-tip="offline">Sin red: guarda igual; se sincroniza al volver la señal</button>
         <button type="button" class="qb-sync-tip" data-tip="resumen">Revisa «Resumen» para ver enviados y pendientes</button>
         <button type="button" class="qb-sync-tip" data-tip="una">Una evaluación a la vez: GUARDAR y sigue con la siguiente</button>
+        <button type="button" class="qb-sync-tip" data-tip="soporte">¿Problemas con el app? Contacta a support — Paolo León</button>
       </div>
       <button type="button" class="qb-sync-done" id="qb-sync-done">Cerrar</button>
     </div>
@@ -266,6 +302,7 @@
   </div>
 
   <script src="js/config.js"></script>
+  <script src="js/catalog-seed.js"></script>
   <script src="js/data.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/select.js"></script>

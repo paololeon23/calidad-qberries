@@ -5,7 +5,7 @@ QB.CONFIG = {
   /** Endpoint codificado (uso interno) */
   _ep: "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4cnI3NGV4a2RnNUtQLURkR3FXWEpWMFNYUFdGOFlac3BDUXdIam4zX2NCQjJGTWk0eURPNTR6Ykk4bElmWS1qajkvZXhlYw==",
   APP_NAME: "Q Berries · Calidad",
-  VERSION: "1.1.0",
+  VERSION: "1.1.37",
 };
 
 QB.CATALOG = {
@@ -44,11 +44,13 @@ QB.DEFECTS = {
     { id: "herida_abierta", label: "Herida abierta", grupo: "CON" },
     { id: "picadura_ave", label: "Picadura de ave", grupo: "CON" },
     { id: "sin_bloom", label: "Sin Bloom", grupo: "CAL" },
+    { id: "plagas_insectos", label: "Plagas e insectos (Cochinilla, Larva)", grupo: "CAL" },
+    { id: "insercion_pedicelar", label: "Inserción pedicelar", grupo: "CAL" },
   ],
   descarte: [
     { id: "fruta_buena", label: "Fruta buena", grupo: "OK", invert: true },
-    { id: "deshidratada", label: "Fruta deshidratada", grupo: "CON" },
-    { id: "rojiza", label: "Fruta rojiza", grupo: "CAL" },
+    { id: "deshidratada", label: "Fruta deshidratada", grupo: "CON", thresholdKey: "deshidratado" },
+    { id: "rojiza", label: "Fruta rojiza", grupo: "CAL", thresholdKey: "rojizo" },
     { id: "pedicelo", label: "Pedicelo", grupo: "CAL" },
     { id: "resto_floral", label: "Resto floral", grupo: "CAL" },
     { id: "cicatriz", label: "Cicatriz", grupo: "CAL" },
@@ -61,27 +63,37 @@ QB.DEFECTS = {
 };
 
 /**
- * Umbrales de calificación — dinámicos según % calculado.
- * 0 → Excelente | ≤ buenoMax → Bueno | ≤ regularMax → Regular | > regularMax → Pobre
- * (valores pensados para muestra típica de campo; ajustables)
+ * Umbrales oficiales — Calidad/Descarte: % defecto (tabla).
+ * Caída/Planta: promedio frutos/planta (misma escala Excelente→Malo).
+ * 0 → Excelente | ≤ buenoMax → Bueno | ≤ regularMax → Regular | > regularMax → Malo
  */
 QB.THRESHOLDS = {
-  default: { buenoMax: 5, regularMax: 10 },
-  blando: { buenoMax: 3, regularMax: 7 },
-  desgarro: { buenoMax: 4, regularMax: 8 },
-  deshidratado: { buenoMax: 5, regularMax: 10 },
-  deshidratada: { buenoMax: 5, regularMax: 10 },
-  rojizo: { buenoMax: 4, regularMax: 8 },
-  rojiza: { buenoMax: 4, regularMax: 8 },
-  resto_floral: { buenoMax: 3, regularMax: 7 },
-  excreta_abeja: { buenoMax: 2, regularMax: 5 },
-  pedicelo: { buenoMax: 4, regularMax: 8 },
-  cicatriz: { buenoMax: 4, regularMax: 8 },
-  polvo: { buenoMax: 3, regularMax: 7 },
+  // CAL estándar: Exc 0 · Bueno 1–5 · Regular 6–12 · Malo 13+
+  default: { buenoMax: 5, regularMax: 12 },
+  rojizo: { buenoMax: 5, regularMax: 12 },
+  rojiza: { buenoMax: 5, regularMax: 12 },
+  pedicelo: { buenoMax: 5, regularMax: 12 },
+  resto_floral: { buenoMax: 5, regularMax: 12 },
+  cicatriz: { buenoMax: 5, regularMax: 12 },
+  polvo: { buenoMax: 5, regularMax: 12 },
+  sin_bloom: { buenoMax: 5, regularMax: 12 },
+  // Plagas / excreta: Exc 0 · Bueno 1–2 · Regular 3–4 · Malo 5+
+  excreta_abeja: { buenoMax: 2, regularMax: 4 },
+  plagas_insectos: { buenoMax: 2, regularMax: 4 },
+  // CAL estándar también: inserción pedicelar
+  insercion_pedicelar: { buenoMax: 5, regularMax: 12 },
+  // CON — Deshidratación / Desgarro / Herida: Exc 0 · Bueno 1–2 · Regular 3–5 · Malo 6+
+  desgarro: { buenoMax: 2, regularMax: 5 },
+  deshidratado: { buenoMax: 2, regularMax: 5 },
+  deshidratada: { buenoMax: 2, regularMax: 5 },
   herida_abierta: { buenoMax: 2, regularMax: 5 },
-  picadura_ave: { buenoMax: 2, regularMax: 5 },
-  sin_bloom: { buenoMax: 5, regularMax: 10 },
-  fruta_buena: { buenoMax: 90, regularMax: 75, invert: true },
+  // Blando: Exc/Bueno 0 · Regular 1–2 · Malo >2
+  blando: { buenoMax: 0, regularMax: 2 },
+  // Picadura de ave: Exc/Bueno 0 · Regular 1 · Malo ≥2
+  picadura_ave: { buenoMax: 0, regularMax: 1 },
+  // Sumas oficiales
+  suma_cal: { buenoMax: 12, regularMax: 20 },
+  suma_con: { buenoMax: 2, regularMax: 5 },
   promedio_caida: { buenoMax: 2, regularMax: 5 },
   promedio_planta: { buenoMax: 3, regularMax: 6 },
 };

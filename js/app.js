@@ -13,9 +13,95 @@ QB.App = (() => {
   };
 
   const UPLOADS_PAGE_SIZE = 10;
+  const DRAFT_KEY = "qb_eval_drafts";
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+
+  function readAllDrafts_() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return {};
+      const d = JSON.parse(raw);
+      return d && typeof d === "object" ? d : {};
+    } catch {
+      return {};
+    }
+  }
+
+  function saveDraft_() {
+    try {
+      if (!state.type || (state.screen !== "form" && state.screen !== "resumen")) return;
+      const data =
+        state.screen === "form" && $("#form-root")
+          ? { ...state.data, ...readFormSafe_() }
+          : state.data || {};
+      const all = readAllDrafts_();
+      all[state.type] = {
+        data,
+        score: state.score || null,
+        clientId: state.clientId || null,
+        screen: state.screen,
+        at: Date.now(),
+      };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(all));
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function readFormSafe_() {
+    try {
+      return readForm();
+    } catch {
+      return {};
+    }
+  }
+
+  function draftIsMeaningful_(d) {
+    if (!d || !d.data) return false;
+    if (d.score) return true;
+    return Object.keys(d.data).some((k) => {
+      if (k === "fecha") return false;
+      const v = d.data[k];
+      return v != null && String(v).trim() !== "";
+    });
+  }
+
+  function loadDraft_(type) {
+    try {
+      const all = readAllDrafts_();
+      const d = all[type];
+      if (!d || !d.data) return null;
+      if (d.at && Date.now() - d.at > 7 * 24 * 60 * 60 * 1000) {
+        clearDraft_(type);
+        return null;
+      }
+      if (!draftIsMeaningful_(d)) {
+        clearDraft_(type);
+        return null;
+      }
+      return d;
+    } catch {
+      return null;
+    }
+  }
+
+  function clearDraft_(type) {
+    try {
+      if (!type) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      const all = readAllDrafts_();
+      if (!(type in all)) return;
+      delete all[type];
+      if (Object.keys(all).length) localStorage.setItem(DRAFT_KEY, JSON.stringify(all));
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+  }
 
   const FB_ICONS = {
     ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
@@ -128,10 +214,10 @@ QB.App = (() => {
 
   async function confirmCancel() {
     return feedback({
-      title: "¿Cancelar evaluación?",
-      text: "Se perderán los datos no guardados.",
+      title: "¿Salir de la evaluación?",
+      text: "Los datos quedan en el celular hasta que pulses Guardar.",
       type: "warn",
-      confirmText: "Sí, salir",
+      confirmText: "Salir",
       cancelText: "Seguir",
     });
   }
@@ -141,6 +227,26 @@ QB.App = (() => {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  /** Siempre el día de hoy — no dejar fecha pegada de otro día */
+  function syncFechaHoy() {
+    const hoy = todayISO();
+    if (!state.data) state.data = {};
+    state.data.fecha = hoy;
+    const hidden = $("#field-fecha");
+    const trig = $("#trig-fecha");
+    if (hidden) hidden.value = hoy;
+    if (trig) {
+      const span = trig.querySelector(".value, .placeholder");
+      if (span) {
+        span.className = "value";
+        span.textContent = QB.DatePicker
+          ? QB.DatePicker.formatDisplay(hoy)
+          : hoy;
+      }
+    }
+    return hoy;
   }
 
   /** Día local (no UTC) — evita que de noche “Hoy” quede en 0 */
@@ -194,9 +300,7 @@ QB.App = (() => {
 
   function setKeyboardUi_(open) {
     document.body.classList.toggle("kb-open", !!open);
-    document.querySelectorAll(".form-actions").forEach((el) => {
-      el.classList.toggle("kb-hidden", !!open);
-    });
+    // form-actions siempre visibles (Cancelar / Ver resumen / Guardar)
   }
 
   function scrollFieldIntoView_(el) {
@@ -270,26 +374,53 @@ QB.App = (() => {
   }
 
   function clearEvalSession() {
+    const type = state.type;
     state.type = null;
     state.data = {};
     state.score = null;
     state.clientId = null;
     state.saving = false;
+    if (type) clearDraft_(type);
   }
 
   async function startEval(type) {
     state.type = type;
-    state.data = { fecha: todayISO() };
-    state.score = null;
-    state.clientId = null;
+    const draft = loadDraft_(type);
+    if (draft && draft.data) {
+      state.data = { ...draft.data, fecha: todayISO() };
+      state.score = draft.score || null;
+      state.clientId = draft.clientId || null;
+    } else {
+      state.data = { fecha: todayISO() };
+      state.score = null;
+      state.clientId = null;
+    }
     state.saving = false;
     if (QB.Data && !QB.Data.isReady()) {
       setLoading(true, "Cargando catálogos...");
       await QB.Data.load();
       setLoading(false);
     }
-    renderForm();
-    showScreen("form");
+    if (QB.Data?.ensureEvaluadores) {
+      const n = (QB.Data.evaluadorOptions("") || []).length;
+      if (!n) {
+        setLoading(true, "Cargando evaluadores...");
+        await QB.Data.ensureEvaluadores();
+        setLoading(false);
+      }
+    }
+    const resumeResumen = draft && draft.screen === "resumen" && draft.score;
+    if (resumeResumen) {
+      renderResumen();
+      showScreen("resumen");
+      $("#progress-fill").style.width = "100%";
+    } else {
+      renderForm();
+      showScreen("form");
+      $("#progress-fill").style.width = "45%";
+    }
+    saveDraft_();
+    if (draft) toast("Borrador recuperado", "info");
   }
 
   /* ——— Icons ——— */
@@ -311,6 +442,7 @@ QB.App = (() => {
   };
 
   function renderHome() {
+    const drafts = readAllDrafts_();
     const grid = $("#eval-grid");
     grid.innerHTML = Object.values(QB.EVALS)
       .map(
@@ -320,7 +452,7 @@ QB.App = (() => {
         <div class="eval-meta">
           <h2>${e.title}</h2>
           <p>${e.desc}</p>
-          <span class="eval-code">${EVAL_CODES[e.id] || ""}</span>
+          <span class="eval-code">${EVAL_CODES[e.id] || ""}${draftIsMeaningful_(drafts[e.id]) ? " · Borrador" : ""}</span>
         </div>
         <span class="eval-go" aria-hidden="true">${ICONS.chevron}</span>
       </button>`
@@ -391,11 +523,13 @@ QB.App = (() => {
       ? new Date(last.at).toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" })
       : "";
     const loteBig =
-      last.lote != null && last.lote !== "" ? `Lote ${last.lote}` : "—";
+      last.lote != null && last.lote !== ""
+        ? QB.Data?.loteShortLabel?.(QB.Data.findLote(last.codLote || last.lote)) || `Lote ${last.lote}`
+        : "—";
     let modSm = "—";
     let turSm = "—";
-    if (last.lote && QB.Data?.loteMeta) {
-      const meta = QB.Data.loteMeta(last.lote);
+    if ((last.codLote || last.lote) && QB.Data?.loteMeta) {
+      const meta = QB.Data.loteMeta(last.codLote || last.lote);
       modSm = meta.modulo || last.modulo || "—";
       turSm = meta.turno ? `T${meta.turno}` : last.turno ? `T${last.turno}` : "—";
     } else {
@@ -591,7 +725,7 @@ QB.App = (() => {
   async function clearAppCache() {
     const ok = await feedback({
       title: "¿Borrar caché?",
-      text: "Limpia formularios temporales. No borra pendientes por enviar ni el historial local.",
+      text: "Limpia formularios temporales. No borra pendientes por enviar, borradores ni el historial local.",
       type: "warn",
       confirmText: "Borrar",
       cancelText: "Cancelar",
@@ -601,7 +735,14 @@ QB.App = (() => {
     setLoading(true, "Limpiando…");
     try {
       // No tocar cola pendiente ni activity
-      const keep = new Set(["qb_pending_queue", "qb_activity", "qb_people_history"]);
+      const keep = new Set([
+        "qb_pending_queue",
+        "qb_activity",
+        "qb_people_history",
+        "qb_custom_people",
+        "qb_custom_values",
+        "qb_eval_drafts",
+      ]);
       const toRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -633,7 +774,7 @@ QB.App = (() => {
       },
       offline: {
         title: "Trabajo sin red",
-        text: "Puedes GUARDAR sin internet. Queda en cola (pend.) y se envía solo al recuperar señal.",
+        text: "Si cierras el app, el formulario queda guardado. Al GUARDAR, se envía o queda en cola (pend.) hasta tener señal; ahí se limpia el borrador.",
       },
       resumen: {
         title: "Ver tus registros",
@@ -641,7 +782,11 @@ QB.App = (() => {
       },
       una: {
         title: "Una a la vez",
-        text: "Completa, Ver resumen, GUARDAR. Vuelves al inicio listo para la siguiente evaluación.",
+        text: "Completa, Ver resumen, GUARDAR. El borrador se borra solo al enviar; si sales antes, al volver lo recuperas.",
+      },
+      soporte: {
+        title: "Soporte",
+        text: "Si tienes problemas con el app, contacta a support: Paolo León.",
       },
     };
     const t = tips[tip] || tips.lote;
@@ -665,11 +810,12 @@ QB.App = (() => {
     let loteBig = item.lote != null && item.lote !== "" ? `Lote ${item.lote}` : "—";
     let modSm = item.modulo || "—";
     let turSm = item.turno != null && item.turno !== "" ? `T${item.turno}` : "—";
-    if (item.lote && QB.Data?.loteMeta) {
-      const meta = QB.Data.loteMeta(item.lote);
+    if ((item.codLote || item.lote) && QB.Data?.loteMeta) {
+      const meta = QB.Data.loteMeta(item.codLote || item.lote);
       if (meta.modulo) modSm = meta.modulo;
       if (meta.turno) turSm = `T${meta.turno}`;
-      if (meta.lote) loteBig = `Lote ${meta.lote}`;
+      if (meta.raw && QB.Data.loteShortLabel) loteBig = QB.Data.loteShortLabel(meta.raw);
+      else if (meta.lote) loteBig = `Lote ${meta.lote}`;
     }
     const nota =
       item.nota != null && !Number.isNaN(Number(item.nota)) ? String(item.nota) : "—";
@@ -796,7 +942,16 @@ QB.App = (() => {
   function fieldHtml(name, label, opts = {}) {
     const req = opts.required ? `<span class="req">*</span>` : "";
     const type = opts.type || "text";
-    const val = state.data[name] ?? opts.value ?? "";
+    let val = state.data[name] ?? opts.value ?? "";
+    let shown = val;
+    if (name === "lote") {
+      const key = state.data.codLote || state.data.lote || val;
+      const L = key && QB.Data?.findLote ? QB.Data.findLote(key) : null;
+      if (L) {
+        val = L.codLote || String(L.lote);
+        shown = QB.Data.loteLabel(L);
+      }
+    }
     if (opts.readonly) {
       const shown = val || opts.placeholder || "Según lote";
       return `
@@ -817,7 +972,7 @@ QB.App = (() => {
         <div class="field" data-field="${name}">
           <label>${label}${req}</label>
           <button type="button" class="precise-trigger" data-precise="${name}" id="trig-${name}">
-            <span class="${val ? "value" : "placeholder"}">${val || opts.placeholder || "Seleccionar..."}</span>
+            <span class="${val ? "value" : "placeholder"}">${escapeHtml(shown || opts.placeholder || "Seleccionar...")}</span>
             ${ICONS.caret}
           </button>
           <input type="hidden" name="${name}" id="field-${name}" value="${escapeAttr(val)}" ${opts.required ? "required" : ""} />
@@ -825,19 +980,19 @@ QB.App = (() => {
         </div>`;
     }
     if (type === "date") {
-      const shown = val && QB.DatePicker ? QB.DatePicker.formatDisplay(val) : val;
+      const hoy = todayISO();
+      const shown = QB.DatePicker ? QB.DatePicker.formatDisplay(hoy) : hoy;
       return `
-        <div class="field" data-field="${name}">
+        <div class="field field-locked" data-field="${name}">
           <label>${label}${req}</label>
-          <button type="button" class="precise-trigger date-trigger" id="trig-${name}">
-            <span class="${val ? "value" : "placeholder"}">${shown || "Elegir fecha..."}</span>
+          <div class="precise-trigger date-trigger is-locked" id="trig-${name}" aria-readonly="true" title="Fecha del día (se actualiza sola)">
+            <span class="value">${shown}</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="5" width="18" height="16" rx="2"/>
               <path d="M3 10h18M8 3v4M16 3v4"/>
             </svg>
-          </button>
-          <input type="hidden" name="${name}" id="field-${name}" value="${escapeAttr(val)}" ${opts.required ? "required" : ""} />
-          <span class="field-hint">Campo obligatorio</span>
+          </div>
+          <input type="hidden" name="${name}" id="field-${name}" value="${escapeAttr(hoy)}" ${opts.required ? "required" : ""} />
         </div>`;
     }
     if (type === "textarea") {
@@ -848,13 +1003,21 @@ QB.App = (() => {
           <span class="field-hint">Campo obligatorio</span>
         </div>`;
     }
+    if (name === "tamano_muestra" || opts.maxDigits) {
+      const limit = opts.maxDigits || 3;
+      val = String(val ?? "").replace(/\D/g, "").slice(0, limit);
+    }
     return `
       <div class="field" data-field="${name}">
         <label>${label}${req}</label>
         <input type="${type}" name="${name}" id="field-${name}" value="${escapeAttr(val)}"
           ${opts.min != null ? `min="${opts.min}"` : ""}
+          ${opts.max != null ? `max="${opts.max}"` : ""}
           ${opts.step != null ? `step="${opts.step}"` : ""}
+          ${opts.maxlength != null ? `maxlength="${opts.maxlength}"` : ""}
+          ${opts.maxDigits != null ? `data-max-digits="${opts.maxDigits}"` : ""}
           ${opts.inputmode ? `inputmode="${opts.inputmode}"` : ""}
+          ${opts.pattern ? `pattern="${opts.pattern}"` : ""}
           ${opts.required ? "required" : ""}
           placeholder="${opts.placeholder || (type === "number" ? "00" : "")}" />
         <span class="field-hint">Campo obligatorio</span>
@@ -867,7 +1030,7 @@ QB.App = (() => {
       <div class="section-card">
         <div class="section-head">
           <div class="section-title">Conteo de defectos</div>
-          <p class="section-sub">Ingrese la cantidad encontrada en la muestra.</p>
+          <p class="section-sub">Ingrese la cantidad encontrada en la muestra. La calificación usa los parámetros oficiales.</p>
         </div>
         <div class="defect-grid">
           ${defs
@@ -876,11 +1039,15 @@ QB.App = (() => {
               const hasVal = raw !== undefined && raw !== null && raw !== "";
               const v = hasVal ? raw : "";
               return `
-              <div class="defect-item">
+              <div class="defect-item" data-defect-id="${d.id}">
                 <label for="field-${d.id}">${d.label}</label>
                 <input type="number" min="0" step="1" inputmode="numeric"
                   name="${d.id}" id="field-${d.id}" value="${escapeAttr(v)}"
                   placeholder="00" />
+                <div class="defect-live" data-live="${d.id}" hidden>
+                  <span class="defect-live-pct">—</span>
+                  <span class="pill na">—</span>
+                </div>
               </div>`;
             })
             .join("")}
@@ -888,9 +1055,68 @@ QB.App = (() => {
       </div>`;
   }
 
+  function refreshDefectLiveRatings() {
+    const root = $("#form-root");
+    if (!root || !QB.Scoring) return;
+
+    if (state.type === "calidad" || state.type === "descarte") {
+      const sampleEl = root.querySelector('[name="tamano_muestra"]');
+      const sample = Number(sampleEl?.value) || 0;
+      const defs = QB.DEFECTS[state.type] || [];
+      for (const d of defs) {
+        const live = root.querySelector(`[data-live="${d.id}"]`);
+        if (!live) continue;
+        const input = root.querySelector(`[name="${d.id}"]`);
+        const count = Number(input?.value) || 0;
+        if (sample <= 0) {
+          live.hidden = true;
+          continue;
+        }
+        const dr = QB.Scoring.defectRating(count, sample, d);
+        const pctEl = live.querySelector(".defect-live-pct");
+        const pillEl = live.querySelector(".pill");
+        if (pctEl) {
+          pctEl.textContent = d.invert
+            ? `${dr.countPct.toFixed(2)}% buena`
+            : `${dr.countPct.toFixed(2)}%`;
+        }
+        if (pillEl) {
+          pillEl.className = `pill ${QB.Scoring.pillClass(dr.cal)}`;
+          pillEl.textContent = dr.cal;
+        }
+        live.hidden = false;
+      }
+      return;
+    }
+
+    if (state.type === "caida" || state.type === "planta") {
+      const live = root.querySelector('[data-live="promedio"]');
+      if (!live) return;
+      const plantas = Number(root.querySelector('[name="plantas_evaluadas"]')?.value) || 0;
+      const frutosName = state.type === "caida" ? "frutos_caidos" : "frutos_planta";
+      const frutos = Number(root.querySelector(`[name="${frutosName}"]`)?.value) || 0;
+      if (plantas <= 0) {
+        live.hidden = true;
+        return;
+      }
+      const promedio = QB.Scoring.round2(frutos / plantas);
+      const key = state.type === "caida" ? "promedio_caida" : "promedio_planta";
+      const cal = QB.Scoring.rate(promedio, key);
+      const pctEl = live.querySelector(".defect-live-pct");
+      const pillEl = live.querySelector(".pill");
+      if (pctEl) pctEl.textContent = `${promedio.toFixed(2)} frutos/planta`;
+      if (pillEl) {
+        pillEl.className = `pill ${QB.Scoring.pillClass(cal)}`;
+        pillEl.textContent = cal;
+      }
+      live.hidden = false;
+    }
+  }
+
   function renderForm() {
     const evalDef = QB.EVALS[state.type];
     const form = $("#form-root");
+    syncFechaHoy();
     $("#form-title").textContent = evalDef.title;
     $("#form-desc").textContent = EVAL_CODES[state.type] || evalDef.desc;
     $("#screen-form").style.setProperty("--accent", accentColor(state.type));
@@ -904,13 +1130,33 @@ QB.App = (() => {
     if (state.type === "calidad") {
       detalle = `
         ${fieldHtml("cosechador", "Cosechador", { precise: true, required: true, placeholder: "Seleccionar..." })}
-        ${fieldHtml("tamano_muestra", "Tamaño de muestra", { type: "number", min: 1, inputmode: "numeric", required: true })}
+        ${fieldHtml("tamano_muestra", "Tamaño de muestra", {
+          type: "number",
+          min: 1,
+          max: 999,
+          maxlength: 3,
+          maxDigits: 3,
+          inputmode: "numeric",
+          pattern: "[0-9]{1,3}",
+          required: true,
+          placeholder: "00",
+        })}
       `;
       defects = defectsHtml("calidad");
       comentario = fieldHtml("comentario", "Comentario adicional", { type: "textarea", placeholder: "Opcional..." });
     } else if (state.type === "descarte") {
       detalle = `
-        ${fieldHtml("tamano_muestra", "Tamaño de muestra", { type: "number", min: 1, inputmode: "numeric", required: true })}
+        ${fieldHtml("tamano_muestra", "Tamaño de muestra", {
+          type: "number",
+          min: 1,
+          max: 999,
+          maxlength: 3,
+          maxDigits: 3,
+          inputmode: "numeric",
+          pattern: "[0-9]{1,3}",
+          required: true,
+          placeholder: "00",
+        })}
       `;
       defects = defectsHtml("descarte");
       comentario = fieldHtml("comentario", "Comentario", { type: "textarea", placeholder: "Opcional..." });
@@ -918,9 +1164,16 @@ QB.App = (() => {
       detalle = `
         ${fieldHtml("cosechador", "Cosechador", { precise: true, required: true, placeholder: "Seleccionar..." })}
         ${fieldHtml("momento", "Evaluación", { precise: true, required: true, placeholder: "Antes / Después..." })}
-        <div class="field-row">
-          ${fieldHtml("plantas_evaluadas", "Plantas evaluadas", { type: "number", min: 1, inputmode: "numeric", required: true })}
-          ${fieldHtml("frutos_caidos", "Cantidad de frutos caidos", { type: "number", min: 0, inputmode: "numeric", required: true })}
+        <div class="caida-counts">
+          ${fieldHtml("plantas_evaluadas", "Plantas evaluadas", { type: "number", min: 1, inputmode: "numeric", required: true, placeholder: "00" })}
+          <div class="field-row">
+            ${fieldHtml("frutos_caidos", "Cantidad de frutos caídos", { type: "number", min: 0, inputmode: "numeric", required: true, placeholder: "00" })}
+            ${fieldHtml("frutos_caidos_verdes", "Cantidad de frutos caídos verdes", { type: "number", min: 0, inputmode: "numeric", placeholder: "00" })}
+          </div>
+          <div class="defect-live metric-live" data-live="promedio" hidden>
+            <span class="defect-live-pct">—</span>
+            <span class="pill na">—</span>
+          </div>
         </div>
       `;
       comentario = fieldHtml("comentario", "Comentario", { type: "textarea", placeholder: "Opcional..." });
@@ -930,6 +1183,10 @@ QB.App = (() => {
         <div class="field-row">
           ${fieldHtml("plantas_evaluadas", "Plantas evaluadas", { type: "number", min: 1, inputmode: "numeric", required: true })}
           ${fieldHtml("frutos_planta", "N° de frutos en planta", { type: "number", min: 0, inputmode: "numeric", required: true })}
+        </div>
+        <div class="defect-live metric-live" data-live="promedio" hidden>
+          <span class="defect-live-pct">—</span>
+          <span class="pill na">—</span>
         </div>
       `;
       comentario = fieldHtml("comentario", "Comentar", { type: "textarea", placeholder: "Opcional..." });
@@ -942,7 +1199,7 @@ QB.App = (() => {
           <p class="section-sub">Información base de la evaluación.</p>
         </div>
         ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
-        ${fieldHtml("evaluador", "Evaluador", { precise: true, allowCustom: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
         ${fieldHtml("supervisor", "Supervisor", { precise: true, required: true, placeholder: "Seleccionar..." })}
         ${fieldHtml("variedad", "Variedad", { precise: true, required: true, placeholder: "Elegir..." })}
         <div class="lote-block">
@@ -971,15 +1228,12 @@ QB.App = (() => {
     `;
 
     bindPreciseFields();
-    bindDateField();
+    // Fecha del día: bloqueada, no se abre calendario
     bindLiveValidation();
   }
 
   function bindDateField() {
-    const trig = $("#trig-fecha");
-    const hidden = $("#field-fecha");
-    if (!trig || !hidden || !QB.DatePicker) return;
-    QB.DatePicker.bind(trig, hidden);
+    // Fecha siempre = hoy (campo bloqueado). No bind de DatePicker.
   }
 
   function accentColor(type) {
@@ -1025,6 +1279,8 @@ QB.App = (() => {
       state.data.modulo = lote.modulo || "";
       state.data.turno = lote.turno != null && lote.turno !== "" ? String(lote.turno) : "";
       state.data.lote = String(lote.lote);
+      state.data.etapa = lote.etapa || "";
+      state.data.codLote = lote.codLote || "";
     }
     const varId = QB.Data.mapVariedad(lote.variedad);
     if (varId) {
@@ -1063,48 +1319,119 @@ QB.App = (() => {
     return QB.Data ? QB.Data.formatStoredPerson(val) : val;
   }
 
+  function buildCustomPerson(dni, nombre) {
+    const d = String(dni || "").replace(/\D/g, "").trim();
+    const n = String(nombre || "").trim();
+    const short = QB.Data ? QB.Data.shortName(n) : n;
+    return {
+      id: QB.Data ? QB.Data.personLabel(d, n) : `${d} — ${short}`,
+      label: n,
+      meta: "Local · emergencia",
+      dni: d,
+      nombre: n,
+      nombreCorto: short,
+      local: true,
+    };
+  }
+
+  function mergeOpts(...lists) {
+    const seen = new Set();
+    const out = [];
+    lists.flat().forEach((o) => {
+      if (!o) return;
+      const k = String(o.id || o.label || "").toLowerCase();
+      if (!k || seen.has(k)) return;
+      seen.add(k);
+      out.push(o);
+    });
+    return out;
+  }
+
+  function filterCatalog(list, q) {
+    const s = String(q || "").trim().toLowerCase();
+    if (!s) return list || [];
+    return (list || []).filter(
+      (o) =>
+        String(o.label || "").toLowerCase().includes(s) ||
+        String(o.id || "").toLowerCase().includes(s) ||
+        String(o.meta || "").toLowerCase().includes(s)
+    );
+  }
+
   function bindPreciseFields() {
     const binds = {
       lote: {
         title: "Elegir lote",
-        searchPlaceholder: "Buscar lote / Q…",
+        searchPlaceholder: "Buscar lote / etapa / módulo…",
         placeholder: "Seleccionar lote...",
         dynamic: true,
         inputmode: "numeric",
-        getOptions: (q) => (QB.Data ? QB.Data.loteOptions(q) : []),
+        minQuery: 0,
+        minHint: "Sin lotes cargados",
+        allowCustom: "text",
+        customKind: "lote",
+        getOptions: (q) =>
+          mergeOpts(
+            QB.API?.customValueOptions?.("lote", q) || [],
+            QB.Data ? QB.Data.loteOptions(q) : []
+          ),
+        storeValue: (opt) => String(opt?.raw?.codLote || opt?.id || ""),
         resolveOption: (val) => {
           const l = QB.Data && QB.Data.findLote(val);
           if (!l) return val ? { id: val, label: `Lote ${val}` } : null;
           return {
-            id: String(l.lote),
-            label: `Lote ${l.lote}`,
-            meta: `${l.modulo} · Turno ${l.turno}`,
+            id: String(l.codLote || l.lote),
+            label: QB.Data.loteLabel(l),
+            meta: `${l.modulo || "—"} · Turno ${l.turno ?? "—"}`,
             raw: l,
           };
+        },
+        formatValue: (_opt, val) => {
+          const l = QB.Data && QB.Data.findLote(val);
+          return l ? QB.Data.loteLabel(l) : val;
         },
         onChange: (opt) => applyLote(opt),
       },
       variedad: {
         title: "Elegir variedad",
         searchPlaceholder: "Buscar variedad...",
-        getOptions: () => QB.CATALOG.variedades,
+        dynamic: true,
+        allowCustom: "text",
+        customKind: "variedad",
+        getOptions: (q) =>
+          mergeOpts(
+            QB.API?.customValueOptions?.("variedad", q) || [],
+            filterCatalog(QB.CATALOG.variedades, q)
+          ),
       },
       momento: {
         title: "Elegir evaluación",
         searchPlaceholder: "Buscar...",
-        getOptions: () => QB.CATALOG.evaluacionCaida,
+        dynamic: true,
+        allowCustom: "text",
+        customKind: "momento",
+        getOptions: (q) =>
+          mergeOpts(
+            QB.API?.customValueOptions?.("momento", q) || [],
+            filterCatalog(QB.CATALOG.evaluacionCaida, q)
+          ),
       },
       evaluador: {
         title: "Elegir evaluador",
-        searchPlaceholder: "Buscar nombre o DNI…",
+        searchPlaceholder: "Buscar nombre o código…",
         placeholder: "Seleccionar...",
-        allowCustom: true,
         dynamic: true,
         minQuery: 0,
-        getOptions: (q) =>
-          QB.Data
-            ? QB.Data.evaluadorOptions(q, (QB.API.peopleOptions("evaluador") || []).map((o) => o.label))
-            : QB.API.peopleOptions("evaluador"),
+        allowCustom: "person",
+        customKind: "evaluador",
+        buildCustomPerson,
+        getOptions: (q) => {
+          if (!QB.Data) return [];
+          const list = QB.Data.evaluadorOptions(q) || [];
+          return list;
+        },
+        storeValue: personStore,
+        resolveOption: personResolve,
         formatValue: (_opt, val) => personDisplay(val),
       },
       supervisor: {
@@ -1113,7 +1440,15 @@ QB.App = (() => {
         placeholder: "Seleccionar...",
         dynamic: true,
         minQuery: 0,
-        getOptions: (q) => (QB.Data ? QB.Data.searchSupervisores(q) : []),
+        minHint: "Sin supervisores cargados",
+        allowCustom: "person",
+        customKind: "supervisor",
+        buildCustomPerson,
+        getOptions: (q) =>
+          mergeOpts(
+            QB.API?.customPeopleOptions?.("supervisor", q) || [],
+            QB.Data ? QB.Data.searchSupervisores(q) : []
+          ),
         storeValue: personStore,
         resolveOption: personResolve,
         formatValue: (_opt, val) => personDisplay(val),
@@ -1124,7 +1459,16 @@ QB.App = (() => {
         placeholder: "Seleccionar...",
         dynamic: true,
         minQuery: 0,
-        getOptions: (q) => (QB.Data ? QB.Data.searchTrabajadores(q) : []),
+        minHint: "Sin cosechadores cargados",
+        listColumns: false,
+        allowCustom: "person",
+        customKind: "cosechador",
+        buildCustomPerson,
+        getOptions: (q) =>
+          mergeOpts(
+            QB.API?.customPeopleOptions?.("cosechador", q) || [],
+            QB.Data ? QB.Data.searchTrabajadores(q) : []
+          ),
         storeValue: personStore,
         resolveOption: personResolve,
         formatValue: (_opt, val) => personDisplay(val),
@@ -1138,7 +1482,7 @@ QB.App = (() => {
       QB.PreciseSelect.bind(trig, hidden, cfg);
     });
 
-    if (state.data.lote) applyLote({ id: state.data.lote });
+    if (state.data.codLote || state.data.lote) applyLote({ id: state.data.codLote || state.data.lote });
   }
 
   function readForm() {
@@ -1150,6 +1494,17 @@ QB.App = (() => {
         data[el.name] = el.value.trim();
       }
     });
+    // Lote en formulario guarda codLote único → expandir a lote/módulo/turno/etapa
+    if (data.lote && QB.Data?.findLote) {
+      const L = QB.Data.findLote(data.lote);
+      if (L) {
+        data.codLote = L.codLote || data.lote;
+        data.lote = String(L.lote);
+        data.modulo = L.modulo || data.modulo || "";
+        data.turno = L.turno != null && L.turno !== "" ? String(L.turno) : data.turno || "";
+        data.etapa = L.etapa || "";
+      }
+    }
     return data;
   }
 
@@ -1162,6 +1517,24 @@ QB.App = (() => {
     return required;
   }
 
+  /** Defectos nunca son obligatorios */
+  function isDefectField(name) {
+    const defs = QB.DEFECTS[state.type] || [];
+    return defs.some((d) => d.id === name);
+  }
+
+  function applyLoteMetaToData(data) {
+    if ((data.codLote || data.lote) && QB.Data?.loteMeta) {
+      const meta = QB.Data.loteMeta(data.codLote || data.lote);
+      if (meta.modulo) data.modulo = meta.modulo;
+      if (meta.turno) data.turno = meta.turno;
+      if (meta.lote) data.lote = meta.lote;
+      if (meta.etapa) data.etapa = meta.etapa;
+      if (meta.codLote) data.codLote = meta.codLote;
+    }
+    return data;
+  }
+
   function isEmptyRequired(name, val) {
     const empty = val === "" || val == null || (typeof val === "number" && Number.isNaN(val));
     const zeroBad =
@@ -1170,6 +1543,7 @@ QB.App = (() => {
   }
 
   function refreshFieldError(name) {
+    if (isDefectField(name)) return;
     const field = $(`#form-root [data-field="${name}"]`);
     if (!field) return;
     const data = readForm();
@@ -1181,58 +1555,72 @@ QB.App = (() => {
     else field.classList.remove("error");
   }
 
+  function clampDigitsInput_(el) {
+    if (!el || el.tagName !== "INPUT") return;
+    const maxDigits = Number(el.dataset.maxDigits || el.getAttribute("maxlength") || 0);
+    if (!maxDigits && el.name !== "tamano_muestra") return;
+    const limit = maxDigits || (el.name === "tamano_muestra" ? 3 : 0);
+    if (!limit) return;
+    const digits = String(el.value || "").replace(/\D/g, "").slice(0, limit);
+    if (el.value !== digits) el.value = digits;
+  }
+
   function bindLiveValidation() {
     const root = $("#form-root");
     if (!root) return;
     const onUpdate = (e) => {
       const el = e.target;
       if (!el || !el.name) return;
+      clampDigitsInput_(el);
       refreshFieldError(el.name);
       if (el.name === "lote") {
         refreshFieldError("modulo");
         refreshFieldError("turno");
       }
+      refreshDefectLiveRatings();
+      saveDraft_();
     };
     root.addEventListener("input", onUpdate);
     root.addEventListener("change", onUpdate);
+    refreshDefectLiveRatings();
   }
 
-  function validate() {
-    const data = readForm();
+  function validate(data, { feedback: showFeedback = true, markFields = true } = {}) {
+    const d = data ? { ...data } : readForm();
     let ok = true;
     const required = requiredNames();
 
-    $$("#form-root .field").forEach((f) => f.classList.remove("error"));
-
-    for (const name of required) {
-      if (isEmptyRequired(name, data[name])) {
-        ok = false;
-        const field = $(`#form-root [data-field="${name}"]`);
-        if (field) field.classList.add("error");
+    if (markFields && $("#form-root")) {
+      $$("#form-root .field").forEach((f) => f.classList.remove("error"));
+      for (const name of required) {
+        if (isEmptyRequired(name, d[name])) {
+          ok = false;
+          const field = $(`#form-root [data-field="${name}"]`);
+          if (field) field.classList.add("error");
+        }
+      }
+    } else {
+      for (const name of required) {
+        if (isEmptyRequired(name, d[name])) ok = false;
       }
     }
 
-    if (!ok) {
+    if (!ok && showFeedback) {
       toast("Completa los campos obligatorios", "error");
       feedback({
         title: "Campos incompletos",
-        text: "Revisa los campos marcados en rojo.",
+        text: "Revisa los campos obligatorios antes de guardar.",
         type: "error",
         confirmText: "Entendido",
       });
     }
-    return ok ? data : null;
+    return ok ? applyLoteMetaToData(d) : null;
   }
 
   function goResumen() {
-    const data = validate();
-    if (!data) return;
-    // Asegurar módulo/turno desde lote antes de calcular
-    if (data.lote && QB.Data?.loteMeta) {
-      const meta = QB.Data.loteMeta(data.lote);
-      if (meta.modulo) data.modulo = meta.modulo;
-      if (meta.turno) data.turno = meta.turno;
-    }
+    syncFechaHoy();
+    const data = applyLoteMetaToData(readForm());
+    data.fecha = todayISO();
     state.data = data;
     state.score = QB.Scoring.compute(state.type, data);
     state.clientId = QB.API.newClientId();
@@ -1240,6 +1628,7 @@ QB.App = (() => {
     $("#progress-fill").style.width = "100%";
     renderResumen();
     showScreen("resumen");
+    saveDraft_();
   }
 
   function renderResumen() {
@@ -1260,7 +1649,14 @@ QB.App = (() => {
       (d.lote || d.modulo || d.turno)
         ? [
             "Lote · Módulo · Turno",
-            [d.lote, d.modulo, d.turno].filter((x) => x != null && x !== "").join(" · "),
+            [
+              QB.Data?.loteShortLabel?.(QB.Data.findLote(d.codLote || d.lote)) ||
+                (d.lote != null && d.lote !== "" ? `Lote ${d.lote}` : null),
+              d.modulo,
+              d.turno != null && d.turno !== "" ? `T${d.turno}` : null,
+            ]
+              .filter((x) => x != null && x !== "")
+              .join(" · "),
           ]
         : null,
       d.momento ? ["Momento", d.momento] : null,
@@ -1281,11 +1677,9 @@ QB.App = (() => {
         <div class="label">Nota final</div>
         <div class="nota">${s.nota}</div>
         <div class="sub">${
-          s.pctCalidad != null
-            ? `% Calidad ${s.pctCalidad} · Def. ${s.sumaDefectos}%`
-            : s.promedio != null
-              ? `Promedio ${s.promedio} / planta`
-              : evalDef.short
+          s.promedio != null
+            ? `Promedio ${s.promedio} / planta`
+            : evalDef.short
         }</div>
       </div>
       <div class="score-badge">
@@ -1305,8 +1699,12 @@ QB.App = (() => {
       : `<tr><th>Ítem</th><th>Valor</th><th>Calificación</th></tr>`;
 
     const body = s.rows
+      .filter((r) => {
+        if (r.grupo === "SUM") return false;
+        const item = String(r.item || "").toLowerCase();
+        return !item.includes("suma def") && !item.includes("tot. defectos");
+      })
       .map((r) => {
-        const isSum = r.grupo === "SUM";
         const calc =
           r.pct != null
             ? Number(r.pct).toFixed(2)
@@ -1317,7 +1715,7 @@ QB.App = (() => {
         if (r.calificacion) {
           pillHtml = `<span class="pill ${QB.Scoring.pillClass(r.calificacion)}">${r.calificacion}</span>`;
         }
-        return `<tr class="${isSum ? "total" : ""}">
+        return `<tr>
           <td>${escapeHtml(r.item)}</td>
           <td>${calc}</td>
           <td>${pillHtml}</td>
@@ -1330,6 +1728,19 @@ QB.App = (() => {
 
   async function save() {
     if (!state.score || !state.type || state.saving) return;
+
+    syncFechaHoy();
+    if (state.data) state.data.fecha = todayISO();
+
+    const data = validate(state.data, { feedback: true, markFields: false });
+    if (!data) {
+      showScreen("form");
+      renderForm();
+      validate(readForm(), { feedback: false, markFields: true });
+      return;
+    }
+    state.data = data;
+
     state.saving = true;
     const saveBtn = $("#btn-save");
     if (saveBtn) saveBtn.disabled = true;
@@ -1340,6 +1751,7 @@ QB.App = (() => {
       setLoading(false);
       clearEvalSession();
       goHome();
+      renderHome();
       renderOpsPanel();
       updateStatusUI();
     }
@@ -1392,10 +1804,12 @@ QB.App = (() => {
   function bindChrome() {
     const goHomeSafe = async () => {
       if (state.screen === "form" || state.screen === "resumen") {
+        saveDraft_();
         const ok = await confirmCancel();
         if (!ok) return;
       }
       goHome();
+      renderHome();
     };
 
     $("#btn-back-form").addEventListener("click", goHomeSafe);
@@ -1473,11 +1887,12 @@ QB.App = (() => {
 
   function init() {
     if (!allowMobileOrTablet_()) {
+      document.documentElement.classList.add("is-desktop");
       document.body.classList.add("is-desktop");
-      const gate = document.getElementById("desktop-gate");
-      if (gate) gate.hidden = false;
       return;
     }
+    document.documentElement.classList.remove("is-desktop");
+    document.body.classList.remove("is-desktop");
     renderHome();
     bindChrome();
     setupInstallPrompt_();
@@ -1509,6 +1924,21 @@ QB.App = (() => {
     window.addEventListener("resize", () => {
       if (isKeyboardOpen_()) setTimeout(resetViewportLayout, 30);
     });
+
+    // Si la app queda abierta y cambia el día → refrescar fecha
+    const refreshFechaIfNeeded = () => {
+      if (state.screen === "form" || state.screen === "resumen") {
+        syncFechaHoy();
+      }
+    };
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") saveDraft_();
+      if (document.visibilityState === "visible") refreshFechaIfNeeded();
+    });
+    window.addEventListener("pagehide", saveDraft_);
+    window.addEventListener("focus", refreshFechaIfNeeded);
+    window.addEventListener("pageshow", refreshFechaIfNeeded);
+
     updateStatusUI();
     renderOpsPanel();
     const foot = $("#home-foot");
@@ -1525,7 +1955,7 @@ QB.App = (() => {
     if (navigator.onLine) syncPending(false).catch(() => {});
   }
 
-  /** Celular / tablet sí · PC de escritorio no (modo responsive del navegador sí) */
+  /** Celular / tablet sí · PC de escritorio no */
   function allowMobileOrTablet_() {
     const ua = navigator.userAgent || "";
     const touch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
@@ -1539,9 +1969,8 @@ QB.App = (() => {
     }
     // iPadOS que se hace pasar por Mac
     if (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) return true;
-    // Ventana estrecha (DevTools móvil) o tablet táctil
-    if (shortSide <= 900) return true;
-    if (touch && longSide <= 1366) return true;
+    // Tablet táctil sin UA móvil (no basta con achicar la ventana del PC)
+    if (touch && shortSide <= 900 && longSide <= 1400) return true;
     return false;
   }
 
@@ -1576,6 +2005,8 @@ QB.App = (() => {
       "touchmove",
       (e) => {
         if (!e.touches || e.touches.length !== 1) return;
+        // Chrome marca algunos touchmove como no cancelables (scroll ya en curso)
+        if (!e.cancelable) return;
         const target = e.target;
         if (!target || !target.closest) return;
         if (target.closest("input, textarea, [contenteditable=true]")) return;

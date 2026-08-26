@@ -36,13 +36,13 @@ QB.Scoring = (() => {
       if (v >= t.buenoMax) return "Excelente";
       if (v >= t.regularMax) return "Bueno";
       if (v >= t.regularMax * 0.85) return "Regular";
-      return "Pobre";
+      return "Malo";
     }
-    // Menor % defecto = mejor — siempre dinámico
+    // Menor % defecto = mejor (tabla oficial)
     if (v <= 0) return "Excelente";
     if (v <= t.buenoMax) return "Bueno";
     if (v <= t.regularMax) return "Regular";
-    return "Pobre";
+    return "Malo";
   }
 
   function rateWhy(value, key) {
@@ -52,7 +52,7 @@ QB.Scoring = (() => {
     if (t.invert) {
       return `${cal}: ≥${t.buenoMax}% Excelente · ≥${t.regularMax}% Bueno`;
     }
-    return `${cal}: 0 Excelente · ≤${t.buenoMax}% Bueno · ≤${t.regularMax}% Regular · >${t.regularMax}% Pobre`;
+    return `${cal}: 0 Excelente · ≤${t.buenoMax}% Bueno · ≤${t.regularMax}% Regular · >${t.regularMax}% Malo`;
   }
 
   function pillClass(cal) {
@@ -60,13 +60,40 @@ QB.Scoring = (() => {
       Excelente: "excelente",
       Bueno: "bueno",
       Regular: "regular",
-      Pobre: "pobre",
+      Malo: "malo",
+      Pobre: "malo",
     };
     return m[cal] || "na";
   }
 
   function pointsFromRate(cal) {
-    return { Excelente: 20, Bueno: 16, Regular: 10, Pobre: 4 }[cal] ?? 0;
+    return { Excelente: 20, Bueno: 16, Regular: 10, Malo: 4, Pobre: 4 }[cal] ?? 0;
+  }
+
+  const GRADE_RANK = { Excelente: 4, Bueno: 3, Regular: 2, Malo: 1, Pobre: 1 };
+
+  function worstGrade(...grades) {
+    let worst = "Excelente";
+    for (const g of grades) {
+      if (!g || !GRADE_RANK[g]) continue;
+      if (GRADE_RANK[g] < GRADE_RANK[worst]) worst = g;
+    }
+    return worst;
+  }
+
+  /** % mostrado + % para calificar (tabla oficial; fruta buena = complemento) */
+  function defectRating(count, sample, def) {
+    const countPct = pct(count, sample);
+    const rateKey = def.thresholdKey || def.id;
+    const ratePct = def.invert ? round2(Math.max(0, 100 - countPct)) : countPct;
+    const key = def.invert ? def.thresholdKey || "default" : rateKey;
+    const cal = rate(ratePct, key);
+    return {
+      countPct,
+      ratePct,
+      cal,
+      why: rateWhy(ratePct, key),
+    };
   }
 
   /** Nota 0–20 según % total de defectos */
@@ -91,7 +118,7 @@ QB.Scoring = (() => {
     if (nota >= 18) return "Excelente";
     if (nota >= 14) return "Bueno";
     if (nota >= 10) return "Regular";
-    return "Pobre";
+    return "Malo";
   }
 
   function scoreDefectForm(type, data) {
@@ -107,8 +134,9 @@ QB.Scoring = (() => {
     for (const d of defs) {
       const count = Number(data[d.id]) || 0;
       const f = formulaPct(count, sample);
-      const p = pct(count, sample);
-      const cal = rate(p, d.id);
+      const dr = defectRating(count, sample, d);
+      const p = dr.countPct;
+      const cal = dr.cal;
       const pts = pointsFromRate(cal);
       const itemLabel = d.invert ? `% ${d.label}` : `${d.grupo}-% ${d.label}`;
 
@@ -118,9 +146,11 @@ QB.Scoring = (() => {
         count,
         pct: p,
         calc: f.text,
-        formula: f.detail,
+        formula: d.invert
+          ? `${p.toFixed(2)}% buena · ${dr.ratePct.toFixed(2)}% no buena`
+          : f.detail,
         calificacion: cal,
-        why: rateWhy(p, d.id),
+        why: dr.why,
         puntos: pts,
         grupo: d.grupo,
         invert: !!d.invert,
@@ -139,33 +169,12 @@ QB.Scoring = (() => {
     const sumaDefectos = round2(sumaCal + sumaCon);
     const pctCalidad = round2(Math.max(0, 100 - sumaDefectos));
     const ptsPromedio = ptsCount ? round2(ptsSum / ptsCount) : 0;
-    const nota = notaFromTotalDefect(sumaDefectos);
-    const calidadGlobal = gradeLabel(nota);
-
-    rows.push({
-      id: "_suma_cal",
-      item: "% Suma def. calidad",
-      count: null,
-      pct: sumaDefCal,
-      calc: `${sumaDefCal.toFixed(2)}%`,
-      formula: `Suma de todos los CAL-% = ${sumaDefCal.toFixed(2)}%`,
-      calificacion: rate(sumaDefCal, "default"),
-      why: rateWhy(sumaDefCal, "default"),
-      puntos: null,
-      grupo: "SUM",
-    });
-    rows.push({
-      id: "_suma_con",
-      item: "% Suma def. condición",
-      count: null,
-      pct: sumaDefCon,
-      calc: `${sumaDefCon.toFixed(2)}%`,
-      formula: `Suma de todos los CON-% = ${sumaDefCon.toFixed(2)}%`,
-      calificacion: rate(sumaDefCon, "default"),
-      why: rateWhy(sumaDefCon, "default"),
-      puntos: null,
-      grupo: "SUM",
-    });
+    const calSumaCal = rate(sumaDefCal, "suma_cal");
+    const calSumaCon = rate(sumaDefCon, "suma_con");
+    const calidadGlobal = worstGrade(calSumaCal, calSumaCon);
+    const nota = pointsFromRate(calidadGlobal);
+    // Sumas se calculan para Sheet / nota, pero NO se muestran en el resumen
+    // (evitar que condicionen la captura en campo).
 
     return {
       sample,
@@ -184,7 +193,7 @@ QB.Scoring = (() => {
         muestra: `Tamaño de muestra = ${sample}`,
         tot: `% Tot. defectos = ${sumaDefCal.toFixed(2)} + ${sumaDefCon.toFixed(2)} = ${sumaDefectos.toFixed(2)}%`,
         calidad: `% Calidad = máx(0, 100 − ${sumaDefectos.toFixed(2)}) = ${pctCalidad.toFixed(2)}%`,
-        nota: notaWhy(sumaDefectos, nota),
+        nota: `Nota ${nota} (${calidadGlobal}): suma cal. ${calSumaCal} · suma con. ${calSumaCon}`,
         tip: "Si un fruto tiene varios defectos, la suma de % puede pasar de 100%.",
       },
     };
@@ -193,21 +202,16 @@ QB.Scoring = (() => {
   function scoreCaida(data) {
     const plantas = Number(data.plantas_evaluadas) || 0;
     const frutos = Number(data.frutos_caidos) || 0;
+    const frutosVerdes = Number(data.frutos_caidos_verdes) || 0;
     const promedio = plantas > 0 ? round2(frutos / plantas) : 0;
     const cal = rate(promedio, "promedio_caida");
     const pts = pointsFromRate(cal);
-    const nota = (() => {
-      if (promedio <= 1) return 20;
-      if (promedio <= 2) return 18;
-      if (promedio <= 3) return 16;
-      if (promedio <= 5) return 12;
-      if (promedio <= 8) return 8;
-      return 4;
-    })();
+    const nota = pointsFromRate(cal);
 
     return {
       plantas,
       frutos,
+      frutosVerdes,
       promedio,
       rows: [
         {
@@ -231,6 +235,16 @@ QB.Scoring = (() => {
           puntos: null,
         },
         {
+          id: "frutos_verdes",
+          item: "Cantidad de frutos caidos verdes",
+          count: frutosVerdes,
+          pct: null,
+          calc: String(frutosVerdes),
+          formula: "Dato ingresado",
+          calificacion: null,
+          puntos: null,
+        },
+        {
           id: "promedio",
           item: "Promedio frutos/planta",
           count: null,
@@ -243,7 +257,7 @@ QB.Scoring = (() => {
         },
       ],
       nota,
-      calidadGlobal: gradeLabel(nota),
+      calidadGlobal: cal,
       ptsTot: pts,
       pctCalidad: null,
       sumaDefectos: promedio,
@@ -252,7 +266,7 @@ QB.Scoring = (() => {
         muestra: `Plantas = ${plantas} · Frutos = ${frutos}`,
         tot: `Promedio = ${promedio.toFixed(2)}`,
         calidad: null,
-        nota: `Nota ${nota} según promedio por planta`,
+        nota: `Nota ${nota} (${cal}): ${rateWhy(promedio, "promedio_caida")}`,
         tip: "Menor promedio = mejor calificación.",
       },
     };
@@ -264,13 +278,7 @@ QB.Scoring = (() => {
     const promedio = plantas > 0 ? round2(frutos / plantas) : 0;
     const cal = rate(promedio, "promedio_planta");
     const pts = pointsFromRate(cal);
-    const nota = (() => {
-      if (promedio <= 1.5) return 20;
-      if (promedio <= 3) return 18;
-      if (promedio <= 5) return 14;
-      if (promedio <= 8) return 10;
-      return 6;
-    })();
+    const nota = pointsFromRate(cal);
 
     return {
       plantas,
@@ -310,7 +318,7 @@ QB.Scoring = (() => {
         },
       ],
       nota,
-      calidadGlobal: gradeLabel(nota),
+      calidadGlobal: cal,
       ptsTot: pts,
       pctCalidad: null,
       sumaDefectos: promedio,
@@ -319,7 +327,7 @@ QB.Scoring = (() => {
         muestra: `Plantas = ${plantas} · Frutos = ${frutos}`,
         tot: `Promedio = ${promedio.toFixed(2)}`,
         calidad: null,
-        nota: `Nota ${nota} según promedio por planta`,
+        nota: `Nota ${nota} (${cal}): ${rateWhy(promedio, "promedio_planta")}`,
         tip: "Menor promedio = mejor calificación.",
       },
     };
@@ -329,8 +337,8 @@ QB.Scoring = (() => {
     if (type === "calidad" || type === "descarte") return scoreDefectForm(type, data);
     if (type === "caida") return scoreCaida(data);
     if (type === "planta") return scorePlanta(data);
-    return { rows: [], nota: 0, calidadGlobal: "Pobre", explain: null };
+    return { rows: [], nota: 0, calidadGlobal: "Malo", explain: null };
   }
 
-  return { pct, rate, pillClass, compute, round2, gradeLabel, formulaPct };
+  return { pct, rate, pillClass, compute, round2, gradeLabel, formulaPct, defectRating };
 })();

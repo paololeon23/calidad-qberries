@@ -4,6 +4,8 @@ window.QB = window.QB || {};
 QB.API = (() => {
   const QUEUE_KEY = "qb_pending_queue";
   const HISTORY_KEY = "qb_people_history";
+  const CUSTOM_PEOPLE_KEY = "qb_custom_people";
+  const CUSTOM_VALUES_KEY = "qb_custom_values";
   const ACTIVITY_KEY = "qb_activity";
   const HISTORY_TTL_MS = 48 * 60 * 60 * 1000; // 48 h
 
@@ -66,6 +68,82 @@ QB.API = (() => {
   function peopleOptions(kind) {
     const list = getHistory()[kind] || [];
     return list.map((n) => ({ id: n, label: n, meta: "Reciente" }));
+  }
+
+  function getCustomPeople_() {
+    try {
+      return JSON.parse(localStorage.getItem(CUSTOM_PEOPLE_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  function getCustomValues_() {
+    try {
+      return JSON.parse(localStorage.getItem(CUSTOM_VALUES_KEY) || "{}");
+    } catch {
+      return {};
+    }
+  }
+
+  /** Persona de emergencia — solo local, no modifica JSON del servidor */
+  function rememberCustomPerson(kind, dni, nombre) {
+    const d = String(dni || "").replace(/\D/g, "").trim();
+    const n = String(nombre || "").trim();
+    if (!d || !n) return null;
+    const label =
+      window.QB?.Data?.personLabel?.(d, n) ||
+      `${d} — ${n}`;
+    rememberPerson(kind, label);
+    const all = getCustomPeople_();
+    if (!all[kind]) all[kind] = {};
+    all[kind][d] = { nombre: n, at: Date.now() };
+    localStorage.setItem(CUSTOM_PEOPLE_KEY, JSON.stringify(all));
+    return { dni: d, nombre: n, label };
+  }
+
+  function customPeopleOptions(kind, query) {
+    const map = getCustomPeople_()[kind] || {};
+    const q = String(query || "").trim().toLowerCase();
+    const digits = String(query || "").replace(/\D/g, "");
+    const out = [];
+    Object.keys(map).forEach((dni) => {
+      const p = map[dni];
+      const nombre = (p.nombre || "").trim();
+      const byDni = digits.length >= 2 && dni.includes(digits);
+      const byName = q.length >= 2 && nombre.toLowerCase().includes(q);
+      if (q && !byDni && !byName) return;
+      const short = window.QB?.Data?.shortName?.(nombre) || nombre;
+      out.push({
+        id: window.QB?.Data?.personLabel?.(dni, nombre) || `${dni} — ${short}`,
+        label: nombre || dni,
+        meta: "Local · emergencia",
+        nombre,
+        nombreCorto: short,
+        dni: String(dni),
+        local: true,
+      });
+    });
+    return out;
+  }
+
+  /** Valor libre (lote, variedad, etc.) — solo local */
+  function rememberCustomValue(kind, value) {
+    const v = String(value || "").trim();
+    if (!v) return;
+    rememberPerson(kind, v);
+    const all = getCustomValues_();
+    if (!all[kind]) all[kind] = [];
+    all[kind] = [v, ...all[kind].filter((x) => x.toLowerCase() !== v.toLowerCase())].slice(0, 30);
+    localStorage.setItem(CUSTOM_VALUES_KEY, JSON.stringify(all));
+  }
+
+  function customValueOptions(kind, query) {
+    const list = getCustomValues_()[kind] || [];
+    const q = String(query || "").trim().toLowerCase();
+    return list
+      .filter((v) => !q || String(v).toLowerCase().includes(q))
+      .map((v) => ({ id: v, label: v, meta: "Local · emergencia", customText: true }));
   }
 
   function logActivity(record) {
@@ -300,6 +378,10 @@ QB.API = (() => {
     newClientId: cryptoRandom,
     peopleOptions,
     rememberPerson,
+    rememberCustomPerson,
+    customPeopleOptions,
+    rememberCustomValue,
+    customValueOptions,
     getQueue,
     pendingCount,
     getActivity,
