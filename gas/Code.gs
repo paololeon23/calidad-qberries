@@ -24,7 +24,7 @@ var COL = {
 };
 
 var SHEETS = {
-  /** Orden: datos → resultados/calificaciones → % al final → comentario / hora */
+  /** Orden: datos → resultados → Cal. → N° (unidades) → % → comentario / hora */
   calidad: {
     name: 'Calidad',
     headers: COL.meta.concat(COL.cosechador, COL.ubicacion, [
@@ -35,6 +35,9 @@ var SHEETS = {
       'Cal. Resto floral', 'Cal. Polen', 'Cal. Pedicelo', 'Cal. Cicatriz',
       'Cal. Polvo', 'Cal. Herida', 'Cal. Ave', 'Cal. Sin Bloom',
       'Cal. Plagas', 'Cal. Inserción pedicelar',
+      'N° Blando', 'N° Desgarro', 'N° Deshidratado', 'N° Rojizo', 'N° Resto floral',
+      'N° Polen', 'N° Pedicelo', 'N° Cicatriz', 'N° Polvo', 'N° Herida abierta',
+      'N° Picadura ave', 'N° Sin Bloom', 'N° Plagas e insectos', 'N° Inserción pedicelar',
       '% Blando', '% Desgarro', '% Deshidratado', '% Rojizo', '% Resto floral',
       '% Polen', '% Pedicelo', '% Cicatriz', '% Polvo', '% Herida abierta',
       '% Picadura ave', '% Sin Bloom', '% Plagas e insectos', '% Inserción pedicelar',
@@ -46,9 +49,10 @@ var SHEETS = {
     headers: COL.meta.concat(COL.ubicacion, [
       'Tamaño muestra'
     ], COL.resultado, [
-      'Cal. Fruta buena', 'Cal. Deshidratada', 'Cal. Rojiza', 'Cal. Pedicelo',
-      'Cal. Resto floral', 'Cal. Cicatriz', 'Cal. Polvo', 'Cal. Desgarro',
-      'Cal. Ave', 'Cal. Sin Bloom', 'Cal. Polen',
+      /* Solo 3 se califican; el resto es N° + % */
+      'Cal. Fruta buena', 'Cal. Rojiza', 'Cal. Pedicelo',
+      'N° Fruta buena', 'N° Deshidratada', 'N° Rojiza', 'N° Pedicelo', 'N° Resto floral',
+      'N° Cicatriz', 'N° Polvo', 'N° Desgarro', 'N° Picadura ave', 'N° Sin Bloom', 'N° Polen',
       '% Fruta buena', '% Deshidratada', '% Rojiza', '% Pedicelo', '% Resto floral',
       '% Cicatriz', '% Polvo', '% Desgarro', '% Picadura ave', '% Sin Bloom', '% Polen',
       '% Suma def. calidad', '% Suma def. condición', '% Tot. defectos', '% Calidad'
@@ -79,10 +83,15 @@ function setupSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var keys = Object.keys(SHEETS);
   for (var i = 0; i < keys.length; i++) {
-    var def = SHEETS[keys[i]];
+    var key = keys[i];
+    var def = SHEETS[key];
     var sheet = ensureSheet_(ss, def.name, def.headers);
     removeColumnByHeader_(sheet, 'Marca temporal');
     syncHeaders_(sheet, def.headers);
+    // Calidad / Descarte: rellenar N° vacíos desde % (filas antiguas)
+    if (key === 'calidad' || key === 'descarte') {
+      backfillUnitsFromPct_(sheet);
+    }
   }
 }
 
@@ -90,9 +99,9 @@ function doGet(e) {
   e = e || { parameter: {} };
   var action = String((e.parameter && e.parameter.action) || 'ping').trim();
   if (action === 'ping') {
-    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.13' });
+    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.17' });
   }
-  return json_({ ok: true, api: 'calidad', version: '1.1.13', sheets: Object.keys(SHEETS) });
+  return json_({ ok: true, api: 'calidad', version: '1.1.17', sheets: Object.keys(SHEETS) });
 }
 
 function doPost(e) {
@@ -202,13 +211,35 @@ function buildRow_(type, data, score, stamp, submittedAt) {
   var rowsById = {};
   (score.rows || []).forEach(function (r) { rowsById[r.id] = r; });
 
+  /** % siempre numérico: si no llega data → 0 */
   function p(id) {
     var r = rowsById[id];
-    return r && r.pct != null ? Number(r.pct) : pct_(data[id], data.tamano_muestra);
+    if (r && r.pct != null && !isNaN(Number(r.pct))) return Number(r.pct);
+    return pct_(data[id], data.tamano_muestra);
+  }
+  /**
+   * Unidades (conteo): si no llega N° pero sí hay %,
+   * se deduce: N° = redondeo(% × tamaño_muestra / 100)
+   */
+  function n(id) {
+    var v = data[id];
+    if (v !== '' && v != null) {
+      var num = Number(v);
+      if (!isNaN(num)) return num;
+    }
+    var pctVal = p(id);
+    var sample = Number(data.tamano_muestra) || 0;
+    if (sample > 0 && pctVal != null && !isNaN(pctVal) && Number(pctVal) !== 0) {
+      return Math.round((Number(pctVal) / 100) * sample);
+    }
+    return 0;
   }
   function cal(id) {
     var r = rowsById[id];
     return r && r.calificacion ? r.calificacion : '';
+  }
+  function numOr0_(v) {
+    return v != null && !isNaN(Number(v)) ? Number(v) : 0;
   }
 
   var base = {
@@ -230,6 +261,20 @@ function buildRow_(type, data, score, stamp, submittedAt) {
     return Object.assign(base, {
       'Cosechador': data.cosechador || '',
       'Tamaño muestra': data.tamano_muestra || '',
+      'N° Blando': n('blando'),
+      'N° Desgarro': n('desgarro'),
+      'N° Deshidratado': n('deshidratado'),
+      'N° Rojizo': n('rojizo'),
+      'N° Resto floral': n('resto_floral'),
+      'N° Polen': n('polen'),
+      'N° Pedicelo': n('pedicelo'),
+      'N° Cicatriz': n('cicatriz'),
+      'N° Polvo': n('polvo'),
+      'N° Herida abierta': n('herida_abierta'),
+      'N° Picadura ave': n('picadura_ave'),
+      'N° Sin Bloom': n('sin_bloom'),
+      'N° Plagas e insectos': n('plagas_insectos'),
+      'N° Inserción pedicelar': n('insercion_pedicelar'),
       '% Blando': p('blando'),
       '% Desgarro': p('desgarro'),
       '% Deshidratado': p('deshidratado'),
@@ -244,10 +289,10 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       '% Sin Bloom': p('sin_bloom'),
       '% Plagas e insectos': p('plagas_insectos'),
       '% Inserción pedicelar': p('insercion_pedicelar'),
-      '% Suma def. calidad': score.sumaDefCal != null ? score.sumaDefCal : '',
-      '% Suma def. condición': score.sumaDefCon != null ? score.sumaDefCon : '',
-      '% Tot. defectos': score.sumaDefectos != null ? score.sumaDefectos : '',
-      '% Calidad': score.pctCalidad != null ? score.pctCalidad : '',
+      '% Suma def. calidad': numOr0_(score.sumaDefCal),
+      '% Suma def. condición': numOr0_(score.sumaDefCon),
+      '% Tot. defectos': numOr0_(score.sumaDefectos),
+      '% Calidad': score.pctCalidad != null ? Number(score.pctCalidad) : 100,
       'Puntos Calidad': score.nota != null ? score.nota : '',
       'Puntos Condición': ptsGrupo_(score.rows, 'CON'),
       'Puntos Calidad def.': ptsGrupo_(score.rows, 'CAL'),
@@ -271,6 +316,17 @@ function buildRow_(type, data, score, stamp, submittedAt) {
   if (type === 'descarte') {
     return Object.assign(base, {
       'Tamaño muestra': data.tamano_muestra || '',
+      'N° Fruta buena': n('fruta_buena'),
+      'N° Deshidratada': n('deshidratada'),
+      'N° Rojiza': n('rojiza'),
+      'N° Pedicelo': n('pedicelo'),
+      'N° Resto floral': n('resto_floral'),
+      'N° Cicatriz': n('cicatriz'),
+      'N° Polvo': n('polvo'),
+      'N° Desgarro': n('desgarro'),
+      'N° Picadura ave': n('picadura_ave'),
+      'N° Sin Bloom': n('sin_bloom'),
+      'N° Polen': n('polen'),
       '% Fruta buena': p('fruta_buena'),
       '% Deshidratada': p('deshidratada'),
       '% Rojiza': p('rojiza'),
@@ -282,21 +338,13 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       '% Picadura ave': p('picadura_ave'),
       '% Sin Bloom': p('sin_bloom'),
       '% Polen': p('polen'),
-      '% Suma def. calidad': score.sumaDefCal != null ? score.sumaDefCal : '',
-      '% Suma def. condición': score.sumaDefCon != null ? score.sumaDefCon : '',
-      '% Tot. defectos': score.sumaDefectos != null ? score.sumaDefectos : '',
-      '% Calidad': score.pctCalidad != null ? score.pctCalidad : '',
+      '% Suma def. calidad': numOr0_(score.sumaDefCal),
+      '% Suma def. condición': numOr0_(score.sumaDefCon),
+      '% Tot. defectos': numOr0_(score.sumaDefectos),
+      '% Calidad': score.pctCalidad != null ? Number(score.pctCalidad) : 100,
       'Cal. Fruta buena': cal('fruta_buena'),
-      'Cal. Deshidratada': cal('deshidratada'),
       'Cal. Rojiza': cal('rojiza'),
-      'Cal. Pedicelo': cal('pedicelo'),
-      'Cal. Resto floral': cal('resto_floral'),
-      'Cal. Cicatriz': cal('cicatriz'),
-      'Cal. Polvo': cal('polvo'),
-      'Cal. Desgarro': cal('desgarro'),
-      'Cal. Ave': cal('picadura_ave'),
-      'Cal. Sin Bloom': cal('sin_bloom'),
-      'Cal. Polen': cal('polen')
+      'Cal. Pedicelo': cal('pedicelo')
     });
   }
 
@@ -342,6 +390,61 @@ function pct_(count, sample) {
   return Math.round(((Number(count) || 0) / s) * 10000) / 100;
 }
 
+/**
+ * Filas antiguas: si hay % y N° está vacío/0 → N° = redondeo(% × muestra / 100).
+ * Pares por nombre: "N° X" ↔ "% X"
+ */
+function backfillUnitsFromPct_(sheet) {
+  var headers = getHeaders_(sheet);
+  if (!headers.length) return;
+
+  var sampleIdx = headers.indexOf('Tamaño muestra');
+  if (sampleIdx === -1) return;
+
+  var pairs = [];
+  for (var h = 0; h < headers.length; h++) {
+    var name = headers[h];
+    if (name.indexOf('N° ') !== 0) continue;
+    var suffix = name.slice(3); // después de "N° "
+    var pctName = '% ' + suffix;
+    var pctIdx = headers.indexOf(pctName);
+    if (pctIdx === -1) continue;
+    pairs.push({ nIdx: h, pIdx: pctIdx });
+  }
+  if (!pairs.length) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  var numRows = lastRow - 1;
+  var lastCol = headers.length;
+  var values = sheet.getRange(2, 1, numRows, lastCol).getValues();
+  var changed = false;
+
+  for (var r = 0; r < values.length; r++) {
+    var row = values[r];
+    var sample = Number(row[sampleIdx]) || 0;
+    if (sample <= 0) continue;
+
+    for (var i = 0; i < pairs.length; i++) {
+      var pair = pairs[i];
+      var nVal = row[pair.nIdx];
+      var pVal = row[pair.pIdx];
+      var nEmpty = nVal === '' || nVal === null || typeof nVal === 'undefined' ||
+        (typeof nVal === 'string' && String(nVal).trim() === '') ||
+        Number(nVal) === 0;
+      var pct = Number(pVal);
+      if (!nEmpty || isNaN(pct) || pct === 0) continue;
+      row[pair.nIdx] = Math.round((pct / 100) * sample);
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    sheet.getRange(2, 1, numRows, lastCol).setValues(values);
+  }
+}
+
 function ensureSheet_(ss, name, headers) {
   var sheet = ss.getSheetByName(name);
   var isNew = !sheet;
@@ -381,7 +484,16 @@ function syncHeaders_(sheet, headers) {
     'Pun. Calidad',
     'Ptos. Condición',
     'Ptos. Calidad def.',
-    'Marca temporal'
+    'Marca temporal',
+    /* Descarte: Cal. sin rating (se quedan N° + %) */
+    'Cal. Deshidratada',
+    'Cal. Resto floral',
+    'Cal. Cicatriz',
+    'Cal. Polvo',
+    'Cal. Desgarro',
+    'Cal. Ave',
+    'Cal. Sin Bloom',
+    'Cal. Polen'
   ];
   for (var o = 0; o < obsolete.length; o++) {
     if (headers.indexOf(obsolete[o]) === -1) {
@@ -543,5 +655,17 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('Q Berries')
     .addItem('Preparar hojas / columnas', 'setupSheets')
+    .addItem('Rellenar N° desde % (Calidad/Descarte)', 'backfillAllUnits_')
     .addToUi();
+}
+
+/** Menú: rellena N° vacíos desde % en Calidad y Descarte */
+function backfillAllUnits_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ['calidad', 'descarte'].forEach(function (key) {
+    var def = SHEETS[key];
+    var sheet = ss.getSheetByName(def.name);
+    if (sheet) backfillUnitsFromPct_(sheet);
+  });
+  SpreadsheetApp.getUi().alert('Listo: unidades (N°) rellenadas desde % donde faltaban.');
 }

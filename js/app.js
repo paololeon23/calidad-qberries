@@ -1771,8 +1771,17 @@ QB.App = (() => {
             : evalDef.short
         }</div>
       </div>
-      <div class="score-badge">
-        <strong>${s.calidadGlobal}</strong>
+      <div class="score-badge score-analyzing" aria-label="Analizado">
+        <span class="score-line-chart" aria-hidden="true">
+          <svg viewBox="0 0 64 28" width="64" height="28" preserveAspectRatio="none">
+            <polyline class="score-line-grid" points="0,7 64,7"></polyline>
+            <polyline class="score-line-grid" points="0,14 64,14"></polyline>
+            <polyline class="score-line-grid" points="0,21 64,21"></polyline>
+            <polyline class="score-line-path" points="0,18 8,12 16,20 24,8 32,16 40,6 48,14 56,10 64,18"></polyline>
+            <polyline class="score-line-path score-line-path-b" points="0,18 8,12 16,20 24,8 32,16 40,6 48,14 56,10 64,18"></polyline>
+          </svg>
+        </span>
+        <span class="score-analyzing-label">Analizado</span>
       </div>
     `;
 
