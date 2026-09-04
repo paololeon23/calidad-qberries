@@ -97,8 +97,82 @@ var SHEETS = {
 var CACHE_TTL_SEC = 21600; // 6 h — mismo criterio que Guías
 
 /**
- * Solo preparación manual (menú / editor). NO lo usa doPost.
- * Estilos solo en hojas nuevas — re-ejecutar no repinta encabezados.
+ * Columnas que el frontend ya no usa (nombres viejos).
+ * Se renombran/fusionan primero; lo que sobra se borra al compactar.
+ */
+var OBSOLETE_COLS = [
+  'Marca temporal',
+  'Client ID',
+  'Ptos. Tot',
+  'Pun. Calidad',
+  'Ptos. Condición',
+  'Ptos. Calidad def.',
+  'Jabas / Tamaño muestra',
+  /* Descarte / matriz antigua */
+  'Cal. Fruta buena', 'N° Fruta buena', '% Fruta buena',
+  'Cal. Deshidratada', 'N° Deshidratada', '% Deshidratada',
+  'Cal. Rojiza', 'N° Rojiza', '% Rojiza',
+  'Cal. Rojizo', 'N° Rojizo', '% Rojizo',
+  'Cal. Pedicelo', 'N° Pedicelo', '% Pedicelo',
+  'Cal. Resto floral', 'N° Resto floral', '% Resto floral',
+  'Cal. Cicatriz', 'N° Cicatriz', '% Cicatriz',
+  'Cal. Sin Bloom', 'N° Sin Bloom', '% Sin Bloom',
+  'Cal. Ave', 'N° Picadura ave', '% Picadura ave',
+  'Cal. Deshidratado', 'N° Deshidratado', '% Deshidratado',
+  'Cal. Daño sol', 'N° Daño sol', '% Daño sol',
+  'Cal. Deshidratado rojizo', 'N° Deshidratado rojizo', '% Deshidratado rojizo',
+  'Cal. Excreta', 'N° Excreta abeja', '% Excreta abeja',
+  'Cal. Herida abierta' /* oficial es Cal. Herida */
+];
+
+/** Renombres suaves: datos viejos → nombre actual del frontend */
+var RENAME_COLS = [
+  ['Ptos. Tot', 'Puntos totales'],
+  ['Pun. Calidad', 'Puntos Calidad'],
+  ['Ptos. Condición', 'Puntos Condición'],
+  ['Ptos. Calidad def.', 'Puntos Calidad def.'],
+  ['% Excreta abeja', '% Polen'],
+  ['Cal. Excreta', 'Cal. Polen'],
+  ['N° Excreta abeja', 'N° Polen'],
+  ['Cal. Rojizo', 'Cal. Falta de color'],
+  ['Cal. Rojiza', 'Cal. Falta de color'],
+  ['N° Rojizo', 'N° Falta de color'],
+  ['N° Rojiza', 'N° Falta de color'],
+  ['% Rojizo', '% Falta de color'],
+  ['% Rojiza', '% Falta de color'],
+  ['Cal. Pedicelo', 'Cal. Pedúnculo adherido'],
+  ['N° Pedicelo', 'N° Pedúnculo adherido'],
+  ['% Pedicelo', '% Pedúnculo adherido'],
+  ['Cal. Resto floral', 'Cal. Restos florales'],
+  ['N° Resto floral', 'N° Restos florales'],
+  ['% Resto floral', '% Restos florales'],
+  ['Cal. Cicatriz', 'Cal. Cicatrices'],
+  ['N° Cicatriz', 'N° Cicatrices'],
+  ['% Cicatriz', '% Cicatrices'],
+  ['Cal. Sin Bloom', 'Cal. Ausencia de bloom'],
+  ['N° Sin Bloom', 'N° Ausencia de bloom'],
+  ['% Sin Bloom', '% Ausencia de bloom'],
+  ['Cal. Ave', 'Cal. Daño ave'],
+  ['N° Picadura ave', 'N° Daño ave'],
+  ['% Picadura ave', '% Daño ave'],
+  ['Cal. Deshidratado', 'Cal. Deshidratación'],
+  ['N° Deshidratado', 'N° Deshidratación'],
+  ['N° Deshidratada', 'N° Deshidratación'],
+  ['% Deshidratado', '% Deshidratación'],
+  ['% Deshidratada', '% Deshidratación'],
+  ['Cal. Deshidratada', 'Cal. Deshidratación'],
+  ['Cal. Daño sol', 'Cal. Quemadura de sol'],
+  ['N° Daño sol', 'N° Quemadura de sol'],
+  ['% Daño sol', '% Quemadura de sol'],
+  ['Cal. Deshidratado rojizo', 'Cal. Rojo deshidratado'],
+  ['N° Deshidratado rojizo', 'N° Rojo deshidratado'],
+  ['% Deshidratado rojizo', '% Rojo deshidratado'],
+  ['Cal. Herida abierta', 'Cal. Herida']
+];
+
+/**
+ * Prepara hojas: renombra → mueve data → borra obsoletos → deja SOLO
+ * el orden oficial (sin huecos ni columnas sueltas).
  */
 function setupSheets() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -107,9 +181,7 @@ function setupSheets() {
     var key = keys[i];
     var def = SHEETS[key];
     var sheet = ensureSheet_(ss, def.name, def.headers);
-    removeColumnByHeader_(sheet, 'Marca temporal');
     syncHeaders_(sheet, def.headers);
-    // Calidad / Descarte: rellenar N° vacíos desde % (filas antiguas)
     if (key === 'calidad' || key === 'descarte') {
       backfillUnitsFromPct_(sheet);
     }
@@ -120,9 +192,9 @@ function doGet(e) {
   e = e || { parameter: {} };
   var action = String((e.parameter && e.parameter.action) || 'ping').trim();
   if (action === 'ping') {
-    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.19' });
+    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.22' });
   }
-  return json_({ ok: true, api: 'calidad', version: '1.1.19', sheets: Object.keys(SHEETS) });
+  return json_({ ok: true, api: 'calidad', version: '1.1.22', sheets: Object.keys(SHEETS) });
 }
 
 function doPost(e) {
@@ -197,9 +269,8 @@ function saveEvaluation_(body) {
     var stamp = new Date();
     var rowMap = buildRow_(type, data, score, stamp, body.submittedAt);
 
-    removeColumnByHeader_(sheet, 'Marca temporal');
+    // Compacta a orden oficial (mueve data, sin huecos) y escribe
     syncHeaders_(sheet, def.headers);
-    // Siempre escribir en el orden oficial (Puntos totales + Nota incluidos)
     var headers = def.headers;
     var row = headers.map(function (h) {
       return rowMap.hasOwnProperty(h) ? rowMap[h] : '';
@@ -540,80 +611,21 @@ function ensureHeaders_(sheet, headers) {
   }
   if (!missing.length) return;
   var start = existing.length + 1;
-  // getRange(fila, col, numFilas, numCols) — no usar columna final
   sheet.getRange(1, start, 1, missing.length).setValues([missing]);
 }
 
-/** Renombra/fusiona aliases viejos, elimina columnas obsoletas y deja SOLO el orden oficial */
+/**
+ * Renombra viejos → actuales, borra lo que el frontend ya no usa,
+ * y reescribe TODA la hoja en el orden oficial (data se mueve, sin huecos).
+ */
 function syncHeaders_(sheet, headers) {
-  mergeRenameColumn_(sheet, 'Ptos. Tot', 'Puntos totales');
-  mergeRenameColumn_(sheet, 'Pun. Calidad', 'Puntos Calidad');
-  mergeRenameColumn_(sheet, 'Ptos. Condición', 'Puntos Condición');
-  mergeRenameColumn_(sheet, 'Ptos. Calidad def.', 'Puntos Calidad def.');
-  mergeRenameColumn_(sheet, '% Excreta abeja', '% Polen');
-  mergeRenameColumn_(sheet, 'Cal. Excreta', 'Cal. Polen');
-  /* Renombres matriz nueva — Calidad y Descarte */
-  if (headers.indexOf('Cal. Falta de color') !== -1 || headers.indexOf('N° Falta de color') !== -1) {
-    mergeRenameColumn_(sheet, 'Cal. Rojizo', 'Cal. Falta de color');
-    mergeRenameColumn_(sheet, 'Cal. Rojiza', 'Cal. Falta de color');
-    mergeRenameColumn_(sheet, 'N° Rojizo', 'N° Falta de color');
-    mergeRenameColumn_(sheet, 'N° Rojiza', 'N° Falta de color');
-    mergeRenameColumn_(sheet, '% Rojizo', '% Falta de color');
-    mergeRenameColumn_(sheet, '% Rojiza', '% Falta de color');
-    mergeRenameColumn_(sheet, 'Cal. Pedicelo', 'Cal. Pedúnculo adherido');
-    mergeRenameColumn_(sheet, 'N° Pedicelo', 'N° Pedúnculo adherido');
-    mergeRenameColumn_(sheet, '% Pedicelo', '% Pedúnculo adherido');
-    mergeRenameColumn_(sheet, 'Cal. Resto floral', 'Cal. Restos florales');
-    mergeRenameColumn_(sheet, 'N° Resto floral', 'N° Restos florales');
-    mergeRenameColumn_(sheet, '% Resto floral', '% Restos florales');
-    mergeRenameColumn_(sheet, 'Cal. Cicatriz', 'Cal. Cicatrices');
-    mergeRenameColumn_(sheet, 'N° Cicatriz', 'N° Cicatrices');
-    mergeRenameColumn_(sheet, '% Cicatriz', '% Cicatrices');
-    mergeRenameColumn_(sheet, 'Cal. Sin Bloom', 'Cal. Ausencia de bloom');
-    mergeRenameColumn_(sheet, 'N° Sin Bloom', 'N° Ausencia de bloom');
-    mergeRenameColumn_(sheet, '% Sin Bloom', '% Ausencia de bloom');
-    mergeRenameColumn_(sheet, 'Cal. Ave', 'Cal. Daño ave');
-    mergeRenameColumn_(sheet, 'N° Picadura ave', 'N° Daño ave');
-    mergeRenameColumn_(sheet, '% Picadura ave', '% Daño ave');
-    mergeRenameColumn_(sheet, 'Cal. Deshidratado', 'Cal. Deshidratación');
-    mergeRenameColumn_(sheet, 'N° Deshidratado', 'N° Deshidratación');
-    mergeRenameColumn_(sheet, 'N° Deshidratada', 'N° Deshidratación');
-    mergeRenameColumn_(sheet, '% Deshidratado', '% Deshidratación');
-    mergeRenameColumn_(sheet, '% Deshidratada', '% Deshidratación');
-    mergeRenameColumn_(sheet, 'Cal. Daño sol', 'Cal. Quemadura de sol');
-    mergeRenameColumn_(sheet, 'N° Daño sol', 'N° Quemadura de sol');
-    mergeRenameColumn_(sheet, '% Daño sol', '% Quemadura de sol');
-    mergeRenameColumn_(sheet, 'Cal. Deshidratado rojizo', 'Cal. Rojo deshidratado');
-    mergeRenameColumn_(sheet, 'N° Deshidratado rojizo', 'N° Rojo deshidratado');
-    mergeRenameColumn_(sheet, '% Deshidratado rojizo', '% Rojo deshidratado');
+  for (var i = 0; i < RENAME_COLS.length; i++) {
+    mergeRenameColumn_(sheet, RENAME_COLS[i][0], RENAME_COLS[i][1]);
   }
-
-  var obsolete = [
-    'Ptos. Tot',
-    'Pun. Calidad',
-    'Ptos. Condición',
-    'Ptos. Calidad def.',
-    'Marca temporal',
-    /* Descarte antiguo */
-    'Cal. Fruta buena',
-    'Cal. Deshidratada',
-    'Cal. Rojiza',
-    'N° Fruta buena',
-    'N° Deshidratada',
-    'N° Rojiza',
-    '% Fruta buena',
-    '% Deshidratada',
-    '% Rojiza',
-    'Cal. Resto floral',
-    'Cal. Cicatriz',
-    'Cal. Desgarro',
-    'Cal. Ave',
-    'Cal. Sin Bloom',
-    'Cal. Polen'
-  ];
-  for (var o = 0; o < obsolete.length; o++) {
-    if (headers.indexOf(obsolete[o]) === -1) {
-      removeColumnByHeader_(sheet, obsolete[o]);
+  for (var o = 0; o < OBSOLETE_COLS.length; o++) {
+    var name = OBSOLETE_COLS[o];
+    if (headers.indexOf(name) === -1) {
+      removeColumnByHeader_(sheet, name);
     }
   }
 
@@ -622,8 +634,8 @@ function syncHeaders_(sheet, headers) {
   var existing = getHeaders_(sheet);
   var ordered = existing.length === headers.length;
   if (ordered) {
-    for (var i = 0; i < headers.length; i++) {
-      if (existing[i] !== headers[i]) {
+    for (var j = 0; j < headers.length; j++) {
+      if (existing[j] !== headers[j]) {
         ordered = false;
         break;
       }
@@ -636,11 +648,9 @@ function syncHeaders_(sheet, headers) {
   var values = sheet.getRange(1, 1, lastRow, lastCol).getValues();
   var colIndex = {};
   for (var c = 0; c < existing.length; c++) {
-    // Si hay duplicados, preferir la primera columna con ese nombre
     if (colIndex[existing[c]] == null) colIndex[existing[c]] = c;
   }
 
-  // Solo columnas oficiales — no dejar "Ptos. Tot" ni extras viejos al final
   var newOrder = headers.slice();
   var newValues = [];
   for (var r = 0; r < values.length; r++) {
@@ -655,19 +665,18 @@ function syncHeaders_(sheet, headers) {
 
   if (lastCol > newOrder.length) {
     sheet.deleteColumns(newOrder.length + 1, lastCol - newOrder.length);
-  } else if (lastCol < newOrder.length) {
-    // ensureHeaders ya agregó; el setValues amplia
   }
   sheet.getRange(1, 1, lastRow, newOrder.length).setValues(newValues);
 }
 
 /**
- * Si solo existe el nombre viejo → renombra.
- * Si existen ambos → copia valores faltantes al nuevo y borra el viejo.
+ * Si solo existe el nombre viejo → renombra in-place.
+ * Si existen ambos → copia vacíos al nuevo y borra el viejo (data no se pierde).
  */
 function mergeRenameColumn_(sheet, fromName, toName) {
   fromName = String(fromName || '').trim();
   toName = String(toName || '').trim();
+  if (!fromName || !toName || fromName === toName) return;
   var headers = getHeaders_(sheet);
   var fromIdx = headers.indexOf(fromName);
   if (fromIdx === -1) return;
@@ -680,7 +689,6 @@ function mergeRenameColumn_(sheet, fromName, toName) {
 
   var lastRow = Math.max(sheet.getLastRow(), 1);
   if (lastRow >= 2) {
-    // getRange(fila, col, numFilas, numCols) — no coordenadas finales
     var numDataRows = lastRow - 1;
     var fromVals = sheet.getRange(2, fromIdx + 1, numDataRows, 1).getValues();
     var toVals = sheet.getRange(2, toIdx + 1, numDataRows, 1).getValues();
@@ -699,8 +707,11 @@ function mergeRenameColumn_(sheet, fromName, toName) {
   if (fromIdx !== -1) sheet.deleteColumn(fromIdx + 1);
 }
 
-function renameHeader_(sheet, fromName, toName) {
-  mergeRenameColumn_(sheet, fromName, toName);
+function removeColumnByHeader_(sheet, headerName) {
+  var headers = getHeaders_(sheet);
+  var idx = headers.indexOf(String(headerName || '').trim());
+  if (idx === -1) return;
+  sheet.deleteColumn(idx + 1);
 }
 
 function getHeaders_(sheet) {
@@ -711,14 +722,6 @@ function getHeaders_(sheet) {
   for (var i = 0; i < row.length; i++) out.push(String(row[i] || '').trim());
   while (out.length && out[out.length - 1] === '') out.pop();
   return out;
-}
-
-/** Quita columna obsoleta (p. ej. Marca temporal) al ejecutar setupSheets */
-function removeColumnByHeader_(sheet, headerName) {
-  var headers = getHeaders_(sheet);
-  var idx = headers.indexOf(String(headerName || '').trim());
-  if (idx === -1) return;
-  sheet.deleteColumn(idx + 1);
 }
 
 function styleHeader_(sheet, colCount) {
