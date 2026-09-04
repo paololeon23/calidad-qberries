@@ -397,6 +397,10 @@ QB.App = (() => {
       state.score = null;
       state.clientId = null;
     }
+    /* Fruta caída: solo "Después de cosecha" (valor fijo) */
+    if (type === "caida") {
+      state.data.momento = "Después de cosecha";
+    }
     state.saving = false;
     if (QB.Data && !QB.Data.isReady()) {
       setLoading(true, "Cargando catálogos...");
@@ -1226,9 +1230,10 @@ QB.App = (() => {
       defects = defectsHtml("descarte");
       comentario = fieldHtml("comentario", "Comentario", { type: "textarea", placeholder: "Opcional..." });
     } else if (state.type === "caida") {
+      state.data.momento = "Después de cosecha";
       detalle = `
         ${fieldHtml("cosechador", "Cosechador", { precise: true, required: true, placeholder: "Seleccionar..." })}
-        ${fieldHtml("momento", "Evaluación", { precise: true, required: true, placeholder: "Antes / Después..." })}
+        ${fieldHtml("momento", "Evaluación", { readonly: true, required: true, placeholder: "Después de cosecha" })}
         <div class="caida-counts">
           ${fieldHtml("plantas_evaluadas", "Plantas evaluadas", { type: "number", min: 1, inputmode: "numeric", required: true, placeholder: "00" })}
           <div class="field-row">
@@ -1592,6 +1597,7 @@ QB.App = (() => {
         data.etapa = L.etapa || "";
       }
     }
+    if (state.type === "caida") data.momento = "Después de cosecha";
     return data;
   }
 
@@ -1760,30 +1766,6 @@ QB.App = (() => {
       <div class="meta-row"><span class="k">${k}</span><span class="v">${escapeHtml(v)}</span></div>`
       )
       .join("");
-
-    $("#score-hero").innerHTML = `
-      <div>
-        <div class="label">Nota final</div>
-        <div class="nota">${s.nota}</div>
-        <div class="sub">${
-          s.promedio != null
-            ? `Promedio ${s.promedio} / planta`
-            : evalDef.short
-        }</div>
-      </div>
-      <div class="score-badge score-analyzing" aria-label="Analizado">
-        <span class="score-line-chart" aria-hidden="true">
-          <svg viewBox="0 0 64 28" width="64" height="28" preserveAspectRatio="none">
-            <polyline class="score-line-grid" points="0,7 64,7"></polyline>
-            <polyline class="score-line-grid" points="0,14 64,14"></polyline>
-            <polyline class="score-line-grid" points="0,21 64,21"></polyline>
-            <polyline class="score-line-path" points="0,18 8,12 16,20 24,8 32,16 40,6 48,14 56,10 64,18"></polyline>
-            <polyline class="score-line-path score-line-path-b" points="0,18 8,12 16,20 24,8 32,16 40,6 48,14 56,10 64,18"></polyline>
-          </svg>
-        </span>
-        <span class="score-analyzing-label">Analizado</span>
-      </div>
-    `;
 
     const box = $("#formula-box");
     if (box) {

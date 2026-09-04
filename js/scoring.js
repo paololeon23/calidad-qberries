@@ -39,12 +39,63 @@ QB.Scoring = (() => {
     return t;
   }
 
+  const REF_SAMPLE = () => Number(QB.THRESHOLDS.REF_SAMPLE) || 350;
+
+  /** Unidades equivalentes a base 350: u = conteo × (350 / muestra) */
+  function equivUnits_(count, sample) {
+    const s = Number(sample) || 0;
+    const c = Number(count) || 0;
+    if (s <= 0) return 0;
+    return (c * REF_SAMPLE()) / s;
+  }
+
+  /** Califica un valor numérico contra bandas (%, unidades, etc.) */
+  function rateAgainstBands_(v, bands, flags) {
+    const t = flags || {};
+    const exc = bands.excelente || [0, 0];
+    const [eMin, eMax] = exc;
+    const [bMin, bMax] = bands.bueno || [999, 999];
+    const [rMin, rMax] = bands.regular || [999, 999];
+    const [mMin, mMax] = bands.malo || [999, 999];
+
+    if (t.zeroTolerance) {
+      if (v <= 0) return "Excelente";
+      if (inBand_(v, bands.regular) && !inBand_(v, bands.malo)) return "Regular";
+      if (inBand_(v, bands.malo)) return "Malo";
+      const maloMin = bands.malo && bands.malo[0] != null ? Number(bands.malo[0]) : 0;
+      if (maloMin > 0 && v < maloMin) return "Excelente";
+      return "Malo";
+    }
+
+    if (inBand_(v, exc)) {
+      if (t.overlapExcelenteWins || inBand_(v, bands.bueno)) return "Excelente";
+      return "Excelente";
+    }
+
+    if (t.overlapWorst && inBand_(v, bands.regular) && inBand_(v, bands.malo)) {
+      return "Malo";
+    }
+    if (t.overlapBuenoWins && inBand_(v, bands.regular) && inBand_(v, bands.bueno)) {
+      return "Bueno";
+    }
+
+    if (inBand_(v, bands.malo)) return "Malo";
+    if (inBand_(v, bands.regular)) return "Regular";
+    if (inBand_(v, bands.bueno)) return "Bueno";
+
+    if (v > eMax && v < bMin) return "Excelente";
+    if (v > bMax && v < rMin) return t.gapAsBueno !== false ? "Bueno" : "Regular";
+    if (v > rMax && v < mMin) return "Regular";
+    if (v > mMax) return "Malo";
+    if (v < eMin) return "Excelente";
+    return "Malo";
+  }
+
   /** Calificación por bandas oficiales (% o conteo según threshold) */
   function rate(value, key) {
     const t = resolveThreshold_(key);
     const v = Number(value) || 0;
 
-    // Conteo por bayas / promedio planta
     if (t.byCount) {
       if (v <= 0) return "Excelente";
       if (v <= t.buenoMax) return "Bueno";
@@ -59,52 +110,17 @@ QB.Scoring = (() => {
       return "Malo";
     }
 
-    const exc = t.excelente || [0, 0];
-    const [eMin, eMax] = exc;
-    const [bMin, bMax] = t.bueno || [999, 999];
-    const [rMin, rMax] = t.regular || [999, 999];
-    const [mMin, mMax] = t.malo || [999, 999];
+    return rateAgainstBands_(v, t, t);
+  }
 
-    // Tolerancia 0 (plagas / polvo): solo 0 = Excelente
-    if (t.zeroTolerance) {
-      if (v <= 0) return "Excelente";
-      if (inBand_(v, t.regular) && !inBand_(v, t.malo)) return "Regular";
-      return "Malo";
+  /** Calificación por UNIDADES azules (base 350) — única vía para defectos de matriz */
+  function rateByUnits(count, sample, key) {
+    const t = resolveThreshold_(key);
+    if (!t || !t.unidades) {
+      return rate(pct(count, sample), key);
     }
-
-    // Exactamente en Excelente
-    if (inBand_(v, exc)) {
-      // Solape Excelente ↔ Bueno → Excelente
-      if (t.overlapExcelenteWins || inBand_(v, t.bueno)) return "Excelente";
-      return "Excelente";
-    }
-
-    // Solape Regular ↔ Malo → Malo
-    if (t.overlapWorst && inBand_(v, t.regular) && inBand_(v, t.malo)) {
-      return "Malo";
-    }
-
-    // Solape Bueno ↔ Regular → Bueno
-    if (t.overlapBuenoWins && inBand_(v, t.regular) && inBand_(v, t.bueno)) {
-      return "Bueno";
-    }
-
-    if (inBand_(v, t.malo)) return "Malo";
-    if (inBand_(v, t.regular)) return "Regular";
-    if (inBand_(v, t.bueno)) return "Bueno";
-
-    // Huecos entre bandas → grado anterior (mejor)
-    if (v > eMax && v < bMin) return "Excelente";
-    if (v > bMax && v < rMin) return t.gapAsBueno !== false ? "Bueno" : "Regular";
-    if (v > rMax && v < mMin) return "Regular";
-
-    // Por encima del máximo malo
-    if (v > mMax) return "Malo";
-
-    // Por debajo del mínimo excelente (raro)
-    if (v < eMin) return "Excelente";
-
-    return "Malo";
+    const u = equivUnits_(count, sample);
+    return rateAgainstBands_(u, t.unidades, t);
   }
 
   function bandLabel_(band) {
@@ -124,8 +140,22 @@ QB.Scoring = (() => {
     if (t.invert) {
       return `${cal}: ≥${t.buenoMax}% Excelente · ≥${t.regularMax}% Bueno`;
     }
+    if (t.unidades) {
+      const U = t.unidades;
+      return `${cal}: Und@350 Exc ${bandLabel_(U.excelente)} · B ${bandLabel_(U.bueno)} · R ${bandLabel_(U.regular)} · M ${bandLabel_(U.malo)}`;
+    }
     const exc = t.excelente || [0, 0];
     return `${cal}: Exc ${bandLabel_(exc)}% · Bueno ${bandLabel_(t.bueno)}% · Reg ${bandLabel_(t.regular)}% · Malo ${bandLabel_(t.malo)}%`;
+  }
+
+  function rateWhyUnits(count, sample, key) {
+    const t = resolveThreshold_(key);
+    if (!t || !t.unidades) return rateWhy(pct(count, sample), key);
+    const u = equivUnits_(count, sample);
+    const cal = rateByUnits(count, sample, key);
+    const U = t.unidades;
+    const ref = REF_SAMPLE();
+    return `${cal}: u=${round2(u)} (N×${ref}/S) · Und Exc ${bandLabel_(U.excelente)} · B ${bandLabel_(U.bueno)} · R ${bandLabel_(U.regular)} · M ${bandLabel_(U.malo)}`;
   }
 
   function pillClass(cal) {
@@ -154,7 +184,7 @@ QB.Scoring = (() => {
     return worst;
   }
 
-  /** % mostrado + calificación (fruta buena en descarte = por bayas/conteo) */
+  /** % mostrado + calificación por UNIDADES @350 (o % si no hay bandas und) */
   function defectRating(count, sample, def) {
     const countPct = pct(count, sample);
     if (def.noRate) {
@@ -179,6 +209,19 @@ QB.Scoring = (() => {
     }
     const ratePct = def.invert ? round2(Math.max(0, 100 - countPct)) : countPct;
     const key = def.invert ? def.thresholdKey || "default" : rateKey;
+    const t = resolveThreshold_(key);
+    if (t && t.unidades && !def.invert) {
+      const cal = rateByUnits(count, sample, key);
+      return {
+        countPct,
+        ratePct,
+        cal,
+        why: rateWhyUnits(count, sample, key),
+        byCount: false,
+        byUnits: true,
+        equivUnits: round2(equivUnits_(count, sample)),
+      };
+    }
     const cal = rate(ratePct, key);
     return {
       countPct,
@@ -448,5 +491,5 @@ QB.Scoring = (() => {
     return { rows: [], nota: 0, calidadGlobal: "Malo", explain: null };
   }
 
-  return { pct, rate, pillClass, compute, round2, gradeLabel, formulaPct, defectRating };
+  return { pct, rate, rateByUnits, pillClass, compute, round2, gradeLabel, formulaPct, defectRating };
 })();

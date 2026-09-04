@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Q Berries · Calidad — Google Apps Script
  * ------------------------------------------------------------
  * Patrón seguro (igual que Guías):
@@ -31,16 +31,24 @@ var SHEETS = {
       'Tamaño muestra',
       'Puntos Calidad', 'Puntos Condición', 'Puntos Calidad def.'
     ], COL.resultado, [
-      'Cal. Blando', 'Cal. Desgarro', 'Cal. Deshidratado', 'Cal. Rojizo',
-      'Cal. Resto floral', 'Cal. Polen', 'Cal. Pedicelo', 'Cal. Cicatriz',
-      'Cal. Polvo', 'Cal. Herida', 'Cal. Ave', 'Cal. Sin Bloom',
-      'Cal. Plagas', 'Cal. Inserción pedicelar',
-      'N° Blando', 'N° Desgarro', 'N° Deshidratado', 'N° Rojizo', 'N° Resto floral',
-      'N° Polen', 'N° Pedicelo', 'N° Cicatriz', 'N° Polvo', 'N° Herida abierta',
-      'N° Picadura ave', 'N° Sin Bloom', 'N° Plagas e insectos', 'N° Inserción pedicelar',
-      '% Blando', '% Desgarro', '% Deshidratado', '% Rojizo', '% Resto floral',
-      '% Polen', '% Pedicelo', '% Cicatriz', '% Polvo', '% Herida abierta',
-      '% Picadura ave', '% Sin Bloom', '% Plagas e insectos', '% Inserción pedicelar',
+      'Cal. Falta de color', 'Cal. Pedúnculo adherido', 'Cal. Restos florales', 'Cal. Cicatrices',
+      'Cal. Polen', 'Cal. Ausencia de bloom', 'Cal. Russet', 'Cal. Plagas',
+      'Cal. Pre calibre', 'Cal. Polvo',
+      'Cal. Pudrición', 'Cal. Daño ave', 'Cal. Inserción pedicelar', 'Cal. Quemadura',
+      'Cal. Blando', 'Cal. Deshidratación', 'Cal. Desgarro', 'Cal. Herida',
+      'Cal. Quemadura de sol', 'Cal. Rojo deshidratado',
+      'N° Falta de color', 'N° Pedúnculo adherido', 'N° Restos florales', 'N° Cicatrices',
+      'N° Polen', 'N° Ausencia de bloom', 'N° Russet', 'N° Plagas e insectos',
+      'N° Pre calibre', 'N° Polvo',
+      'N° Pudrición', 'N° Daño ave', 'N° Inserción pedicelar', 'N° Quemadura',
+      'N° Blando', 'N° Deshidratación', 'N° Desgarro', 'N° Herida abierta',
+      'N° Quemadura de sol', 'N° Rojo deshidratado',
+      '% Falta de color', '% Pedúnculo adherido', '% Restos florales', '% Cicatrices',
+      '% Polen', '% Ausencia de bloom', '% Russet', '% Plagas e insectos',
+      '% Pre calibre', '% Polvo',
+      '% Pudrición', '% Daño ave', '% Inserción pedicelar', '% Quemadura',
+      '% Blando', '% Deshidratación', '% Desgarro', '% Herida abierta',
+      '% Quemadura de sol', '% Rojo deshidratado',
       '% Suma def. calidad', '% Suma def. condición', '% Tot. defectos', '% Calidad'
     ], COL.cierre)
   },
@@ -49,12 +57,25 @@ var SHEETS = {
     headers: COL.meta.concat(COL.ubicacion, [
       'Tamaño muestra'
     ], COL.resultado, [
-      /* Solo 3 se califican; el resto es N° + % */
-      'Cal. Fruta buena', 'Cal. Rojiza', 'Cal. Pedicelo',
-      'N° Fruta buena', 'N° Deshidratada', 'N° Rojiza', 'N° Pedicelo', 'N° Resto floral',
-      'N° Cicatriz', 'N° Polvo', 'N° Desgarro', 'N° Picadura ave', 'N° Sin Bloom', 'N° Polen',
-      '% Fruta buena', '% Deshidratada', '% Rojiza', '% Pedicelo', '% Resto floral',
-      '% Cicatriz', '% Polvo', '% Desgarro', '% Picadura ave', '% Sin Bloom', '% Polen',
+      /* Misma matriz 20 defectos que Calidad */
+      'Cal. Falta de color', 'Cal. Pedúnculo adherido', 'Cal. Restos florales', 'Cal. Cicatrices',
+      'Cal. Polen', 'Cal. Ausencia de bloom', 'Cal. Russet', 'Cal. Plagas',
+      'Cal. Pre calibre', 'Cal. Polvo',
+      'Cal. Pudrición', 'Cal. Daño ave', 'Cal. Inserción pedicelar', 'Cal. Quemadura',
+      'Cal. Blando', 'Cal. Deshidratación', 'Cal. Desgarro', 'Cal. Herida',
+      'Cal. Quemadura de sol', 'Cal. Rojo deshidratado',
+      'N° Falta de color', 'N° Pedúnculo adherido', 'N° Restos florales', 'N° Cicatrices',
+      'N° Polen', 'N° Ausencia de bloom', 'N° Russet', 'N° Plagas e insectos',
+      'N° Pre calibre', 'N° Polvo',
+      'N° Pudrición', 'N° Daño ave', 'N° Inserción pedicelar', 'N° Quemadura',
+      'N° Blando', 'N° Deshidratación', 'N° Desgarro', 'N° Herida abierta',
+      'N° Quemadura de sol', 'N° Rojo deshidratado',
+      '% Falta de color', '% Pedúnculo adherido', '% Restos florales', '% Cicatrices',
+      '% Polen', '% Ausencia de bloom', '% Russet', '% Plagas e insectos',
+      '% Pre calibre', '% Polvo',
+      '% Pudrición', '% Daño ave', '% Inserción pedicelar', '% Quemadura',
+      '% Blando', '% Deshidratación', '% Desgarro', '% Herida abierta',
+      '% Quemadura de sol', '% Rojo deshidratado',
       '% Suma def. calidad', '% Suma def. condición', '% Tot. defectos', '% Calidad'
     ], COL.cierre)
   },
@@ -99,9 +120,9 @@ function doGet(e) {
   e = e || { parameter: {} };
   var action = String((e.parameter && e.parameter.action) || 'ping').trim();
   if (action === 'ping') {
-    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.17' });
+    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.19' });
   }
-  return json_({ ok: true, api: 'calidad', version: '1.1.17', sheets: Object.keys(SHEETS) });
+  return json_({ ok: true, api: 'calidad', version: '1.1.19', sheets: Object.keys(SHEETS) });
 }
 
 function doPost(e) {
@@ -261,34 +282,46 @@ function buildRow_(type, data, score, stamp, submittedAt) {
     return Object.assign(base, {
       'Cosechador': data.cosechador || '',
       'Tamaño muestra': data.tamano_muestra || '',
-      'N° Blando': n('blando'),
-      'N° Desgarro': n('desgarro'),
-      'N° Deshidratado': n('deshidratado'),
-      'N° Rojizo': n('rojizo'),
-      'N° Resto floral': n('resto_floral'),
+      'N° Falta de color': n('rojizo'),
+      'N° Pedúnculo adherido': n('pedicelo'),
+      'N° Restos florales': n('resto_floral'),
+      'N° Cicatrices': n('cicatriz'),
       'N° Polen': n('polen'),
-      'N° Pedicelo': n('pedicelo'),
-      'N° Cicatriz': n('cicatriz'),
-      'N° Polvo': n('polvo'),
-      'N° Herida abierta': n('herida_abierta'),
-      'N° Picadura ave': n('picadura_ave'),
-      'N° Sin Bloom': n('sin_bloom'),
+      'N° Ausencia de bloom': n('sin_bloom'),
+      'N° Russet': n('russet'),
       'N° Plagas e insectos': n('plagas_insectos'),
+      'N° Pre calibre': n('pre_calibre'),
+      'N° Polvo': n('polvo'),
+      'N° Pudrición': n('pudricion'),
+      'N° Daño ave': n('picadura_ave'),
       'N° Inserción pedicelar': n('insercion_pedicelar'),
-      '% Blando': p('blando'),
-      '% Desgarro': p('desgarro'),
-      '% Deshidratado': p('deshidratado'),
-      '% Rojizo': p('rojizo'),
-      '% Resto floral': p('resto_floral'),
+      'N° Quemadura': n('quemadura'),
+      'N° Blando': n('blando'),
+      'N° Deshidratación': n('deshidratado'),
+      'N° Desgarro': n('desgarro'),
+      'N° Herida abierta': n('herida_abierta'),
+      'N° Quemadura de sol': n('dano_sol'),
+      'N° Rojo deshidratado': n('deshidratado_rojizo'),
+      '% Falta de color': p('rojizo'),
+      '% Pedúnculo adherido': p('pedicelo'),
+      '% Restos florales': p('resto_floral'),
+      '% Cicatrices': p('cicatriz'),
       '% Polen': p('polen'),
-      '% Pedicelo': p('pedicelo'),
-      '% Cicatriz': p('cicatriz'),
-      '% Polvo': p('polvo'),
-      '% Herida abierta': p('herida_abierta'),
-      '% Picadura ave': p('picadura_ave'),
-      '% Sin Bloom': p('sin_bloom'),
+      '% Ausencia de bloom': p('sin_bloom'),
+      '% Russet': p('russet'),
       '% Plagas e insectos': p('plagas_insectos'),
+      '% Pre calibre': p('pre_calibre'),
+      '% Polvo': p('polvo'),
+      '% Pudrición': p('pudricion'),
+      '% Daño ave': p('picadura_ave'),
       '% Inserción pedicelar': p('insercion_pedicelar'),
+      '% Quemadura': p('quemadura'),
+      '% Blando': p('blando'),
+      '% Deshidratación': p('deshidratado'),
+      '% Desgarro': p('desgarro'),
+      '% Herida abierta': p('herida_abierta'),
+      '% Quemadura de sol': p('dano_sol'),
+      '% Rojo deshidratado': p('deshidratado_rojizo'),
       '% Suma def. calidad': numOr0_(score.sumaDefCal),
       '% Suma def. condición': numOr0_(score.sumaDefCon),
       '% Tot. defectos': numOr0_(score.sumaDefectos),
@@ -296,55 +329,96 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       'Puntos Calidad': score.nota != null ? score.nota : '',
       'Puntos Condición': ptsGrupo_(score.rows, 'CON'),
       'Puntos Calidad def.': ptsGrupo_(score.rows, 'CAL'),
-      'Cal. Blando': cal('blando'),
-      'Cal. Desgarro': cal('desgarro'),
-      'Cal. Deshidratado': cal('deshidratado'),
-      'Cal. Rojizo': cal('rojizo'),
-      'Cal. Resto floral': cal('resto_floral'),
+      'Cal. Falta de color': cal('rojizo'),
+      'Cal. Pedúnculo adherido': cal('pedicelo'),
+      'Cal. Restos florales': cal('resto_floral'),
+      'Cal. Cicatrices': cal('cicatriz'),
       'Cal. Polen': cal('polen'),
-      'Cal. Pedicelo': cal('pedicelo'),
-      'Cal. Cicatriz': cal('cicatriz'),
-      'Cal. Polvo': cal('polvo'),
-      'Cal. Herida': cal('herida_abierta'),
-      'Cal. Ave': cal('picadura_ave'),
-      'Cal. Sin Bloom': cal('sin_bloom'),
+      'Cal. Ausencia de bloom': cal('sin_bloom'),
+      'Cal. Russet': cal('russet'),
       'Cal. Plagas': cal('plagas_insectos'),
-      'Cal. Inserción pedicelar': cal('insercion_pedicelar')
+      'Cal. Pre calibre': cal('pre_calibre'),
+      'Cal. Polvo': cal('polvo'),
+      'Cal. Pudrición': cal('pudricion'),
+      'Cal. Daño ave': cal('picadura_ave'),
+      'Cal. Inserción pedicelar': cal('insercion_pedicelar'),
+      'Cal. Quemadura': cal('quemadura'),
+      'Cal. Blando': cal('blando'),
+      'Cal. Deshidratación': cal('deshidratado'),
+      'Cal. Desgarro': cal('desgarro'),
+      'Cal. Herida': cal('herida_abierta'),
+      'Cal. Quemadura de sol': cal('dano_sol'),
+      'Cal. Rojo deshidratado': cal('deshidratado_rojizo')
     });
   }
 
   if (type === 'descarte') {
     return Object.assign(base, {
       'Tamaño muestra': data.tamano_muestra || '',
-      'N° Fruta buena': n('fruta_buena'),
-      'N° Deshidratada': n('deshidratada'),
-      'N° Rojiza': n('rojiza'),
-      'N° Pedicelo': n('pedicelo'),
-      'N° Resto floral': n('resto_floral'),
-      'N° Cicatriz': n('cicatriz'),
-      'N° Polvo': n('polvo'),
-      'N° Desgarro': n('desgarro'),
-      'N° Picadura ave': n('picadura_ave'),
-      'N° Sin Bloom': n('sin_bloom'),
+      'N° Falta de color': n('rojizo'),
+      'N° Pedúnculo adherido': n('pedicelo'),
+      'N° Restos florales': n('resto_floral'),
+      'N° Cicatrices': n('cicatriz'),
       'N° Polen': n('polen'),
-      '% Fruta buena': p('fruta_buena'),
-      '% Deshidratada': p('deshidratada'),
-      '% Rojiza': p('rojiza'),
-      '% Pedicelo': p('pedicelo'),
-      '% Resto floral': p('resto_floral'),
-      '% Cicatriz': p('cicatriz'),
-      '% Polvo': p('polvo'),
-      '% Desgarro': p('desgarro'),
-      '% Picadura ave': p('picadura_ave'),
-      '% Sin Bloom': p('sin_bloom'),
+      'N° Ausencia de bloom': n('sin_bloom'),
+      'N° Russet': n('russet'),
+      'N° Plagas e insectos': n('plagas_insectos'),
+      'N° Pre calibre': n('pre_calibre'),
+      'N° Polvo': n('polvo'),
+      'N° Pudrición': n('pudricion'),
+      'N° Daño ave': n('picadura_ave'),
+      'N° Inserción pedicelar': n('insercion_pedicelar'),
+      'N° Quemadura': n('quemadura'),
+      'N° Blando': n('blando'),
+      'N° Deshidratación': n('deshidratado'),
+      'N° Desgarro': n('desgarro'),
+      'N° Herida abierta': n('herida_abierta'),
+      'N° Quemadura de sol': n('dano_sol'),
+      'N° Rojo deshidratado': n('deshidratado_rojizo'),
+      '% Falta de color': p('rojizo'),
+      '% Pedúnculo adherido': p('pedicelo'),
+      '% Restos florales': p('resto_floral'),
+      '% Cicatrices': p('cicatriz'),
       '% Polen': p('polen'),
+      '% Ausencia de bloom': p('sin_bloom'),
+      '% Russet': p('russet'),
+      '% Plagas e insectos': p('plagas_insectos'),
+      '% Pre calibre': p('pre_calibre'),
+      '% Polvo': p('polvo'),
+      '% Pudrición': p('pudricion'),
+      '% Daño ave': p('picadura_ave'),
+      '% Inserción pedicelar': p('insercion_pedicelar'),
+      '% Quemadura': p('quemadura'),
+      '% Blando': p('blando'),
+      '% Deshidratación': p('deshidratado'),
+      '% Desgarro': p('desgarro'),
+      '% Herida abierta': p('herida_abierta'),
+      '% Quemadura de sol': p('dano_sol'),
+      '% Rojo deshidratado': p('deshidratado_rojizo'),
       '% Suma def. calidad': numOr0_(score.sumaDefCal),
       '% Suma def. condición': numOr0_(score.sumaDefCon),
       '% Tot. defectos': numOr0_(score.sumaDefectos),
       '% Calidad': score.pctCalidad != null ? Number(score.pctCalidad) : 100,
-      'Cal. Fruta buena': cal('fruta_buena'),
-      'Cal. Rojiza': cal('rojiza'),
-      'Cal. Pedicelo': cal('pedicelo')
+      'Cal. Falta de color': cal('rojizo'),
+      'Cal. Pedúnculo adherido': cal('pedicelo'),
+      'Cal. Restos florales': cal('resto_floral'),
+      'Cal. Cicatrices': cal('cicatriz'),
+      'Cal. Polen': cal('polen'),
+      'Cal. Ausencia de bloom': cal('sin_bloom'),
+      'Cal. Russet': cal('russet'),
+      'Cal. Plagas': cal('plagas_insectos'),
+      'Cal. Pre calibre': cal('pre_calibre'),
+      'Cal. Polvo': cal('polvo'),
+      'Cal. Pudrición': cal('pudricion'),
+      'Cal. Daño ave': cal('picadura_ave'),
+      'Cal. Inserción pedicelar': cal('insercion_pedicelar'),
+      'Cal. Quemadura': cal('quemadura'),
+      'Cal. Blando': cal('blando'),
+      'Cal. Deshidratación': cal('deshidratado'),
+      'Cal. Desgarro': cal('desgarro'),
+      'Cal. Herida': cal('herida_abierta'),
+      'Cal. Quemadura de sol': cal('dano_sol'),
+      'Cal. Rojo deshidratado': cal('deshidratado_rojizo')
     });
   }
 
@@ -478,6 +552,41 @@ function syncHeaders_(sheet, headers) {
   mergeRenameColumn_(sheet, 'Ptos. Calidad def.', 'Puntos Calidad def.');
   mergeRenameColumn_(sheet, '% Excreta abeja', '% Polen');
   mergeRenameColumn_(sheet, 'Cal. Excreta', 'Cal. Polen');
+  /* Renombres matriz nueva — Calidad y Descarte */
+  if (headers.indexOf('Cal. Falta de color') !== -1 || headers.indexOf('N° Falta de color') !== -1) {
+    mergeRenameColumn_(sheet, 'Cal. Rojizo', 'Cal. Falta de color');
+    mergeRenameColumn_(sheet, 'Cal. Rojiza', 'Cal. Falta de color');
+    mergeRenameColumn_(sheet, 'N° Rojizo', 'N° Falta de color');
+    mergeRenameColumn_(sheet, 'N° Rojiza', 'N° Falta de color');
+    mergeRenameColumn_(sheet, '% Rojizo', '% Falta de color');
+    mergeRenameColumn_(sheet, '% Rojiza', '% Falta de color');
+    mergeRenameColumn_(sheet, 'Cal. Pedicelo', 'Cal. Pedúnculo adherido');
+    mergeRenameColumn_(sheet, 'N° Pedicelo', 'N° Pedúnculo adherido');
+    mergeRenameColumn_(sheet, '% Pedicelo', '% Pedúnculo adherido');
+    mergeRenameColumn_(sheet, 'Cal. Resto floral', 'Cal. Restos florales');
+    mergeRenameColumn_(sheet, 'N° Resto floral', 'N° Restos florales');
+    mergeRenameColumn_(sheet, '% Resto floral', '% Restos florales');
+    mergeRenameColumn_(sheet, 'Cal. Cicatriz', 'Cal. Cicatrices');
+    mergeRenameColumn_(sheet, 'N° Cicatriz', 'N° Cicatrices');
+    mergeRenameColumn_(sheet, '% Cicatriz', '% Cicatrices');
+    mergeRenameColumn_(sheet, 'Cal. Sin Bloom', 'Cal. Ausencia de bloom');
+    mergeRenameColumn_(sheet, 'N° Sin Bloom', 'N° Ausencia de bloom');
+    mergeRenameColumn_(sheet, '% Sin Bloom', '% Ausencia de bloom');
+    mergeRenameColumn_(sheet, 'Cal. Ave', 'Cal. Daño ave');
+    mergeRenameColumn_(sheet, 'N° Picadura ave', 'N° Daño ave');
+    mergeRenameColumn_(sheet, '% Picadura ave', '% Daño ave');
+    mergeRenameColumn_(sheet, 'Cal. Deshidratado', 'Cal. Deshidratación');
+    mergeRenameColumn_(sheet, 'N° Deshidratado', 'N° Deshidratación');
+    mergeRenameColumn_(sheet, 'N° Deshidratada', 'N° Deshidratación');
+    mergeRenameColumn_(sheet, '% Deshidratado', '% Deshidratación');
+    mergeRenameColumn_(sheet, '% Deshidratada', '% Deshidratación');
+    mergeRenameColumn_(sheet, 'Cal. Daño sol', 'Cal. Quemadura de sol');
+    mergeRenameColumn_(sheet, 'N° Daño sol', 'N° Quemadura de sol');
+    mergeRenameColumn_(sheet, '% Daño sol', '% Quemadura de sol');
+    mergeRenameColumn_(sheet, 'Cal. Deshidratado rojizo', 'Cal. Rojo deshidratado');
+    mergeRenameColumn_(sheet, 'N° Deshidratado rojizo', 'N° Rojo deshidratado');
+    mergeRenameColumn_(sheet, '% Deshidratado rojizo', '% Rojo deshidratado');
+  }
 
   var obsolete = [
     'Ptos. Tot',
@@ -485,11 +594,18 @@ function syncHeaders_(sheet, headers) {
     'Ptos. Condición',
     'Ptos. Calidad def.',
     'Marca temporal',
-    /* Descarte: Cal. sin rating (se quedan N° + %) */
+    /* Descarte antiguo */
+    'Cal. Fruta buena',
     'Cal. Deshidratada',
+    'Cal. Rojiza',
+    'N° Fruta buena',
+    'N° Deshidratada',
+    'N° Rojiza',
+    '% Fruta buena',
+    '% Deshidratada',
+    '% Rojiza',
     'Cal. Resto floral',
     'Cal. Cicatriz',
-    'Cal. Polvo',
     'Cal. Desgarro',
     'Cal. Ave',
     'Cal. Sin Bloom',
