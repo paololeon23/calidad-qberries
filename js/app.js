@@ -1784,6 +1784,40 @@ QB.App = (() => {
       return !item.includes("suma def") && !item.includes("tot. defectos");
     });
 
+    /** Solo UI: Deshidratado + Rojo deshidratado → "Suma deshidratado" */
+    const mergeSumaDeshidratado_ = (rows) => {
+      const DESH = new Set(["deshidratado", "deshidratada"]);
+      const ROJO = "deshidratado_rojizo";
+      const parts = [];
+      const rest = [];
+      for (const r of rows) {
+        if (DESH.has(r.id) || r.id === ROJO) parts.push(r);
+        else rest.push(r);
+      }
+      if (!parts.length) return rest;
+
+      const sumPct = QB.Scoring.round2(
+        parts.reduce((a, r) => a + (Number(r.pct) || 0), 0)
+      );
+      const sumCount = parts.reduce((a, r) => a + (Number(r.count) || 0), 0);
+      const sample = Number(s.sample ?? d.tamano_muestra) || 0;
+      const cal = QB.Scoring.rateByUnits
+        ? QB.Scoring.rateByUnits(sumCount, sample, "deshidratado")
+        : QB.Scoring.rate(sumPct, "deshidratado");
+
+      rest.push({
+        id: "suma_deshidratado",
+        item: "Suma deshidratado",
+        pct: sumPct,
+        count: sumCount,
+        calificacion: cal,
+        grupo: parts[0].grupo || "CON",
+      });
+      return rest;
+    };
+
+    const displayRows = mergeSumaDeshidratado_(filtered);
+
     const rowHtml = (r) => {
       const calc =
         r.pct != null
@@ -1805,7 +1839,7 @@ QB.App = (() => {
     const always = [];
     const bueno = [];
     const excelente = [];
-    for (const r of filtered) {
+    for (const r of displayRows) {
       if (r.calificacion === "Bueno") bueno.push(r);
       else if (r.calificacion === "Excelente") excelente.push(r);
       else always.push(r);
