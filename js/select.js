@@ -9,6 +9,7 @@ QB.PreciseSelect = (() => {
     filtered: [],
     selected: null,
     allowCustom: false,
+    canAddCustom: null,
     dynamic: false,
     minQuery: 0,
     emptyHint: "Sin resultados",
@@ -72,17 +73,41 @@ QB.PreciseSelect = (() => {
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) close();
     });
+    let filterTimer = null;
     searchEl.addEventListener("input", () => {
-      filter(searchEl.value);
-      updateAddUi();
+      clearTimeout(filterTimer);
+      filterTimer = setTimeout(() => {
+        filter(searchEl.value);
+        updateAddUi();
+      }, 80);
     });
     addDniEl.addEventListener("input", () => {
       addDniEl.value = String(addDniEl.value || "").replace(/\D/g, "").slice(0, 8);
     });
-    addBtn.addEventListener("click", submitCustomText);
-    addSaveBtn.addEventListener("click", submitCustomPerson);
+    let customBusy = false;
+    addBtn.addEventListener("click", () => {
+      if (customBusy) return;
+      customBusy = true;
+      try {
+        submitCustomText();
+      } finally {
+        customBusy = false;
+      }
+    });
+    addSaveBtn.addEventListener("click", () => {
+      if (customBusy) return;
+      customBusy = true;
+      try {
+        submitCustomPerson();
+      } finally {
+        customBusy = false;
+      }
+    });
     addNameEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") submitCustomPerson();
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addSaveBtn.click();
+      }
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && state.open) close();
@@ -157,6 +182,7 @@ QB.PreciseSelect = (() => {
   function canShowAdd(q) {
     if (!state.allowCustom || !q) return false;
     if (state.filtered.length) return false;
+    if (typeof state.canAddCustom === "function" && !state.canAddCustom(q)) return false;
     if (state.minQuery) {
       const digits = q.replace(/\D/g, "");
       const qLen = state.inputmode === "numeric" ? digits.length : q.length;
@@ -194,6 +220,14 @@ QB.PreciseSelect = (() => {
   function submitCustomText() {
     const q = searchEl.value.trim();
     if (!q) return;
+    // Si existe en catálogo (p.ej. lote 138), usar esa entrada — nunca un custom vacío
+    if (typeof state.resolveCustomText === "function") {
+      const resolved = state.resolveCustomText(q);
+      if (resolved) {
+        pick(resolved);
+        return;
+      }
+    }
     pick({ id: q, label: q, meta: "Local · emergencia", customText: true });
   }
 
@@ -273,9 +307,15 @@ QB.PreciseSelect = (() => {
   }
 
   function pick(opt) {
+    if (!state.open) return;
     state.selected = opt.id;
-    if (typeof state.onSelect === "function") state.onSelect(opt);
+    const cb = state.onSelect;
     close();
+    if (typeof cb === "function") {
+      try {
+        cb(opt);
+      } catch (_) {}
+    }
   }
 
   function open(opts) {
@@ -287,6 +327,9 @@ QB.PreciseSelect = (() => {
     state.options = state.dynamic ? [] : opts.options || [];
     state.selected = opts.value ?? null;
     state.allowCustom = opts.allowCustom || false;
+    state.canAddCustom = typeof opts.canAddCustom === "function" ? opts.canAddCustom : null;
+    state.resolveCustomText =
+      typeof opts.resolveCustomText === "function" ? opts.resolveCustomText : null;
     state.buildCustomPerson = opts.buildCustomPerson || null;
     state.onSelect = opts.onSelect || null;
     state.title = opts.title || "Buscar";
@@ -309,8 +352,18 @@ QB.PreciseSelect = (() => {
     }
     filter("");
     overlay.classList.add("open");
+    document.documentElement.classList.add("precise-open");
 
-    // Si el listado sale vacío, reintentar catálogos y refrescar
+    requestAnimationFrame(() => {
+      try {
+        searchEl.focus({ preventScroll: true });
+      } catch (_) {
+        try {
+          searchEl.focus();
+        } catch (__) {}
+      }
+    });
+
     if (!state.filtered.length && window.QB?.Data) {
       listEl.innerHTML = `<div class="precise-empty">Cargando listado…</div>`;
       Promise.resolve(QB.Data.ensureCatalogs ? QB.Data.ensureCatalogs() : QB.Data.load()).then(
@@ -329,6 +382,7 @@ QB.PreciseSelect = (() => {
     if (searchEl && document.activeElement === searchEl) searchEl.blur();
     resetAddForm();
     if (overlay) overlay.classList.remove("open");
+    document.documentElement.classList.remove("precise-open");
     if (modal) modal.classList.remove("has-columns");
     if (listEl) listEl.classList.remove("has-columns");
     if (activeTrigger) {
@@ -394,19 +448,25 @@ QB.PreciseSelect = (() => {
         allowCustom: config.allowCustom,
         listColumns: config.listColumns,
         buildCustomPerson: config.buildCustomPerson,
+        canAddCustom: config.canAddCustom,
+        resolveCustomText: config.resolveCustomText,
         onSelect: (opt) => {
           if (config.customKind) {
             if (opt?.local && opt.dni && opt.nombre) {
               QB.API?.rememberCustomPerson?.(config.customKind, opt.dni, opt.nombre);
             } else if (opt?.customText) {
-              QB.API?.rememberCustomValue?.(config.customKind, opt.id || opt.label);
+              // No guardar como custom si el catálogo ya lo tiene (lotes)
+              const known =
+                config.customKind === "lote" && QB.Data?.findLote?.(opt.id || opt.label);
+              if (!known) QB.API?.rememberCustomValue?.(config.customKind, opt.id || opt.label);
             }
           }
           const store = config.storeValue ? config.storeValue(opt) : opt.id;
           hiddenInput.value = store;
-          hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
-          sync();
+          // onChange antes del change: módulo/turno se llenan antes de validar
           if (config.onChange) config.onChange(opt);
+          sync();
+          hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
         },
       });
     });

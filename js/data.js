@@ -19,8 +19,10 @@ QB.Data = (() => {
     "46819781": { nombre: "PEREZ LEON SALLY ELIZABETH" },
     "47188311": { nombre: "PEREIRA VASQUEZ LUCELIA LEONORA" },
     "47407697": { nombre: "ROLDAN PEREZ JULIO ANTONIO" },
+    "48489693": { nombre: "HUACCHA TERRONES ESTHEFANI LIZBETH" },
     "48962428": { nombre: "CALVANAPON LOPEZ CARLOS MAGNO" },
     "60036529": { nombre: "CHUAN MIRANDA DANIELA MILAGRITOS" },
+    "60208178": { nombre: "GUARNIZ BRIONES EVELYN MARDELI" },
     "60293807": { nombre: "QUIROZ MEDINA QUELUBIA" },
     "60412486": { nombre: "LEON CARRANZA YHULEISY ALEXANDRA" },
     "60412552": { nombre: "TAMARIZ LOPEZ VICTOR JANPIER" },
@@ -33,30 +35,37 @@ QB.Data = (() => {
     "60600072": { nombre: "VIGO PAREDES GABRIELA ANAIS" },
     "60633034": { nombre: "SANGAY CABANILLAS RICARDO FRANCO" },
     "60740851": { nombre: "HORNA JUAREZ ROSALINA NOEMI" },
-    "61256413": { nombre: "SALDANA POEMAPE JULEISY ALEXANDRA" },
+    "61256413": { nombre: "SALDAÑA POEMAPE JULEISY ALEXANDRA" },
+    "61256446": { nombre: "RUMAY DIAZ KEVIN ELISEO" },
     "61256447": { nombre: "RUMAY DIAZ LAZARO RENE" },
     "61669930": { nombre: "SEGURA NEYRA YENNY LISET" },
     "62162097": { nombre: "LLANOS SANCHEZ DAYANA NICOLE" },
     "62585049": { nombre: "RODRIGUEZ DAGA ERICKA ELIZABETH" },
     "62749305": { nombre: "ARANDA SOLIS VALERIA YAMILET" },
     "62894779": { nombre: "VILLALOBOS CARRANZA YURICO NATALY" },
+    "70132627": { nombre: "MIRANDA PALACIOS ERNESTINA EVELYN" },
     "70134863": { nombre: "RIMACHE RAVINES GERSON ELIEZER" },
     "70142292": { nombre: "YRRIBARREN MERCEDES PEDRO JESUS" },
     "70550707": { nombre: "REYES SANGAY JUAN SAMUEL" },
     "70650830": { nombre: "LIMA PALOMINO MAURICIO RENATO" },
-    "70658198": { nombre: "FLORES MARINOS ELIZA GIANELLA" },
+    "70658198": { nombre: "FLORES MARIÑOS ELIZA GIANELLA" },
     "70667311": { nombre: "ALCANTARA VIGO BELCY GABRIELITA" },
     "70735997": { nombre: "DIAZ SOTO MARIA FERNANDA" },
-    "71149417": { nombre: "CABRERA PEREZ CARLOS SAUL" },
+    "70901533": { nombre: "GALLARDO CHUQUIPOMA KENIA STEPHANY" },
+    "71099835": { nombre: "MERINO ISLA JEFFERSON ALEXIS" },
+    "71149417": { nombre: "CABRERA PEREZ CARLOS SAÚL" },
     "71327899": { nombre: "MURGA CASTILLO KEVIN WILLIAMS" },
     "71327907": { nombre: "HUACCHA TERRONES FRANCO EMANUEL" },
     "71367059": { nombre: "MELON VILLANUEVA KARINA ELIZABETH" },
     "71509838": { nombre: "CANO OLIVARES FATIMA DANIELA" },
+    "71729579": { nombre: "VISITACION PEÑA ANDERSON DANY" },
+    "72096348": { nombre: "DIOSES MENDOZA FLOR MARIA" },
     "72743323": { nombre: "VILLANUEVA CAYPO ELIZABETH NOEMI" },
     "72795195": { nombre: "QUISPE ZERPA MARIA ELENA" },
     "72799496": { nombre: "VASQUEZ CARDENAS CRISTIAN OLIVER" },
     "72967660": { nombre: "LLANOS SANCHEZ NAYELI DE LOS ANGELES" },
     "74292255": { nombre: "ESTACIO HUAMAN CLAUDIA LUCIA" },
+    "74571779": { nombre: "BRICEÑO SEVILLANO ALBERTO MAURO" },
     "74662085": { nombre: "OLGUIN OVALLE BRAYAN GIOVANI" },
     "74969230": { nombre: "MONTALVO PEREZ SAIDY PATRICIA" },
     "75023790": { nombre: "BUENO VELEZMORO DEYSI ELIZABETH" },
@@ -72,16 +81,18 @@ QB.Data = (() => {
     "76418254": { nombre: "BALERIO CARRANZA ERICK IVAN" },
     "76977945": { nombre: "CASTRO SANCHEZ MARIA VALENTINA" },
     "77418497": { nombre: "DIAZ SOTO ROXANA" },
+    "77505282": { nombre: "LANDAURO GUTIERREZ SARALEE SOFIA" },
     "77679860": { nombre: "COTRINA ABANTO ESMELA LIZBETH" },
     "77799828": { nombre: "ZAVALETA IGLESIAS KAHORY MARIANELA" },
   };
 
-  /** Semilla embebida (supervisores / preview cosecha) si falla fetch */
+  /** Semilla embebida (lotes / supervisores / preview cosecha) si falla fetch */
   function applySeed_() {
     const seed = (window.QB && window.QB.SEED) || {};
     if (seed.evaluadores) {
-      for (const dni of Object.keys(seed.evaluadores)) {
-        if (!evaluadores[dni]) evaluadores[dni] = seed.evaluadores[dni];
+      // Si el embebido está vacío, cargar semilla completa
+      if (Object.keys(evaluadores).length === 0) {
+        evaluadores = Object.assign({}, seed.evaluadores);
       }
     }
     if (seed.supervisores && Object.keys(supervisores).length === 0) {
@@ -89,6 +100,10 @@ QB.Data = (() => {
     }
     if (seed.trabajadoresPreview && Object.keys(trabajadores).length === 0) {
       trabajadores = Object.assign({}, seed.trabajadoresPreview);
+    }
+    // Lotes siempre desde semilla si el catálogo aún está vacío (offline / SW)
+    if (Array.isArray(seed.lotes) && seed.lotes.length && lotes.length === 0) {
+      buildLoteCatalog(seed.lotes);
     }
   }
   applySeed_();
@@ -205,13 +220,16 @@ QB.Data = (() => {
         .catch(() => fallback);
 
     loading = Promise.all([
-      fetchJson("./data/lotes-licapa.json", []),
+      fetchJson("./data/lotes-licapa.json", null),
       fetchJson("./data/trabajadores.json", null),
       fetchJson("./data/supervisores-cosecha.json", null),
       fetchJson("./data/evaluadores.json", null),
     ])
       .then(([lotesJson, trabJson, supJson, evalJson]) => {
-        buildLoteCatalog(lotesJson);
+        // Nunca vaciar el catálogo si el fetch falló o vino vacío
+        if (Array.isArray(lotesJson) && lotesJson.length) {
+          buildLoteCatalog(lotesJson);
+        }
         // Solo reemplazar si el fetch trajo datos reales
         if (trabJson?.byDni && Object.keys(trabJson.byDni).length) {
           trabajadores = trabJson.byDni;
@@ -220,8 +238,8 @@ QB.Data = (() => {
           supervisores = { ...supervisores, ...supJson.byDni };
         }
         if (evalJson?.byDni && Object.keys(evalJson.byDni).length) {
-          // Fusionar, no reemplazar (nunca dejar vacío el catálogo embebido)
-          evaluadores = Object.assign({}, evaluadores, evalJson.byDni);
+          // Lista oficial: reemplazar (no fusionar con lista vieja)
+          evaluadores = Object.assign({}, evalJson.byDni);
         }
         // Si el fetch falló, conservar la semilla embebida
         applySeed_();
@@ -318,18 +336,34 @@ QB.Data = (() => {
     const raw = String(id ?? "").trim();
     if (!raw) return null;
     if (lotesById[raw]) return lotesById[raw];
-    // "Lote 6 - Licapa I" o "6"
-    const fromLabel = raw.match(/^lote\s*([^\s-]+)/i);
-    const digits = raw.replace(/^lote\s*/i, "").replace(/^q/i, "").split(/\s*-\s*/)[0].trim();
-    const loteNum = fromLabel ? fromLabel[1] : digits;
-    if (loteNum && lotesById[loteNum]) return lotesById[loteNum];
+
+    // "Lote 138 - Licapa I" | "Lote 138" | "Q138" | "138"
+    const fromLabel = raw.match(/^lote\s*([^\s\-–—]+)/i);
+    if (fromLabel && lotesById[fromLabel[1]]) return lotesById[fromLabel[1]];
+
+    const noPrefix = raw.replace(/^lote\s*/i, "").trim();
+    if (noPrefix && lotesById[noPrefix]) return lotesById[noPrefix];
+
+    const qForm = noPrefix.replace(/^q/i, "").trim();
+    if (qForm && lotesById[qForm]) return lotesById[qForm];
+    if (qForm && lotesById[`Q${qForm}`]) return lotesById[`Q${qForm}`];
+
+    // codLote parcial: ...LT138
+    const lt = raw.match(/LT\s*(\d+)/i) || raw.match(/(?:^|[^\d])(\d{1,4})$/);
+    if (lt && lotesById[lt[1]]) return lotesById[lt[1]];
+
+    const digitsOnly = raw.replace(/\D/g, "");
+    if (digitsOnly && lotesById[digitsOnly]) return lotesById[digitsOnly];
+
+    const lower = raw.toLowerCase();
     return (
       lotes.find(
         (l) =>
           String(l.codLote || "") === raw ||
           String(l.lote) === raw ||
-          String(l.lote) === loteNum ||
-          loteLabel(l).toLowerCase() === raw.toLowerCase()
+          String(l.lote) === digitsOnly ||
+          loteLabel(l).toLowerCase() === lower ||
+          loteShortLabel(l).toLowerCase() === lower
       ) || null
     );
   }
@@ -522,15 +556,27 @@ QB.Data = (() => {
   async function ensureCatalogs() {
     applySeed_();
     if (
+      lotes.length > 0 ||
       Object.keys(evaluadores).length > 0 ||
       Object.keys(trabajadores).length > 0 ||
       Object.keys(supervisores).length > 0
     ) {
-      return true;
+      // Si hay personas pero no lotes, forzar recarga una vez
+      if (lotes.length === 0) {
+        ready = false;
+        loading = null;
+        await load();
+        applySeed_();
+      }
+      return lotes.length > 0 || Object.keys(evaluadores).length > 0;
     }
     ready = false;
     loading = null;
     return load();
+  }
+
+  function loteCount() {
+    return lotes.length;
   }
 
   return {
@@ -543,6 +589,7 @@ QB.Data = (() => {
     loteMeta,
     loteLabel,
     loteShortLabel,
+    loteCount,
     mapVariedad,
     shortName,
     personLabel,

@@ -13,9 +13,14 @@
  * 3) Implementar → Nueva implementación → Web App (Yo + Cualquier persona)
  * 4) URL …/exec → js/config.js → API_URL
  *
+ * GET panel jefe (otra página):
+ *   ?action=filters&fecha=YYYY-MM-DD
+ *   ?action=summary&fecha=YYYY-MM-DD&role=evaluador|supervisor|cosechador&name=...
+ *
  * Respecto a 1.1.17: mismos nombres.
  * Solo se AGREGARON en Calidad y Descarte:
  * Quemadura de sol y Rojo deshidratado.
+ * (Deshidratado y Rojo deshidratado NO se unen en Sheet)
  */
 
 var COL = {
@@ -104,13 +109,364 @@ function setupSheets() {
   }
 }
 
+/**
+ * GET (otra página / panel jefe):
+ *   ?action=ping
+ *   ?action=filters&fecha=YYYY-MM-DD
+ *       → listas para select: Evaluador, Supervisor, Cosechador
+ *   ?action=summary&fecha=YYYY-MM-DD&role=evaluador|supervisor|cosechador&name=NOMBRE
+ *       &type=all|calidad|descarte|caida|planta  (opcional, default all)
+ *       → resumen compacto del día (sin unir columnas de Sheet)
+ */
 function doGet(e) {
   e = e || { parameter: {} };
-  var action = String((e.parameter && e.parameter.action) || 'ping').trim();
-  if (action === 'ping') {
-    return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.25' });
+  var p = e.parameter || {};
+  var action = String(p.action || 'ping').trim();
+
+  try {
+    if (action === 'ping') {
+      return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.31' });
+    }
+    if (action === 'help') {
+      return json_({
+        ok: true,
+        version: '1.1.31',
+        endpoints: {
+          filters: '?action=filters&fecha=YYYY-MM-DD',
+          summary: '?action=summary&fecha=YYYY-MM-DD&role=evaluador|supervisor|cosechador&name=...',
+          batchSave: 'POST { action:"batchSave", records:[...] }'
+        }
+      });
+    }
+    if (action === 'filters') {
+      return json_(getFilters_(p));
+    }
+    if (action === 'summary') {
+      return json_(getSummary_(p));
+    }
+    return json_({ ok: true, api: 'calidad', version: '1.1.31', sheets: Object.keys(SHEETS) });
+  } catch (err) {
+    var msg = String(err && err.message ? err.message : err).replace(/^Error:\s*/i, '');
+    return json_({ ok: false, error: msg });
   }
-  return json_({ ok: true, api: 'calidad', version: '1.1.25', sheets: Object.keys(SHEETS) });
+}
+
+/** Normaliza fecha a YYYY-MM-DD (Lima). Evita que el día “salte” por zona horaria. */
+function fechaKey_(value) {
+  if (value === '' || value == null) return '';
+  if (typeof value === 'number' && isFinite(value)) {
+    // Serial Excel / Sheets
+    var epoch = new Date(Date.UTC(1899, 11, 30));
+    var asDate = new Date(epoch.getTime() + Math.floor(value) * 86400000);
+    return Utilities.formatDate(asDate, 'America/Lima', 'yyyy-MM-dd');
+  }
+  if (Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, 'America/Lima', 'yyyy-MM-dd');
+  }
+  var s = String(value).trim();
+  if (!s) return '';
+  // Solo YYYY-MM-DD (lo que manda la app)
+  var mIso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (mIso) return mIso[1] + '-' + mIso[2] + '-' + mIso[3];
+  // dd/mm/yyyy o dd-mm-yyyy (Sheets UI Perú)
+  var m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+  if (m) {
+    var dd = ('0' + m[1]).slice(-2);
+    var mm = ('0' + m[2]).slice(-2);
+    return m[3] + '-' + mm + '-' + dd;
+  }
+  var d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    return Utilities.formatDate(d, 'America/Lima', 'yyyy-MM-dd');
+  }
+  return '';
+}
+
+/**
+ * Fecha a guardar en Sheet:
+ * 1) Si el cliente mandó YYYY-MM-DD válido → esa (día de la evaluación)
+ * 2) Si no → día Lima de submittedAt
+ * Siempre string texto (nunca Date) para que GET no mezcle días.
+ */
+function canonFechaSave_(rawFecha, submittedAt) {
+  var s = String(rawFecha || '').trim();
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  var fromClient = fechaKey_(rawFecha);
+  if (fromClient) return fromClient;
+  var fromSubmit = fechaKey_(submittedAt);
+  if (fromSubmit) return fromSubmit;
+  return Utilities.formatDate(new Date(), 'America/Lima', 'yyyy-MM-dd');
+}
+
+/** Deja la celda Fecha como TEXTO (@) para que Sheets no la convierta a Date */
+function lockFechaCellAsText_(sheet, rowIndex, isoFecha) {
+  var headers = getHeaders_(sheet);
+  var idx = headers.indexOf('Fecha');
+  if (idx === -1) return;
+  var cell = sheet.getRange(rowIndex, idx + 1);
+  cell.setNumberFormat('@');
+  cell.setValue(String(isoFecha || ''));
+}
+
+/** Varias filas Fecha en una sola operación (batch) */
+function lockFechaRange_(sheet, startRow, fechas) {
+  if (!fechas || !fechas.length) return;
+  var headers = getHeaders_(sheet);
+  var idx = headers.indexOf('Fecha');
+  if (idx === -1) return;
+  var n = fechas.length;
+  var range = sheet.getRange(startRow, idx + 1, startRow + n - 1, idx + 1);
+  range.setNumberFormat('@');
+  var vals = [];
+  for (var i = 0; i < n; i++) vals.push([String(fechas[i] || '')]);
+  range.setValues(vals);
+}
+
+function normName_(s) {
+  return String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function uniqSorted_(arr) {
+  var seen = {};
+  var out = [];
+  for (var i = 0; i < arr.length; i++) {
+    var v = String(arr[i] || '').trim();
+    if (!v) continue;
+    var k = normName_(v);
+    if (seen[k]) continue;
+    seen[k] = true;
+    out.push(v);
+  }
+  out.sort(function (a, b) {
+    return a.localeCompare(b, 'es', { sensitivity: 'base' });
+  });
+  return out;
+}
+
+function colMap_(headers) {
+  var map = {};
+  for (var i = 0; i < headers.length; i++) {
+    var h = String(headers[i] || '').trim();
+    if (h && map[h] == null) map[h] = i;
+  }
+  return map;
+}
+
+/** Lee filas de una hoja como objetos {header: value} */
+function readSheetObjects_(sheetName) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  var headers = getHeaders_(sheet);
+  if (!headers.length) return [];
+  var lastRow = sheet.getLastRow();
+  var lastCol = headers.length;
+  var values = sheet.getRange(2, 1, lastRow, lastCol).getValues();
+  var out = [];
+  for (var r = 0; r < values.length; r++) {
+    var row = values[r];
+    var obj = {};
+    var empty = true;
+    for (var c = 0; c < headers.length; c++) {
+      var v = row[c];
+      if (v !== '' && v != null) empty = false;
+      obj[headers[c]] = v;
+    }
+    if (!empty) out.push(obj);
+  }
+  return out;
+}
+
+function roleColumn_(role) {
+  role = String(role || '').trim().toLowerCase();
+  if (role === 'evaluador') return 'Evaluador';
+  if (role === 'supervisor') return 'Supervisor';
+  if (role === 'cosechador') return 'Cosechador';
+  return '';
+}
+
+/**
+ * Selectors para la otra página.
+ * Si viene fecha → solo personas con registros ese día.
+ */
+function getFilters_(p) {
+  p = p || {};
+  var fecha = fechaKey_(p.fecha) || fechaKey_(new Date());
+  var types = ['calidad', 'descarte', 'caida', 'planta'];
+  var evaluadores = [];
+  var supervisores = [];
+  var cosechadores = [];
+
+  for (var t = 0; t < types.length; t++) {
+    var key = types[t];
+    var def = SHEETS[key];
+    var rows = readSheetObjects_(def.name);
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (fechaKey_(row['Fecha']) !== fecha) continue;
+      if (row['Evaluador']) evaluadores.push(row['Evaluador']);
+      if (row['Supervisor']) supervisores.push(row['Supervisor']);
+      if (row['Cosechador']) cosechadores.push(row['Cosechador']);
+    }
+  }
+
+  return {
+    ok: true,
+    action: 'filters',
+    fecha: fecha,
+    evaluadores: uniqSorted_(evaluadores),
+    supervisores: uniqSorted_(supervisores),
+    cosechadores: uniqSorted_(cosechadores)
+  };
+}
+
+function avg_(nums) {
+  if (!nums || !nums.length) return null;
+  var s = 0;
+  for (var i = 0; i < nums.length; i++) s += nums[i];
+  return Math.round((s / nums.length) * 100) / 100;
+}
+
+function num_(v) {
+  if (v === '' || v == null) return null;
+  var n = Number(v);
+  return isNaN(n) ? null : n;
+}
+
+/**
+ * Resumen del día para jefe/supervisor.
+ * Columnas Deshidratado / Rojo deshidratado siguen SEPARADAS en Sheet.
+ */
+function getSummary_(p) {
+  p = p || {};
+  var fecha = fechaKey_(p.fecha);
+  if (!fecha) throw new Error('Falta fecha (YYYY-MM-DD)');
+  var role = String(p.role || '').trim().toLowerCase();
+  var col = roleColumn_(role);
+  if (!col) throw new Error('role inválido: use evaluador | supervisor | cosechador');
+  var name = String(p.name || '').trim();
+  if (!name) throw new Error('Falta name');
+  var nameKey = normName_(name);
+
+  var typeFilter = String(p.type || 'all').trim().toLowerCase();
+  var types = ['calidad', 'descarte', 'caida', 'planta'];
+  if (typeFilter !== 'all') {
+    if (SHEETS[typeFilter]) types = [typeFilter];
+    else throw new Error('type inválido');
+  }
+
+  var porTipo = { calidad: 0, descarte: 0, caida: 0, planta: 0 };
+  var notas = [];
+  var pctCalidad = [];
+  var pctDefectos = [];
+  var grades = { Excelente: 0, Bueno: 0, Regular: 0, Malo: 0, Otro: 0 };
+  var items = [];
+
+  // Promedios de % defectos clave (Calidad) — sin fusionar
+  var defectKeys = [
+    '% Blando', '% Desgarro', '% Deshidratado', '% Rojizo', '% Resto floral',
+    '% Polen', '% Pedicelo', '% Cicatriz', '% Polvo', '% Herida abierta',
+    '% Picadura ave', '% Sin Bloom', '% Plagas e insectos', '% Inserción pedicelar',
+    '% Quemadura de sol', '% Rojo deshidratado'
+  ];
+  var defectSums = {};
+  var defectN = {};
+  for (var d = 0; d < defectKeys.length; d++) {
+    defectSums[defectKeys[d]] = 0;
+    defectN[defectKeys[d]] = 0;
+  }
+
+  for (var t = 0; t < types.length; t++) {
+    var key = types[t];
+    var def = SHEETS[key];
+    var rows = readSheetObjects_(def.name);
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (fechaKey_(row['Fecha']) !== fecha) continue;
+      if (col === 'Cosechador' && (row['Cosechador'] == null || row['Cosechador'] === '')) continue;
+      if (normName_(row[col]) !== nameKey) continue;
+
+      porTipo[key]++;
+      var nota = num_(row['Nota']);
+      if (nota != null) notas.push(nota);
+      var pc = num_(row['% Calidad']);
+      if (pc != null) pctCalidad.push(pc);
+      var pd = num_(row['% Tot. defectos']);
+      if (pd != null) pctDefectos.push(pd);
+
+      var g = String(row['Calificación global'] || '').trim();
+      if (grades.hasOwnProperty(g)) grades[g]++;
+      else if (g) grades.Otro++;
+
+      if (key === 'calidad' || key === 'descarte') {
+        for (var k = 0; k < defectKeys.length; k++) {
+          var hk = defectKeys[k];
+          var dv = num_(row[hk]);
+          if (dv == null) continue;
+          // Descarte no tiene todos; solo suma si existe valor
+          if (row.hasOwnProperty(hk) || def.headers.indexOf(hk) !== -1) {
+            if (dv != null && row[hk] !== '' && row[hk] != null) {
+              defectSums[hk] += dv;
+              defectN[hk]++;
+            }
+          }
+        }
+      }
+
+      items.push({
+        tipo: key,
+        hoja: def.name,
+        hora: row['Hora registro'] || '',
+        variedad: row['Variedad'] || '',
+        lote: row['Lote'] || '',
+        modulo: row['Módulo'] || '',
+        turno: row['Turno'] || '',
+        evaluador: row['Evaluador'] || '',
+        supervisor: row['Supervisor'] || '',
+        cosechador: row['Cosechador'] || '',
+        nota: nota,
+        pctCalidad: pc,
+        pctDefectos: pd,
+        calificacion: g || ''
+      });
+    }
+  }
+
+  // Top defectos por promedio (solo los que tuvieron datos)
+  var topDefectos = [];
+  for (var j = 0; j < defectKeys.length; j++) {
+    var dk = defectKeys[j];
+    if (!defectN[dk]) continue;
+    topDefectos.push({
+      defecto: dk,
+      promedio: Math.round((defectSums[dk] / defectN[dk]) * 100) / 100,
+      n: defectN[dk]
+    });
+  }
+  topDefectos.sort(function (a, b) { return b.promedio - a.promedio; });
+  if (topDefectos.length > 8) topDefectos = topDefectos.slice(0, 8);
+
+  var total = porTipo.calidad + porTipo.descarte + porTipo.caida + porTipo.planta;
+
+  return {
+    ok: true,
+    action: 'summary',
+    fecha: fecha,
+    role: role,
+    name: name,
+    type: typeFilter,
+    total: total,
+    porTipo: porTipo,
+    kpis: {
+      notaMedia: avg_(notas),
+      pctCalidadMedia: avg_(pctCalidad),
+      pctDefectosMedia: avg_(pctDefectos),
+      calificaciones: grades
+    },
+    topDefectos: topDefectos,
+    items: items
+  };
 }
 
 function doPost(e) {
@@ -119,6 +475,9 @@ function doPost(e) {
     var action = String(body.action || 'save').trim();
     if (action === 'ping') {
       return json_({ ok: true, api: 'calidad', ts: nowIso_() });
+    }
+    if (action === 'batchSave' || action === 'batch') {
+      return json_(saveBatch_(body));
     }
     var result = saveEvaluation_(body);
     return json_(result);
@@ -152,12 +511,66 @@ function markClientIdDone_(clientId) {
   } catch (_) {}
 }
 
-function saveEvaluation_(body) {
+/**
+ * Guarda UN registro (sin reordenar toda la hoja en cada POST).
+ * Solo agrega columnas faltantes — crítico con colas grandes.
+ */
+function appendOneEvaluation_(ss, body) {
   body = body || {};
   var type = body.type;
   if (!SHEETS[type]) throw new Error('Tipo de evaluación inválido: ' + type);
 
   var clientId = String(body.clientId || '').trim();
+  if (!clientId) throw new Error('Falta clientId (idempotencia)');
+
+  if (isDuplicateClient_(clientId)) {
+    return {
+      ok: true,
+      created: false,
+      duplicate: true,
+      clientId: clientId
+    };
+  }
+
+  var def = SHEETS[type];
+  var sheet = ss.getSheetByName(def.name);
+  if (!sheet) sheet = ensureSheet_(ss, def.name, def.headers);
+  else ensureHeaders_(sheet, def.headers);
+
+  var data = body.data || {};
+  var score = body.score || {};
+  var stamp = new Date();
+  var fechaISO = canonFechaSave_(data.fecha, body.submittedAt || stamp);
+  data.fecha = fechaISO;
+  var rowMap = buildRow_(type, data, score, stamp, body.submittedAt);
+
+  var headers = getHeaders_(sheet);
+  if (!headers.length) {
+    headers = def.headers.slice();
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+  var row = headers.map(function (h) {
+    return rowMap.hasOwnProperty(h) ? rowMap[h] : '';
+  });
+
+  var newRow = sheet.getLastRow() + 1;
+  sheet.getRange(newRow, 1, 1, row.length).setValues([row]);
+  lockFechaCellAsText_(sheet, newRow, fechaISO);
+  markClientIdDone_(clientId);
+
+  return {
+    ok: true,
+    created: true,
+    duplicate: false,
+    sheet: def.name,
+    row: newRow,
+    clientId: clientId,
+    fecha: fechaISO
+  };
+}
+
+function saveEvaluation_(body) {
+  var clientId = String((body && body.clientId) || '').trim();
   if (!clientId) throw new Error('Falta clientId (idempotencia)');
 
   var lock = LockService.getScriptLock();
@@ -166,51 +579,131 @@ function saveEvaluation_(body) {
     got = lock.tryLock(8000);
     if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
 
-    if (isDuplicateClient_(clientId)) {
-      return {
-        ok: true,
-        api: 'calidad',
-        created: false,
-        duplicate: true,
-        clientId: clientId
-      };
-    }
-
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var def = SHEETS[type];
-    var sheet = ensureSheet_(ss, def.name, def.headers);
-
-    var data = body.data || {};
-    var score = body.score || {};
-    var stamp = new Date();
-    var rowMap = buildRow_(type, data, score, stamp, body.submittedAt);
-
-    removeColumnByHeader_(sheet, 'Marca temporal');
-    syncHeaders_(sheet, def.headers);
-    var headers = def.headers;
-    var row = headers.map(function (h) {
-      return rowMap.hasOwnProperty(h) ? rowMap[h] : '';
-    });
-
-    var newRow = sheet.getLastRow() + 1;
-    sheet.getRange(newRow, 1, 1, row.length).setValues([row]);
-
-    markClientIdDone_(clientId);
-
-    return {
-      ok: true,
-      api: 'calidad',
-      created: true,
-      duplicate: false,
-      sheet: def.name,
-      row: newRow,
-      clientId: clientId
-    };
+    var result = appendOneEvaluation_(ss, body);
+    result.api = 'calidad';
+    return result;
   } finally {
     if (got) {
-      try {
-        lock.releaseLock();
-      } catch (_) {}
+      try { lock.releaseLock(); } catch (_) {}
+    }
+  }
+}
+
+/**
+ * Batch: varios registros en UN lock + setValues multi-fila por tipo.
+ * Body: { action:'batchSave', records:[ {type,clientId,data,score,submittedAt}, ... ] }
+ * Máx 10 por request (alineado con PWA).
+ */
+function saveBatch_(body) {
+  body = body || {};
+  var records = body.records;
+  if (!records || !records.length) throw new Error('Faltan records');
+  if (records.length > 10) records = records.slice(0, 10);
+
+  var lock = LockService.getScriptLock();
+  var got = false;
+  try {
+    got = lock.tryLock(25000);
+    if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var stamp = new Date();
+    var byCid = {};
+    var byType = {};
+
+    for (var i = 0; i < records.length; i++) {
+      var rec = records[i] || {};
+      var cid = String(rec.clientId || '').trim();
+      if (!cid) {
+        byCid['idx_' + i] = { clientId: 'idx_' + i, ok: false, error: 'Falta clientId' };
+        continue;
+      }
+      if (isDuplicateClient_(cid)) {
+        byCid[cid] = { clientId: cid, ok: true, created: false, duplicate: true };
+        continue;
+      }
+      var type = rec.type;
+      if (!SHEETS[type]) {
+        byCid[cid] = { clientId: cid, ok: false, error: 'Tipo inválido: ' + type };
+        continue;
+      }
+      if (!byType[type]) byType[type] = [];
+      byType[type].push(rec);
+    }
+
+    for (var typeKey in byType) {
+      if (!Object.prototype.hasOwnProperty.call(byType, typeKey)) continue;
+      var def = SHEETS[typeKey];
+      var sheet = ss.getSheetByName(def.name);
+      if (!sheet) sheet = ensureSheet_(ss, def.name, def.headers);
+      else ensureHeaders_(sheet, def.headers);
+
+      var headers = getHeaders_(sheet);
+      if (!headers.length) {
+        headers = def.headers.slice();
+        sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      }
+
+      var group = byType[typeKey];
+      var matrix = [];
+      var fechas = [];
+      var cids = [];
+
+      for (var g = 0; g < group.length; g++) {
+        var rec2 = group[g];
+        var cid2 = String(rec2.clientId || '').trim();
+        try {
+          var data = rec2.data || {};
+          var score = rec2.score || {};
+          var fechaISO = canonFechaSave_(data.fecha, rec2.submittedAt || stamp);
+          data.fecha = fechaISO;
+          var rowMap = buildRow_(typeKey, data, score, stamp, rec2.submittedAt);
+          var row = headers.map(function (h) {
+            return rowMap.hasOwnProperty(h) ? rowMap[h] : '';
+          });
+          matrix.push(row);
+          fechas.push(fechaISO);
+          cids.push(cid2);
+        } catch (errPrep) {
+          byCid[cid2] = {
+            clientId: cid2,
+            ok: false,
+            error: String(errPrep && errPrep.message ? errPrep.message : errPrep).replace(/^Error:\s*/i, '')
+          };
+        }
+      }
+
+      if (matrix.length) {
+        var startRow = sheet.getLastRow() + 1;
+        var endRow = startRow + matrix.length - 1;
+        sheet.getRange(startRow, 1, endRow, headers.length).setValues(matrix);
+        lockFechaRange_(sheet, startRow, fechas);
+        for (var m = 0; m < cids.length; m++) {
+          markClientIdDone_(cids[m]);
+          byCid[cids[m]] = {
+            clientId: cids[m],
+            ok: true,
+            created: true,
+            duplicate: false,
+            sheet: def.name,
+            row: startRow + m,
+            fecha: fechas[m]
+          };
+        }
+      }
+    }
+
+    var results = [];
+    for (var r = 0; r < records.length; r++) {
+      var cidR = String((records[r] && records[r].clientId) || '').trim() || ('idx_' + r);
+      results.push(byCid[cidR] || { clientId: cidR, ok: false, error: 'sin resultado' });
+    }
+
+    return { ok: true, api: 'calidad', action: 'batchSave', results: results };
+  } finally {
+    if (got) {
+      try { lock.releaseLock(); } catch (_) {}
     }
   }
 }
@@ -246,7 +739,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
   }
 
   var base = {
-    'Fecha': data.fecha || '',
+    'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
     'Evaluador': data.evaluador || '',
     'Supervisor': data.supervisor || '',
     'Variedad': data.variedad || '',

@@ -1,5 +1,5 @@
 /* Q Berries Calidad — Service Worker · todo local en caché */
-const CACHE = "qb-calidad-v166";
+const CACHE = "qb-calidad-v183";
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,7 +11,6 @@ const ASSETS = [
   "./js/data.js",
   "./js/scoring.js",
   "./js/select.js",
-  "./js/datepicker.js",
   "./js/api.js",
   "./js/app.js",
   "./manifest.json",
@@ -65,6 +64,16 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cached);
       return cached || fetched;
+    })
+  );
+});
+
+/** Aviso a ventanas abiertas para vaciar cola (modo transferencia / red de seguridad) */
+self.addEventListener("sync", (event) => {
+  if (event.tag !== "qb-flush-pending") return;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      clients.forEach((c) => c.postMessage({ type: "QB_FLUSH" }));
     })
   );
 });

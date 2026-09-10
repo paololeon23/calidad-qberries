@@ -7,8 +7,8 @@
     "actividad": "COSECHA",
     "excluye": "SUPERVISOR DE COSECHA"
   },
-  "count": 2852,
-  "updatedAt": "2026-08-20T08:26:54.210Z",
+  "count": 3754,
+  "updatedAt": "2026-09-09T23:08:00-05:00",
   "byDni": {
     "10007166": {
       "nombre": "RUIZ VICTORIO SANTOS BASILIA",
@@ -16,7 +16,7 @@
     },
     "10147317": {
       "nombre": "BECERRA CRUZ SEGUNDO MARTILIANO",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "10428839": {
       "nombre": "CORTEZ DIAZ JOSE WALTER",
@@ -124,7 +124,7 @@
     },
     "18055745": {
       "nombre": "MERCEDES PELAEZ MARITZA EUGENIA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18060433": {
       "nombre": "VEGA CORDOVA RAYMUNDO",
@@ -156,7 +156,7 @@
     },
     "18077472": {
       "nombre": "VENTURA ORBEGOSO SOFIA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18077724": {
       "nombre": "PACHECO ROSARIO MARCOS ANGEL",
@@ -168,7 +168,7 @@
     },
     "18078464": {
       "nombre": "LOYOLA DOMINGUEZ OSWALDO ELMER",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "18078799": {
       "nombre": "RODRIGUEZ ZAVALETA YELITZA LUZ",
@@ -228,7 +228,7 @@
     },
     "18110488": {
       "nombre": "SARE RUIZ SANTOS PEDRO",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18115163": {
       "nombre": "TISNADO REYNA SANTOS EDITA",
@@ -376,7 +376,7 @@
     },
     "18193435": {
       "nombre": "SARE RUIZ SANTOS MARLENI",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18196714": {
       "nombre": "DANZ GONZALEZ MARCOS ANTONIO",
@@ -508,7 +508,7 @@
     },
     "18885700": {
       "nombre": "GARCIA RONCAL NANCY FABIOLA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18887445": {
       "nombre": "SANTISTEBAN ALVARADO ANTONIO JAVIER",
@@ -520,7 +520,7 @@
     },
     "18889401": {
       "nombre": "DE LA CRUZ ALFARO TEOFILA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "18889611": {
       "nombre": "CARBAJAL MENDOZA PAULA ARACELI",
@@ -603,7 +603,7 @@
       "cargo": "COSECHA"
     },
     "18893175": {
-      "nombre": "CRUZ RODRIGUEZ FAUSTINA",
+      "nombre": "RODRIGUEZ CRUZ FAUSTINA",
       "cargo": "COSECHA"
     },
     "18893247": {
@@ -644,7 +644,7 @@
     },
     "18898459": {
       "nombre": "GALLARDO HUAMAN MARIA MAGDALENA",
-      "cargo": "COSECHA"
+      "cargo": "LIMPIEZA DE AMBIENTES"
     },
     "18899237": {
       "nombre": "SANGAY CHAVEZ MERY ELEN",
@@ -1028,7 +1028,7 @@
     },
     "19704465": {
       "nombre": "OTINIANO RAMOS GILMER",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "19704501": {
       "nombre": "GARCIA NARVAEZ MARIA LUCILA",
@@ -1068,7 +1068,7 @@
     },
     "26708688": {
       "nombre": "CHUAN LUCANO MARIA JESUS",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "26713711": {
       "nombre": "CONDORLUICHO PEREZ ERNESTO",
@@ -1188,7 +1188,7 @@
     },
     "27557692": {
       "nombre": "EUGENIO GUAYAC RODOLFO",
-      "cargo": "COSECHA"
+      "cargo": "LAVADO DE JARRAS"
     },
     "27573944": {
       "nombre": "TAFUR LUCANO ELIDER",
@@ -1632,7 +1632,7 @@
     },
     "41085370": {
       "nombre": "LLAJARUNA RODRIGUEZ ESTHER LILIANA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "41087801": {
       "nombre": "PRINCIPE GAMBOA SANTOS IRIS",
@@ -1659,7 +1659,7 @@
       "cargo": "COSECHA"
     },
     "41115788": {
-      "nombre": "CABOSMALON MORALES SARA INES",
+      "nombre": "MORALES CABOSMALON SARA INES",
       "cargo": "COSECHA"
     },
     "41122865": {
@@ -2396,7 +2396,7 @@
     },
     "42745011": {
       "nombre": "VELASQUEZ CORRALES ROSA HAYDEE",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "42745147": {
       "nombre": "TELLO CARRANZA JERSON",
@@ -2407,7 +2407,7 @@
       "cargo": "COSECHA"
     },
     "42752085": {
-      "nombre": "TIPA BANEO ROSA VICTORIA",
+      "nombre": "BANEO TIPA ROSA VICTORIA",
       "cargo": "COSECHA"
     },
     "42753505": {
@@ -2687,7 +2687,7 @@
       "cargo": "COSECHA"
     },
     "43278357": {
-      "nombre": "TERRONES SAAVEDRA LEDI ELIZABETH",
+      "nombre": "SAAVEDRA TERRONES LEDI ELIZABETH",
       "cargo": "COSECHA"
     },
     "43307637": {
@@ -2783,7 +2783,7 @@
       "cargo": "COSECHA"
     },
     "43489627": {
-      "nombre": "AGUILAR LARA ROSA OLGA",
+      "nombre": "LARA AGUILAR ROSA OLGA",
       "cargo": "COSECHA"
     },
     "43491671": {
@@ -2820,7 +2820,7 @@
     },
     "43558894": {
       "nombre": "DIAZ VARAS FANNY DEL MILAGRO",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "43559340": {
       "nombre": "RISCO SAENZ DE ALVAREZ CLARA HAYDE",
@@ -3196,7 +3196,7 @@
     },
     "44314370": {
       "nombre": "CULQUI QUISPE LUCSIOLA",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "44318886": {
       "nombre": "RODRIGUEZ SILVA MARIA DORA",
@@ -3296,7 +3296,7 @@
     },
     "44480134": {
       "nombre": "GONZALES CRUZ CELINDA LICERIA",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "44493244": {
       "nombre": "YARINGAÑO MANTILLA GELMO LUIS",
@@ -3444,7 +3444,7 @@
     },
     "44845675": {
       "nombre": "RAMIREZ VILLANUEVA NELLY",
-      "cargo": "COSECHA"
+      "cargo": "LAVADO DE JARRAS"
     },
     "44845681": {
       "nombre": "SARMIENTO OBESO EUGENIA ANALI",
@@ -3908,7 +3908,7 @@
     },
     "45862821": {
       "nombre": "ABANTO MONZON ROSA DEL CARMEN",
-      "cargo": "COSECHA"
+      "cargo": "PROYECCIÓN"
     },
     "45862967": {
       "nombre": "APUMAYTA HUAMANI SILVIA",
@@ -4120,7 +4120,7 @@
     },
     "46257412": {
       "nombre": "RAMON PARRA LOYDA MARIA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "46259010": {
       "nombre": "GARCIA HUAMAN ROSA SANTOS",
@@ -4368,7 +4368,7 @@
     },
     "46793271": {
       "nombre": "AVALOS MORALES YOANA MARLENY",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "46804257": {
       "nombre": "SILVA GUEVARA CESAR GUILLERMO",
@@ -4439,12 +4439,12 @@
       "cargo": "COSECHA"
     },
     "47006480": {
-      "nombre": "BRICEÑO CAMPOS ESTHER",
+      "nombre": "CAMPOS BRICEÑO ESTHER",
       "cargo": "COSECHA"
     },
     "47009160": {
       "nombre": "ERAS MURGA NOEMI ARCELIS",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "47017189": {
       "nombre": "VARGAS CORREA JINA JESUS",
@@ -4452,7 +4452,7 @@
     },
     "47021377": {
       "nombre": "SALCEDO VALVERDE ALEXANDER RODRIGO",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "47037363": {
       "nombre": "HUAYAC ESPINOZA RAFAEL",
@@ -4543,7 +4543,7 @@
       "cargo": "COSECHA"
     },
     "47178903": {
-      "nombre": "CRUZ REYES MARIA GRIMALDINA",
+      "nombre": "REYES CRUZ MARIA GRIMALDINA",
       "cargo": "COSECHA"
     },
     "47200832": {
@@ -4559,7 +4559,7 @@
       "cargo": "COSECHA"
     },
     "47206228": {
-      "nombre": "DE LA CRUZ LOPEZ  CARMELA",
+      "nombre": "DE LA CRUZ LOPEZ CARMELA",
       "cargo": "COSECHA"
     },
     "47207075": {
@@ -4696,7 +4696,7 @@
     },
     "47453835": {
       "nombre": "VALDERRAMA BACA DHAYLA JUDITH",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "47455973": {
       "nombre": "PLASENCIA RISCO MILLY LISSET",
@@ -4751,8 +4751,8 @@
       "cargo": "COSECHA"
     },
     "47540370": {
-      "nombre": "PINGO CASTILLO LIZEL YVET",
-      "cargo": "COSECHA"
+      "nombre": "47540370",
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "47543190": {
       "nombre": "VARGAS CUEVA WILLIAM LIZANDRO",
@@ -4795,7 +4795,7 @@
       "cargo": "COSECHA"
     },
     "47619266": {
-      "nombre": "SAUCEDO MENDOZA MARIA EDITA",
+      "nombre": "MENDOZA SAUCEDO MARIA EDITA",
       "cargo": "COSECHA"
     },
     "47629333": {
@@ -4920,7 +4920,7 @@
     },
     "47765463": {
       "nombre": "AGUILAR VERGARA OSCAR WILMER",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "47766366": {
       "nombre": "VILLALOBOS RIOS JOSE LUIS",
@@ -5291,7 +5291,7 @@
       "cargo": "COSECHA"
     },
     "48358131": {
-      "nombre": "CHILON QUILICHE OSCAR DAVID",
+      "nombre": "QUILICHE CHILON OSCAR DAVID",
       "cargo": "COSECHA"
     },
     "48362543": {
@@ -5748,11 +5748,11 @@
     },
     "60036602": {
       "nombre": "HUAMAN GARCIA EMERZON ALDAHIR",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "60036665": {
       "nombre": "CONDOR PEÑA CARLOS JULIAN",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "60037095": {
       "nombre": "SEBILLANO BRICEÑO GEINER WILLIAM",
@@ -5836,7 +5836,7 @@
     },
     "60137914": {
       "nombre": "VEGA ULLOA KELVIN MILLER",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "60137975": {
       "nombre": "REYES REYES JHOVER DIOSDADO",
@@ -5867,7 +5867,7 @@
       "cargo": "COSECHA"
     },
     "60157324": {
-      "nombre": "UNUP JEMPEKIT NORA MICHELY",
+      "nombre": "JEMPEKIT UNUP NORA MICHELY",
       "cargo": "COSECHA"
     },
     "60191829": {
@@ -5876,11 +5876,11 @@
     },
     "60208178": {
       "nombre": "GUARNIZ BRIONES EVELYN MARDELI",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "60208181": {
       "nombre": "VILLANUEVA MIRANDA NAYELY XIOMARA",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "60208293": {
       "nombre": "LOPEZ ARENAS LESLY JHAQUELIN",
@@ -6036,7 +6036,7 @@
     },
     "60412552": {
       "nombre": "TAMARIZ LOPEZ VICTOR JANPIEER",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "60412571": {
       "nombre": "PLASENCIA GASTOPE SILVANA MARI CRUZ",
@@ -6059,7 +6059,7 @@
       "cargo": "COSECHA"
     },
     "60425559": {
-      "nombre": "ESCALANTE BARBARAN JULIO CESAR",
+      "nombre": "BARBARAN ESCALANTE JULIO CESAR",
       "cargo": "COSECHA"
     },
     "60425564": {
@@ -6104,7 +6104,7 @@
     },
     "60461291": {
       "nombre": "PAISIG ALFARO WILMER MANUEL",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "60461339": {
       "nombre": "VASQUEZ HUINGO MARCOS ABEL",
@@ -6116,7 +6116,7 @@
     },
     "60473829": {
       "nombre": "POLO POLO JORGE ISAIAS",
-      "cargo": "COSECHA"
+      "cargo": "EVALUADOR FITOSANITARIO"
     },
     "60473837": {
       "nombre": "PAREDES RUIZ MELISSA AHIDEE",
@@ -6364,7 +6364,7 @@
     },
     "60836174": {
       "nombre": "REBAZA SALINAS ALEXANDER YONATHAN",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "60838246": {
       "nombre": "AVALOS VILLANUEVA MARITZA ELIZABETH",
@@ -6480,7 +6480,7 @@
     },
     "61112102": {
       "nombre": "LLANOS SAAVEDRA DANIELA MIRELLA",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "61112316": {
       "nombre": "LAZARO JULCA YUNIOR YEFERSON",
@@ -6516,7 +6516,7 @@
     },
     "61200422": {
       "nombre": "SANTOS TORRES NOEMI ESTHER",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "61220198": {
       "nombre": "SALINAS MARQUINA JUNIOR SMITH",
@@ -6748,7 +6748,7 @@
     },
     "62162068": {
       "nombre": "LEAL RAMIREZ JOSE MANUEL",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "62178128": {
       "nombre": "ULLILEN MEZA ROSMAN WILDER",
@@ -6840,7 +6840,7 @@
     },
     "62519055": {
       "nombre": "RODRIGUEZ VENTURA ELVA NICOL",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "62599590": {
       "nombre": "VILLALOBOS AVALOS JHORDAN ALEXANDER",
@@ -7056,11 +7056,11 @@
     },
     "70134858": {
       "nombre": "RODRIGUEZ CHAVARRY JOSE GONZALO",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "70134863": {
       "nombre": "RIMACHE RAVINES GERSON ELIEZER",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "70150593": {
       "nombre": "ARANDA MEDINA CHRISTIAN ROLLY",
@@ -7260,7 +7260,7 @@
     },
     "70510280": {
       "nombre": "PASTOR RIOS JUNIOR LESTER",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "70513087": {
       "nombre": "SANCHEZ RIVEROS LISET MARIBEL",
@@ -7348,7 +7348,7 @@
     },
     "70649723": {
       "nombre": "CASTILLO HUACCHA CARLOS AUGUSTO",
-      "cargo": "COSECHA"
+      "cargo": "ESTIBA KIA"
     },
     "70656871": {
       "nombre": "CRUZADO CORNELIO LUIS",
@@ -7356,7 +7356,7 @@
     },
     "70659539": {
       "nombre": "VIGO LEIVA PRISCILA SARAI",
-      "cargo": "COSECHA"
+      "cargo": "LAVADO DE JARRAS"
     },
     "70672363": {
       "nombre": "FLORES RIVEROS NERY YASMELITA",
@@ -7364,7 +7364,7 @@
     },
     "70672620": {
       "nombre": "ARISTA RUBIÑOS WILSON MIGUEL",
-      "cargo": "COSECHA"
+      "cargo": "DESHIERBO"
     },
     "70673697": {
       "nombre": "VEGA QUISPE KEVIN MOISES",
@@ -7416,7 +7416,7 @@
     },
     "70725225": {
       "nombre": "CALUA ACUÑA ALMENDRA MARISOL",
-      "cargo": "COSECHA"
+      "cargo": "LAVADO DE JARRAS"
     },
     "70732422": {
       "nombre": "RODRIGUEZ JOAQUIN RICARDO ALBERTO",
@@ -7636,7 +7636,7 @@
     },
     "71099835": {
       "nombre": "MERINO ISLA JEFFERSON ALEXIS",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "71101697": {
       "nombre": "PAZ GUEVARA WILMA CLEOFE",
@@ -7792,7 +7792,7 @@
     },
     "71327899": {
       "nombre": "MURGA CASTILLO KEVIN WILLIAMS",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "71329684": {
       "nombre": "SALINAS LUJAN MARY CARMEN",
@@ -7888,7 +7888,7 @@
     },
     "71509838": {
       "nombre": "CANO OLIVARES FATIMA DANIELA",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "71514261": {
       "nombre": "CALDERON BERRIOS LEYDI TALIA",
@@ -7979,7 +7979,7 @@
       "cargo": "COSECHA"
     },
     "71647212": {
-      "nombre": "LLAPO PASCUAL YENI ORLINDA",
+      "nombre": "PASCUAL LLAPO YENI ORLINDA",
       "cargo": "COSECHA"
     },
     "71649664": {
@@ -8055,7 +8055,7 @@
       "cargo": "COSECHA"
     },
     "71691398": {
-      "nombre": "REYES POLO MARIA ESMINDA",
+      "nombre": "POLO REYES MARIA ESMINDA",
       "cargo": "COSECHA"
     },
     "71691515": {
@@ -8088,7 +8088,7 @@
     },
     "71729579": {
       "nombre": "VISITACION PEÑA ANDERSON DANY",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "71753786": {
       "nombre": "SAAVEDRA COTRINA ALINDOR",
@@ -8644,7 +8644,7 @@
     },
     "73613339": {
       "nombre": "SILVA VALDERRAMA CRISTELL ARIANA",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "73618094": {
       "nombre": "RAMOS MORA JEAN CARLOS",
@@ -8716,11 +8716,11 @@
     },
     "73780518": {
       "nombre": "SANCHEZ CASTILLO SAUL ELIAZAR",
-      "cargo": "COSECHA"
+      "cargo": "MANTENIMIENTO DE CORTINAS"
     },
     "73782961": {
       "nombre": "GONZALES EVANGELISTA SAHARA DEL PILAR",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "73785489": {
       "nombre": "HUAMAN HUAMAN LILIANA",
@@ -8744,7 +8744,7 @@
     },
     "73802618": {
       "nombre": "SAMILLAN CASTILLO MICHAEL ANDREU",
-      "cargo": "COSECHA"
+      "cargo": "MANTENIMIENTO DE CAMPO"
     },
     "73803281": {
       "nombre": "TELLES RODRIGUEZ NOEMI YANALI",
@@ -8956,7 +8956,7 @@
     },
     "74292255": {
       "nombre": "ESTACIO HUAMAN CLAUDIA LUCIA",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "74293126": {
       "nombre": "CARDENAS HUAMAN MARIA NOEMI",
@@ -9071,7 +9071,7 @@
       "cargo": "COSECHA"
     },
     "74482877": {
-      "nombre": "BRICEÑO FLORES DIPLOMILA ISELA",
+      "nombre": "FLORES BRICEÑO DIPLOMILA ISELA",
       "cargo": "COSECHA"
     },
     "74482919": {
@@ -9092,7 +9092,7 @@
     },
     "74571779": {
       "nombre": "BRICEÑO SEVILLANO ALBERTO MAURO",
-      "cargo": "COSECHA"
+      "cargo": "CALIDAD"
     },
     "74596657": {
       "nombre": "HUAMAN BACILIO FREDY OSMER",
@@ -9476,7 +9476,7 @@
     },
     "75374086": {
       "nombre": "AMAYA LEON ORIANA KAROLD",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "75374201": {
       "nombre": "RAMIREZ GONZALES CARLOS ERICK",
@@ -9552,7 +9552,7 @@
     },
     "75501762": {
       "nombre": "CORDOVA MAZA JHOCELYN",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "75506012": {
       "nombre": "DIAZ ESTRAVER GABRIEL LUIS",
@@ -9696,7 +9696,7 @@
     },
     "75743336": {
       "nombre": "GARCIA BUENO SESY LLANET",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "75745670": {
       "nombre": "URIOL CORTEZ JOHAN STEVEN",
@@ -9727,7 +9727,7 @@
       "cargo": "COSECHA"
     },
     "75766870": {
-      "nombre": "SANDOVAL ALVARADO VILMA ANALIXA",
+      "nombre": "ALVARADO SANDOVAL VILMA ANALIXA",
       "cargo": "COSECHA"
     },
     "75772732": {
@@ -9871,8 +9871,8 @@
       "cargo": "COSECHA"
     },
     "75925493": {
-      "nombre": "MARIN MENOR BRANDO SAMIR",
-      "cargo": "COSECHA"
+      "nombre": "75925493",
+      "cargo": "SCANER"
     },
     "75949228": {
       "nombre": "SILVA TORRES ANGEL EFRAIN",
@@ -10060,7 +10060,7 @@
     },
     "76261283": {
       "nombre": "LUCANO MALCA MOISES",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "76264090": {
       "nombre": "CHUQUIVIGUEL CHANCHARI DINA NANCY",
@@ -10163,7 +10163,7 @@
       "cargo": "COSECHA"
     },
     "76531230": {
-      "nombre": "HORNA JUAREZ SARITA PERSIDA",
+      "nombre": "JUAREZ HORNA SARITA PERSIDA",
       "cargo": "COSECHA"
     },
     "76532363": {
@@ -10400,7 +10400,7 @@
     },
     "76957289": {
       "nombre": "MAJUAN CARRANZA ERICK ALEXANDER",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "76957798": {
       "nombre": "VASQUEZ FLORIAN NERY ROSMERY",
@@ -10528,11 +10528,11 @@
     },
     "77160302": {
       "nombre": "BUENO TORRES JOSE FERNANDO",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "77160560": {
       "nombre": "HUAMAN ESPARZA EDELMIRA",
-      "cargo": "COSECHA"
+      "cargo": "SUPERVISOR DE COSECHA"
     },
     "77162594": {
       "nombre": "LOPEZ CASTRO JUNIOR STIVEN",
@@ -10684,7 +10684,7 @@
     },
     "77703750": {
       "nombre": "AGUIRRE GARCIA ARMANDO JHONATAN",
-      "cargo": "COSECHA"
+      "cargo": "SCANER"
     },
     "77762311": {
       "nombre": "SANCHEZ LAIZA ELSA MARIA",
@@ -11416,6 +11416,3614 @@
     },
     "09851939": {
       "nombre": "VILLANUEVA PLASCENCIA MARIANELA JACQUELINE",
+      "cargo": "COSECHA"
+    },
+    "41561056": {
+      "nombre": "SALDAÑA PAREDES EDWAR YONELL",
+      "cargo": "APOYO DE ALMACÉN"
+    },
+    "18131133": {
+      "nombre": "SALINAS PAREDES MARISOL YSABEL",
+      "cargo": "DESHIERBO"
+    },
+    "18822129": {
+      "nombre": "MARQUEZ GALVEZ IVAN DONALD",
+      "cargo": "DESHIERBO"
+    },
+    "18822543": {
+      "nombre": "CUSQUISIBAN QUISPE JULIO MANUEL",
+      "cargo": "DESHIERBO"
+    },
+    "18857869": {
+      "nombre": "VASQUEZ SIFUENTES JOSE JOAQUIN",
+      "cargo": "DESHIERBO"
+    },
+    "18905717": {
+      "nombre": "CHINCHE CABRERA NANCY MARIBEL",
+      "cargo": "DESHIERBO"
+    },
+    "26602745": {
+      "nombre": "JULCA INCIL TORIBIO",
+      "cargo": "DESHIERBO"
+    },
+    "27421990": {
+      "nombre": "PAREDES REYES EMMA PEREGRINA",
+      "cargo": "DESHIERBO"
+    },
+    "41509030": {
+      "nombre": "COTRINA GUERRERO GINO PAOLO",
+      "cargo": "DESHIERBO"
+    },
+    "42569543": {
+      "nombre": "GUTIERREZ MONTEZA JOSE EDMUNDO",
+      "cargo": "DESHIERBO"
+    },
+    "47393139": {
+      "nombre": "LAVADO MONCADA VIOLETA NOEMI",
+      "cargo": "DESHIERBO"
+    },
+    "48575438": {
+      "nombre": "YUPANQUI RUIZ DEYNER LEANDRO",
+      "cargo": "DESHIERBO"
+    },
+    "70955414": {
+      "nombre": "ROMERO ESCOBAL SEGUNDO",
+      "cargo": "DESHIERBO"
+    },
+    "73317844": {
+      "nombre": "LLAJARUNA CHAVEZ ANTHONY WILMAR",
+      "cargo": "DESHIERBO"
+    },
+    "81420711": {
+      "nombre": "MANTILLA LEYVA JIMENA EDITH",
+      "cargo": "DESHIERBO"
+    },
+    "19100254": {
+      "nombre": "RODRIGUEZ CASTILLO EDIL",
+      "cargo": "MANTENIMIENTO DE CORTINAS"
+    },
+    "07535227": {
+      "nombre": "BRICEÑO LEON ANDRES JESUS",
+      "cargo": "MANTENIMIENTO DE CERCO VIVO"
+    },
+    "45818791": {
+      "nombre": "DURAN RONDO FAVIO ROLANDO",
+      "cargo": "TRANSPORTE DE MATERIALES"
+    },
+    "48177347": {
+      "nombre": "CHINGAY SANCHEZ JOSUE",
+      "cargo": "MANTENIMIENTO DE CAMPO"
+    },
+    "80356080": {
+      "nombre": "LOPEZ GUEVARA WILMER BACILIO",
+      "cargo": "MANTENIMIENTO DE CAMPO"
+    },
+    "47391863": {
+      "nombre": "LEON QUIROZ MANUEL ALAMIRO",
+      "cargo": "MANTENIMIENTO Y REPARACIÓN DE INFRAESTRUCTURA"
+    },
+    "76172819": {
+      "nombre": "ZERPA SANCHEZ JHON JAIRO",
+      "cargo": "MANTENIMIENTO Y REPARACIÓN DE INFRAESTRUCTURA"
+    },
+    "18856663": {
+      "nombre": "QUITO SAUCEDO JUANITA ITANE",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "18905164": {
+      "nombre": "OBANDO SANCHEZ PAUL",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "42472743": {
+      "nombre": "BACILIO TOMAS ELIDA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "43403333": {
+      "nombre": "VARGAS SANCHEZDE VASQUEZ RUTH NOEMI",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "44399354": {
+      "nombre": "BRICEÑO VALDERRAMA VICENTA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "46322089": {
+      "nombre": "TAPIA LLAJARUNA ESTEFANI LISBET",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "46613374": {
+      "nombre": "HUARIPATA SHUAN MIRYAM JANET",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "48038382": {
+      "nombre": "SAUCEDO VASQUEZ LUZ ERMILA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "18828142": {
+      "nombre": "AYALA VILCHEZ JORGE LUIS",
+      "cargo": "CONSTRUCCIÓN Y EDIFICACIÓN"
+    },
+    "42437566": {
+      "nombre": "BACILIO SALINAS SANTOS ELOY",
+      "cargo": "CONSTRUCCIÓN Y EDIFICACIÓN"
+    },
+    "18905129": {
+      "nombre": "QUIROZ VIGO DEMETRIO SEGUNDO",
+      "cargo": "ALAMBRADO DE MACETAS"
+    },
+    "19025748": {
+      "nombre": "MEREJILDO RODRIGUEZ JUAN",
+      "cargo": "ALAMBRADO DE MACETAS"
+    },
+    "19089003": {
+      "nombre": "RODRIGUEZ CASTILLO JONNHE OSWALDO",
+      "cargo": "CETRERÍA"
+    },
+    "19520772": {
+      "nombre": "FLORES CASTILLO GREGORIO",
+      "cargo": "CETRERÍA"
+    },
+    "43043021": {
+      "nombre": "MARTINEZ HURTADO PEDRO",
+      "cargo": "CETRERÍA"
+    },
+    "43782678": {
+      "nombre": "QUITO MENDEZ GUSTAVO",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "47032649": {
+      "nombre": "QUIROZ DIAZ BEIBI",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "47958945": {
+      "nombre": "ARRESTEGUI RAMOS JOSEPH YEAN PIERE",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "60461283": {
+      "nombre": "LEON MENDEZ JOSUE ISAAC",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "73949768": {
+      "nombre": "HUAMAN RODRIGUEZ VICTOR",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "75652746": {
+      "nombre": "MORALES AYALA LUIS ENRIQUE",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "40829635": {
+      "nombre": "COTRINA ARIAS HEILEN ALBERTO",
+      "cargo": "AUXILIAR DE CAMPO"
+    },
+    "48462734": {
+      "nombre": "RAZURI ARAMBULO MIGUEL FERNANDO",
+      "cargo": "AUXILIAR DE CAMPO"
+    },
+    "70749513": {
+      "nombre": "HUAMAN CASTRO ARNOLD HENRY",
+      "cargo": "AUXILIAR DE CAMPO"
+    },
+    "74968381": {
+      "nombre": "QUIROZ VEGA DARLIN JOEL",
+      "cargo": "AUXILIAR DE CAMPO"
+    },
+    "18135303": {
+      "nombre": "VERASTEGUI GUEVARA CARLOS ALBERTO",
+      "cargo": "CARPINTERÍA"
+    },
+    "73780516": {
+      "nombre": "SANCHEZ CASTILLO VICTOR JULIAN",
+      "cargo": "CARPINTERÍA"
+    },
+    "17946533": {
+      "nombre": "ROQUE MINCHOLA EGBERTO OLMEDO",
+      "cargo": "PLANTACIÓN DE CERCOS VIVOS"
+    },
+    "42916240": {
+      "nombre": "RUMAY BUENO YSMAEL ALI",
+      "cargo": "MECANICO"
+    },
+    "43564949": {
+      "nombre": "RODRIGUEZ MENDOZA NILTON RAFAEL",
+      "cargo": "MECANICO"
+    },
+    "77795510": {
+      "nombre": "VERDE PINILLOS LUIS PABLITO",
+      "cargo": "SUPERVISOR GENERAL"
+    },
+    "41823623": {
+      "nombre": "SIPIRAN PAZ EDWIN HUMBERTO",
+      "cargo": "ESTIBA KIA"
+    },
+    "42436673": {
+      "nombre": "TORRES IZQUIERDO JOCKSAN MIGUEL",
+      "cargo": "ESTIBA KIA"
+    },
+    "43264123": {
+      "nombre": "FLORES VILCA STEVE SAM",
+      "cargo": "ESTIBA KIA"
+    },
+    "45480919": {
+      "nombre": "ORTIZ ROMERO FERNANDO MARTIN",
+      "cargo": "ESTIBA KIA"
+    },
+    "45529546": {
+      "nombre": "FLORES VILCA YRVING LESTER",
+      "cargo": "ESTIBA KIA"
+    },
+    "46126098": {
+      "nombre": "SALDAÑA POLANCO LUIS ANGEL",
+      "cargo": "ESTIBA KIA"
+    },
+    "46605327": {
+      "nombre": "LLANOS VASQUEZ SEGUNDO CELSO",
+      "cargo": "ESTIBA KIA"
+    },
+    "47555972": {
+      "nombre": "HUACCHA AZAÑERO MANUEL NATIVIDAD",
+      "cargo": "ESTIBA KIA"
+    },
+    "47591336": {
+      "nombre": "FLORES VILCA IVES MARTIN",
+      "cargo": "ESTIBA KIA"
+    },
+    "60461282": {
+      "nombre": "LEON MENDEZ JOSUE DANIEL",
+      "cargo": "ESTIBA KIA"
+    },
+    "60566069": {
+      "nombre": "TIRADO GUARNIZ ENOC ISAI",
+      "cargo": "ESTIBA KIA"
+    },
+    "60768712": {
+      "nombre": "VEGA RODRIGUEZ JOSE ARMANDO",
+      "cargo": "ESTIBA KIA"
+    },
+    "61939088": {
+      "nombre": "VIGO HUARIPATA CINTHIA SOLEDAD",
+      "cargo": "ESTIBA KIA"
+    },
+    "70699639": {
+      "nombre": "LEON GONZALES FRANK JEANPIEER",
+      "cargo": "ESTIBA KIA"
+    },
+    "72461797": {
+      "nombre": "OCAS SAUCEDO JUAN",
+      "cargo": "ESTIBA KIA"
+    },
+    "74305386": {
+      "nombre": "NORIEGA PORRAS KENY ALEXANDER",
+      "cargo": "ESTIBA KIA"
+    },
+    "74712006": {
+      "nombre": "LARA QUIROZ MAYKEL ALESSANDRO",
+      "cargo": "ESTIBA KIA"
+    },
+    "74728878": {
+      "nombre": "LLERENA TERRONES LEONARD FRANK",
+      "cargo": "ESTIBA KIA"
+    },
+    "75078533": {
+      "nombre": "FLORES VILCA ELEMER JAMES",
+      "cargo": "ESTIBA KIA"
+    },
+    "75093263": {
+      "nombre": "FLORES MORENO DINO ANGELO",
+      "cargo": "ESTIBA KIA"
+    },
+    "76216000": {
+      "nombre": "CASANOVA CORREA JUAN LUIS HUMBERTO",
+      "cargo": "ESTIBA KIA"
+    },
+    "76768516": {
+      "nombre": "RAZURI ARAMBULO JOSE BRYAN",
+      "cargo": "ESTIBA KIA"
+    },
+    "78110079": {
+      "nombre": "GAMBOA BRICEÑO MOISES",
+      "cargo": "ESTIBA KIA"
+    },
+    "70367233": {
+      "nombre": "RUIZ RODRIGUEZ NEYLIN PRESILDA",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "72747486": {
+      "nombre": "ROMERO ESCOBAL ANDREA DE LOS ANGELES",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "73248502": {
+      "nombre": "CASTRO MACEDO ANYELINA YOLI",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "75495180": {
+      "nombre": "MENDOCILLA VEREAU ANA LUZ",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "18828421": {
+      "nombre": "ESCOBAL LLAMOGA MARIA PAULA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "18870271": {
+      "nombre": "FLORES COTRINA GEORGIA NINA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "18905802": {
+      "nombre": "QUIROZ VIGO MARIA MAGDALENA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "19520766": {
+      "nombre": "DIAZ CAMPOS LIDUVINA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "41432035": {
+      "nombre": "GARCIA RAMOS DE PAREDES LUCY VIOLETA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "46548103": {
+      "nombre": "ENCOMENDEROS CARRERA JULY ARELIS",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "72214707": {
+      "nombre": "BAUTISTA AZAÑERO SILVIA LORENA",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "47966770": {
+      "nombre": "CUSQUISIBAN RABANAL VICTOR MANUEL",
+      "cargo": "PROYECCIÓN"
+    },
+    "71017580": {
+      "nombre": "LEYTON RODRIGUEZ YADIRA",
+      "cargo": "PROYECCIÓN"
+    },
+    "75078541": {
+      "nombre": "LEON VARGAS DEYSI TATIANA",
+      "cargo": "SCANER"
+    },
+    "19085520": {
+      "nombre": "RODRIGUEZ GUTIERREZ SANTOS RUBEN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "42992833": {
+      "nombre": "PONCE RUIZ ISIDRO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "70656198": {
+      "nombre": "VARGAS DIAZ ALDRIN KERVIN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "70839380": {
+      "nombre": "LEON ANTUNEZ CRISTOPHER PAOLO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "72116751": {
+      "nombre": "VERA LEZAMA FIORELA YASHIRA",
+      "cargo": "ASISTENTE DE GERENCIA"
+    },
+    "60293807": {
+      "nombre": "QUIROZ MEDINA QUELUBIA",
+      "cargo": "COSECHA"
+    },
+    "71551468": {
+      "nombre": "PICON BERMUDEZ YHERAL SAAMIR",
+      "cargo": "SCANER"
+    },
+    "77146080": {
+      "nombre": "CHACON BERMUDEZ NADIA SARAHI",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74707167": {
+      "nombre": "LLANOS MORALES RICHARD KENNETH",
+      "cargo": "REGADORES"
+    },
+    "75079075": {
+      "nombre": "FLORES QUITO GERSON STEWARD",
+      "cargo": "REGADORES"
+    },
+    "47863897": {
+      "nombre": "ZORRILLA LOPEZ RAUL JESUS",
+      "cargo": "REGADORES"
+    },
+    "60543709": {
+      "nombre": "GUEVARA NEYRA ADAIR ANTHONY",
+      "cargo": "REGADORES"
+    },
+    "75565198": {
+      "nombre": "SANDOVAL MORALES HOOVER ALEXANDER",
+      "cargo": "REGADORES"
+    },
+    "48387347": {
+      "nombre": "ROJAS CARRERA NOLBERTO",
+      "cargo": "TÉCNICO DE MANTENIMIENTO"
+    },
+    "70809921": {
+      "nombre": "MUÑOZ VASQUEZ LINDER",
+      "cargo": "TÉCNICO DE MANTENIMIENTO"
+    },
+    "74293121": {
+      "nombre": "ACUÑA FELIX ANTHONY RENZZO",
+      "cargo": "POCERO"
+    },
+    "70794522": {
+      "nombre": "RIOS ALFARO RODRIGO ALEJANDRO",
+      "cargo": "POCERO"
+    },
+    "74165083": {
+      "nombre": "CASTILLO FABIAN RICARDO LEONCIO",
+      "cargo": "OPERADOR OSMOSIS"
+    },
+    "44025729": {
+      "nombre": "TONGO SANCHEZ JOEL",
+      "cargo": "PREMEZCLADOR"
+    },
+    "70563390": {
+      "nombre": "CARDENAS LEON JORGE DANIEL",
+      "cargo": "AUXILIAR DE RIEGO"
+    },
+    "74317270": {
+      "nombre": "PASTOR CUEVA SORAYDA ARACELY",
+      "cargo": "AUXILIAR DE RIEGO"
+    },
+    "74730349": {
+      "nombre": "NUÑEZ SANCHEZ ROSALINDA ANABEL",
+      "cargo": "AUXILIAR DE RIEGO"
+    },
+    "48299368": {
+      "nombre": "PARDO CURITIMA MARCO ANTONIO",
+      "cargo": "SCANER"
+    },
+    "76986313": {
+      "nombre": "VILCA BRICEÑO ALEXANDRA MARIA LAURA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "43461130": {
+      "nombre": "TANTAQUISPE HILARIO JULVER DHELIN",
+      "cargo": "COSECHA"
+    },
+    "47855958": {
+      "nombre": "MARCOS MONDRAGON ELVERT JAMES",
+      "cargo": "SCANER"
+    },
+    "43583858": {
+      "nombre": "PLASENCIA CORREA NADIA YVONNE",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "78199416": {
+      "nombre": "MARTINEZ REYES WILSON ALFREDO",
+      "cargo": "SUPERVISOR DE ACOPIO"
+    },
+    "41809717": {
+      "nombre": "DIAZ SALAZAR OLGA ELIZABETH",
+      "cargo": "SCANER"
+    },
+    "45372928": {
+      "nombre": "PEÑA ROJAS LAURA PATRICIA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "72009029": {
+      "nombre": "LOPEZ ALFARO CARMEN ROSA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "60587643": {
+      "nombre": "ARANDA ESCALANTE RONALD CHARLEEN",
+      "cargo": "COSECHA"
+    },
+    "76051921": {
+      "nombre": "PAREDES VELASQUEZ PIERO ANDERSON",
+      "cargo": "SCANER"
+    },
+    "74291763": {
+      "nombre": "HUARIPATA RAMIREZ PATRICK ALEJANDRO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "41848562": {
+      "nombre": "RODRIGUEZ MARQUINA LISSET MAGDALENA",
+      "cargo": "SCANER"
+    },
+    "45206311": {
+      "nombre": "CHAVEZ ALVA CARLOS ENRIQUE",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "73241410": {
+      "nombre": "CALUA ALAYO CYNTHIA MAGDALENA",
+      "cargo": "SCANER"
+    },
+    "70559269": {
+      "nombre": "LLAQUE ARGOMEDO GENESIS GUILIANA KEIKO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "78476694": {
+      "nombre": "CORDOVA MONTOYA ANA ABIGAIL",
+      "cargo": "COSECHA"
+    },
+    "75483121": {
+      "nombre": "DIAZ BACILIO JUAN CRISTIAN",
+      "cargo": "SCANER"
+    },
+    "48446147": {
+      "nombre": "HILARIO AVALOS EVELYN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "44785702": {
+      "nombre": "BARRIENTOS RIVERA MICHEL ALCIDES",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "75141739": {
+      "nombre": "ROJAS AREDO YERSI YEN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "78883661": {
+      "nombre": "SALAZAR PAJARES CRISTOFER",
+      "cargo": "SCANER"
+    },
+    "47117035": {
+      "nombre": "VERGARA DAVILA KELINDA ELIZABETH",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "40015488": {
+      "nombre": "CARRION MONTENEGRO LUSBINDA",
+      "cargo": "COSECHA"
+    },
+    "71246970": {
+      "nombre": "CEPEDA NEIRA ANGEL ORLANDO",
+      "cargo": "COSECHA"
+    },
+    "74581416": {
+      "nombre": "QUISPE BRIONES CLAUDIA ISABEL",
+      "cargo": "SCANER"
+    },
+    "76774075": {
+      "nombre": "NAVEZ CARBAJAL YOVER OSWALDO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74541454": {
+      "nombre": "SALDAÑA CHINCHE JOSE OLIVER",
+      "cargo": "SCANER"
+    },
+    "70507014": {
+      "nombre": "RODRIGUEZ CABRERA KENYI JENNY",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "44932896": {
+      "nombre": "PAREDES MANTILLA GINA IVONNE",
+      "cargo": "SCANER"
+    },
+    "77534125": {
+      "nombre": "HERRERA ALBERCA PAMELA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "61353468": {
+      "nombre": "BACILIO LECCA ROBINSON YONEL",
+      "cargo": "COSECHA"
+    },
+    "70380615": {
+      "nombre": "AQUINO CASTILLO EFRAIN MERCEDES",
+      "cargo": "SCANER"
+    },
+    "71405307": {
+      "nombre": "ANTICONA SOTO CRISTHIAN ALEXANDER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "70003167": {
+      "nombre": "CUEVA AZAÑA JESUS ORLANDO",
+      "cargo": "COSECHA"
+    },
+    "77492021": {
+      "nombre": "MENDOZA GRANDEZ SOFIA ANGELICA",
+      "cargo": "SCANER"
+    },
+    "71806261": {
+      "nombre": "LEON TRIGOSO JHONY ANDRONICO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "48055477": {
+      "nombre": "ZAVALETA GONZALES LUSBET ERELID",
+      "cargo": "SCANER"
+    },
+    "48533707": {
+      "nombre": "JULCA GAMBOA DILMER ELICER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "61903992": {
+      "nombre": "CRUZ TOLENTINO VELSY ANABELY",
+      "cargo": "COSECHA"
+    },
+    "72143108": {
+      "nombre": "CARRANZA ROJALES HELEN EDITHA",
+      "cargo": "COSECHA"
+    },
+    "73634792": {
+      "nombre": "TRONCOSO SANCHEZ HENRY BRAULIO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74292153": {
+      "nombre": "RUMAY CUEVA MIGUEL ANGEL",
+      "cargo": "COSECHA"
+    },
+    "45722976": {
+      "nombre": "RUMAY MENDO CARLOS ALBERTO",
+      "cargo": "SCANER"
+    },
+    "63249902": {
+      "nombre": "GUARNIZ MARREROS NELIXA VIVIANA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "18169655": {
+      "nombre": "ENRIQUEZ LAVADO MARIA JUANA",
+      "cargo": "COSECHA"
+    },
+    "19253282": {
+      "nombre": "CHANDUVI CASTRO OSCAR ORLANDO",
+      "cargo": "COSECHA"
+    },
+    "19253488": {
+      "nombre": "CHOLAN AGUIRRE RITA LUZMILA",
+      "cargo": "COSECHA"
+    },
+    "41142546": {
+      "nombre": "PEREZ RODRIGUEZ SANTOS VIRGEN",
+      "cargo": "COSECHA"
+    },
+    "41501140": {
+      "nombre": "JARA NAUCA YOLA MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "41810425": {
+      "nombre": "HOYOS CHILON DIANA MAGALY",
+      "cargo": "COSECHA"
+    },
+    "42687202": {
+      "nombre": "PAREDES RODRIGUEZ CRISTINA ESMELDA",
+      "cargo": "COSECHA"
+    },
+    "44327548": {
+      "nombre": "LLAJA CABANILLAS YECENIA",
+      "cargo": "COSECHA"
+    },
+    "45897604": {
+      "nombre": "SAMANA MARQUINA LETY",
+      "cargo": "COSECHA"
+    },
+    "46326815": {
+      "nombre": "RIVEROS POLO MALQUIAS JAVIER",
+      "cargo": "COSECHA"
+    },
+    "48909265": {
+      "nombre": "RODRIGUEZ REYES LUIS ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "61299970": {
+      "nombre": "SALIRROSAS MINCHOLA JAIRO JEANPIER",
+      "cargo": "COSECHA"
+    },
+    "61300183": {
+      "nombre": "LOPEZ ESQUIVEL WALTER ANDERSON",
+      "cargo": "COSECHA"
+    },
+    "61440571": {
+      "nombre": "CASTILLO ESQUIVEL ABRAHAM ISAAC",
+      "cargo": "COSECHA"
+    },
+    "70560803": {
+      "nombre": "RODRIGUEZ CHOLAN ROSA ANTUANED",
+      "cargo": "COSECHA"
+    },
+    "71381019": {
+      "nombre": "ACEVEDO FERREL DIEGO ALESANDRO",
+      "cargo": "COSECHA"
+    },
+    "75318020": {
+      "nombre": "CIPRA MAURICIO NHAYELI XIOMARA",
+      "cargo": "COSECHA"
+    },
+    "75748942": {
+      "nombre": "GARCIA FLORES ANGEL ANTONIO",
+      "cargo": "COSECHA"
+    },
+    "75804033": {
+      "nombre": "TERRONES SACRAMENTO ROSA ELIZABETH",
+      "cargo": "COSECHA"
+    },
+    "76468290": {
+      "nombre": "GONZALEZ ZAVALETA GERALDINE FABIANA",
+      "cargo": "COSECHA"
+    },
+    "76804310": {
+      "nombre": "GARCIA AMAYA CARLOS JIMMY",
+      "cargo": "COSECHA"
+    },
+    "77154731": {
+      "nombre": "CABRERA ASTO JENNIFER JIMENA",
+      "cargo": "COSECHA"
+    },
+    "80523939": {
+      "nombre": "HUAYAC AGUILAR ANIBAL",
+      "cargo": "COSECHA"
+    },
+    "81217623": {
+      "nombre": "ALEGRIA TAMAYO CRISTY KEMELI",
+      "cargo": "COSECHA"
+    },
+    "46561977": {
+      "nombre": "TERRONES ANDRADE YAZMITH KATHERINE",
+      "cargo": "SCANER"
+    },
+    "74959924": {
+      "nombre": "ARMAS DIAZ CRISTIAN DANIEL",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "60550779": {
+      "nombre": "NORIEGA PONTE ALDAIR",
+      "cargo": "COSECHA"
+    },
+    "74730401": {
+      "nombre": "GAMBOA DIAZ CARLOS DANIEL",
+      "cargo": "SCANER"
+    },
+    "48268173": {
+      "nombre": "NORIEGA PONTE MICELY",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "70813953": {
+      "nombre": "LOPEZ GARCIA JEAN CARLOS",
+      "cargo": "SCANER"
+    },
+    "60467254": {
+      "nombre": "RIOS MEDINA DAHIRA MICAELA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "71880419": {
+      "nombre": "CUEVA GUILLERMO KENNET ANDERSON",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74221563": {
+      "nombre": "SANCHEZ CHUN BRANDON JOSUE",
+      "cargo": "SCANER"
+    },
+    "61512235": {
+      "nombre": "HERRERA ALBERCA MARIELA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "60254306": {
+      "nombre": "ALVAREZ ZAVALETA MARICIELO ANAIS",
+      "cargo": "SCANER"
+    },
+    "74942842": {
+      "nombre": "FUENTES VALIENTE DEIMAR ULISES",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "60779155": {
+      "nombre": "MEDINA CARDENAS DANIEL YARED",
+      "cargo": "SCANER"
+    },
+    "70135405": {
+      "nombre": "CASIANO CABRERA JAYNI PAMELA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "48923349": {
+      "nombre": "RODRIGUEZ MONGE GABRIELA",
+      "cargo": "COSECHA"
+    },
+    "71666656": {
+      "nombre": "RODRIGUEZ AVALOS YAKELI ARACELLY",
+      "cargo": "COSECHA"
+    },
+    "70875214": {
+      "nombre": "VEGA BENITES WILMER CHANEL",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "70192613": {
+      "nombre": "BARRETO AUCAPUMA ALEXANDER JHONATAN",
+      "cargo": "SCANER"
+    },
+    "60741145": {
+      "nombre": "PAREDES GALARRETA CRISTHIAN JEANPIER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "76769404": {
+      "nombre": "PASTOR LAIZA SARAI SIORELA",
+      "cargo": "SUPERVISOR DE CALIDAD"
+    },
+    "40354659": {
+      "nombre": "REYES JAVE LOURDES LIZETH",
+      "cargo": "CALIDAD"
+    },
+    "48489693": {
+      "nombre": "HUACCHA TERRONES ESTHEFANI LIZBETH",
+      "cargo": "CALIDAD"
+    },
+    "60412805": {
+      "nombre": "DIAZ SOTO, SANDRA GRABIELA",
+      "cargo": "CALIDAD"
+    },
+    "60461308": {
+      "nombre": "ALCANTARA VIGO DANIEL ELIAS",
+      "cargo": "CALIDAD"
+    },
+    "60600072": {
+      "nombre": "VIGO PAREDES GABRIELA ANAIS",
+      "cargo": "CALIDAD"
+    },
+    "60633034": {
+      "nombre": "SANGAY CABANILLAS RICARDO FRANCO",
+      "cargo": "CALIDAD"
+    },
+    "62162097": {
+      "nombre": "LLANOS SANCHEZ DAYANA NICOLE",
+      "cargo": "CALIDAD"
+    },
+    "62585049": {
+      "nombre": "RODRIGUEZ DAGA ERICKA ELIZABETH",
+      "cargo": "CALIDAD"
+    },
+    "70550707": {
+      "nombre": "REYES SANGAY JUAN SAMUEL",
+      "cargo": "CALIDAD"
+    },
+    "70658198": {
+      "nombre": "FLORES MARIÑOS ELIZA GIANELLA",
+      "cargo": "CALIDAD"
+    },
+    "70667311": {
+      "nombre": "ALCANTARA VIGO BELCY GABRIELITA",
+      "cargo": "CALIDAD"
+    },
+    "70735997": {
+      "nombre": "DIAZ SOTO MARIA FERNANDA",
+      "cargo": "CALIDAD"
+    },
+    "71149417": {
+      "nombre": "CABRERA PEREZ CARLOS SAÚL",
+      "cargo": "CALIDAD"
+    },
+    "71367059": {
+      "nombre": "MELON VILLANUEVA KARINA ELIZABETH",
+      "cargo": "CALIDAD"
+    },
+    "72795195": {
+      "nombre": "QUISPE ZERPA MARIA ELENA",
+      "cargo": "CALIDAD"
+    },
+    "75023790": {
+      "nombre": "BUENO VELEZMORO DEYSI ELIZABETH",
+      "cargo": "CALIDAD"
+    },
+    "75078526": {
+      "nombre": "LOZADA PAJARES JOSE JULIAN",
+      "cargo": "CALIDAD"
+    },
+    "75278098": {
+      "nombre": "MACHUCA ALVAREZ LUIGUI JANPIER",
+      "cargo": "CALIDAD"
+    },
+    "76173220": {
+      "nombre": "GUTIERREZ VALQUI ETHEL YAMELI",
+      "cargo": "CALIDAD"
+    },
+    "76313065": {
+      "nombre": "RODRIGUEZ AGUILAR ARIANA MILAGROS",
+      "cargo": "CALIDAD"
+    },
+    "76371313": {
+      "nombre": "CORTEZ PAJARES PERLA MABEL",
+      "cargo": "CALIDAD"
+    },
+    "77418497": {
+      "nombre": "DIAZ SOTO ROXANA",
+      "cargo": "CALIDAD"
+    },
+    "77799828": {
+      "nombre": "ZAVALETA IGLESIAS KAHORY MARIANELA",
+      "cargo": "CALIDAD"
+    },
+    "62894779": {
+      "nombre": "VILLALOBOS CARRANZA YURICO NATALY",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "75843798": {
+      "nombre": "HUACCHA MORILLO YOSMEL",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "71658943": {
+      "nombre": "POLO RIVEROS ILIEL",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "72768392": {
+      "nombre": "RODRIGUEZ ANGULO GEAN CRISTHIAN",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "72460028": {
+      "nombre": "ALFARO MOYA JEAN MARCO",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "44058786": {
+      "nombre": "DIOSES LARREA JHON ERICK",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "70672397": {
+      "nombre": "VIGO LEIVA JHOEL DANIEL",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "71496131": {
+      "nombre": "FLORES DIAZ ALAN JOEL",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "60133120": {
+      "nombre": "COTRINA BAZAN CARLOS ANTONY",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "74707189": {
+      "nombre": "ROMERO CUSCO BRANDON JOSE",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "77704422": {
+      "nombre": "HANCCO LEZAMA JEAN PAUL",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "46861453": {
+      "nombre": "VELASQUEZ VIGO MANUEL JUNIOR",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "47179438": {
+      "nombre": "VARAS MORENO ALEXANDER EUDOCIO",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "71609554": {
+      "nombre": "RODRIGUEZ RODRIGUEZ ELKIN LUIS",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "46441420": {
+      "nombre": "CONTRERAS POLO SARA",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "47899406": {
+      "nombre": "HUARIPATA OYARCE DE FLORES LUZ ANDREA",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "60437215": {
+      "nombre": "AGUILAR FLORES SANDRA TALIA",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "74322877": {
+      "nombre": "VALERIO GARCIA KLEISER MARUVI",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "81547650": {
+      "nombre": "VELASQUEZ ALIAGA KEYLI MILAGROS",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "76949127": {
+      "nombre": "AGUIRRE GARCIA JOSELITO MATIAS",
+      "cargo": "SUPERVISOR DE FITOSANIDAD"
+    },
+    "72211885": {
+      "nombre": "AMAYA FERRER JONEL FREDDY",
+      "cargo": "SUPERVISOR DE FITOSANIDAD"
+    },
+    "71116250": {
+      "nombre": "CALDERON PAREDES LADY LAURA",
+      "cargo": "DIGITADOR DE SANIDAD"
+    },
+    "77340401": {
+      "nombre": "TASILLA PEREZ MIGUEL ANGEL",
+      "cargo": "PRE MEZCLA"
+    },
+    "18107069": {
+      "nombre": "VASQUEZ MAURICIO MARINO WILLIAM",
+      "cargo": "COSECHA"
+    },
+    "18137109": {
+      "nombre": "SANDOVAL CARDENAS FLOR",
+      "cargo": "COSECHA"
+    },
+    "19061285": {
+      "nombre": "PAREDES VILLAJULCA SIMON ALFREDO",
+      "cargo": "COSECHA"
+    },
+    "19075501": {
+      "nombre": "COLLANTES MENDOZA MARIA TERESA",
+      "cargo": "COSECHA"
+    },
+    "20064849": {
+      "nombre": "FAJARDO VILLAVERDE NADINE BELU",
+      "cargo": "COSECHA"
+    },
+    "27160714": {
+      "nombre": "AMAYA TENA MARIA BERLAO",
+      "cargo": "COSECHA"
+    },
+    "42808315": {
+      "nombre": "EUSTAQUIO ROJAS NELVA GIOVANNY",
+      "cargo": "COSECHA"
+    },
+    "42952380": {
+      "nombre": "GONZALES PEREZ EDGAR",
+      "cargo": "COSECHA"
+    },
+    "44301044": {
+      "nombre": "ESPEJO GALVEZ OLIVIA BELERMINA",
+      "cargo": "COSECHA"
+    },
+    "45874399": {
+      "nombre": "FLORES ZOCON GAVI ARISELI",
+      "cargo": "COSECHA"
+    },
+    "48251649": {
+      "nombre": "ARENAS LAZARO GREIDER YABEL",
+      "cargo": "COSECHA"
+    },
+    "48350303": {
+      "nombre": "VASQUEZ GUEVARA MAGALI ROCIO",
+      "cargo": "COSECHA"
+    },
+    "48889319": {
+      "nombre": "TORRES GUERRERO SIMON ELOY",
+      "cargo": "COSECHA"
+    },
+    "60208920": {
+      "nombre": "LOZANO RENGIFO YENI ROCIO",
+      "cargo": "COSECHA"
+    },
+    "60768705": {
+      "nombre": "BAZAN POLO GIANELLA ANTHONELLA",
+      "cargo": "COSECHA"
+    },
+    "60994108": {
+      "nombre": "JACINTO ACEVEDO CLARA MIGUELINA ABIGAIL",
+      "cargo": "COSECHA"
+    },
+    "61220274": {
+      "nombre": "VEGA MATTA BRAYAN ESTEBAN",
+      "cargo": "COSECHA"
+    },
+    "62906330": {
+      "nombre": "FACHIN FLORES DAYSI DAYLI",
+      "cargo": "COSECHA"
+    },
+    "70690845": {
+      "nombre": "CONTRERAS CASTILLO ROSA CARMELA",
+      "cargo": "COSECHA"
+    },
+    "71802932": {
+      "nombre": "DE LA CRUZ GAMBOA NIEVES HERMINIA",
+      "cargo": "COSECHA"
+    },
+    "72093915": {
+      "nombre": "OLIVARES CARRANZA ALEJANDRO GABRIEL",
+      "cargo": "COSECHA"
+    },
+    "73174121": {
+      "nombre": "RODRIGUEZ RUIZ JAVIER DARIENN",
+      "cargo": "COSECHA"
+    },
+    "73392344": {
+      "nombre": "IDROGO SAAVEDRA AMALIA JUDITH",
+      "cargo": "COSECHA"
+    },
+    "75176604": {
+      "nombre": "RAMOS CONTRERAS KARINA ESMERALDA",
+      "cargo": "COSECHA"
+    },
+    "75470288": {
+      "nombre": "ROJAS POLO LUIS FERNANDO",
+      "cargo": "COSECHA"
+    },
+    "76070279": {
+      "nombre": "CHAVEZ CIPRA ELIZABETH CAROLINA",
+      "cargo": "COSECHA"
+    },
+    "76399687": {
+      "nombre": "SANCHEZ GIL IRIS ANISAYROS",
+      "cargo": "COSECHA"
+    },
+    "76422151": {
+      "nombre": "VASQUEZ CABELLOS PATRICIA ALEJANDRA",
+      "cargo": "COSECHA"
+    },
+    "76583748": {
+      "nombre": "GARCIA VILLANUEVA JENNIFER EDITH",
+      "cargo": "COSECHA"
+    },
+    "77129589": {
+      "nombre": "FLORES BARTRA ERLITH",
+      "cargo": "COSECHA"
+    },
+    "77169495": {
+      "nombre": "MARIN ARTEAGA KAROLINA NICOLE",
+      "cargo": "COSECHA"
+    },
+    "77875233": {
+      "nombre": "OTINIANO ROJAS ALAN HUMBERTO",
+      "cargo": "COSECHA"
+    },
+    "78195035": {
+      "nombre": "VILLANUEVA GAVIDIA SARAI ABIGAIL",
+      "cargo": "COSECHA"
+    },
+    "78551496": {
+      "nombre": "LOYOLA BARRETO ERICKA ATALYA",
+      "cargo": "COSECHA"
+    },
+    "80182298": {
+      "nombre": "VILLANUEVA FLORES SANTOS FABIAN",
+      "cargo": "COSECHA"
+    },
+    "71327910": {
+      "nombre": "SANCHEZ JIMENEZ GIANELLA KASSANDRA",
+      "cargo": "SCANER"
+    },
+    "41520670": {
+      "nombre": "VASQUEZ SANCHEZ JOSE ISIDRO",
+      "cargo": "SCANER"
+    },
+    "71285752": {
+      "nombre": "HUINGO PAJARES VICTOR MANUEL",
+      "cargo": "SCANER"
+    },
+    "60461319": {
+      "nombre": "MOSQUEIRA VALDERRAMA JENNIFER ESTANY",
+      "cargo": "SCANER"
+    },
+    "70192702": {
+      "nombre": "PURIZAGA SAAVEDRA PIERRE OSNAR",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "17881007": {
+      "nombre": "URUNA ANDAYCURA SECUNDINA",
+      "cargo": "COSECHA"
+    },
+    "19079993": {
+      "nombre": "ROSAS SALINAS ROSELINDA",
+      "cargo": "COSECHA"
+    },
+    "19692461": {
+      "nombre": "SANCHEZ LUJAN ANTERO APOSTOL",
+      "cargo": "COSECHA"
+    },
+    "42347023": {
+      "nombre": "BACILIO OBESO SEGUNDO ANIBAL",
+      "cargo": "COSECHA"
+    },
+    "44104030": {
+      "nombre": "VIERA PUELLES JUSTINIANO",
+      "cargo": "COSECHA"
+    },
+    "44753920": {
+      "nombre": "CERNA GAMONAL FELIX SANTIAGO",
+      "cargo": "COSECHA"
+    },
+    "44924617": {
+      "nombre": "FIGUEROA CONTRERAS ESTELITA",
+      "cargo": "COSECHA"
+    },
+    "46513452": {
+      "nombre": "GARCIA RODRIGUEZ EMERITA CORINA",
+      "cargo": "COSECHA"
+    },
+    "46824905": {
+      "nombre": "HUAMAN LLAMOCTANTA ISMAEL",
+      "cargo": "COSECHA"
+    },
+    "47130471": {
+      "nombre": "LEYVA BUENO ALEXANDER ROEL",
+      "cargo": "COSECHA"
+    },
+    "47408022": {
+      "nombre": "VASQUEZ AGUILAR ASUNCIONA CARLOTA",
+      "cargo": "COSECHA"
+    },
+    "48299641": {
+      "nombre": "OLLARCE MANRIQUE CARLOS ALFREDO",
+      "cargo": "COSECHA"
+    },
+    "48523371": {
+      "nombre": "CHAMORRO VERA YULISSA LIZETH",
+      "cargo": "COSECHA"
+    },
+    "48725415": {
+      "nombre": "CASTILLO GUERRERO MARIA GLENDY",
+      "cargo": "COSECHA"
+    },
+    "48999739": {
+      "nombre": "LEYVA BUENO MAXIMILA",
+      "cargo": "COSECHA"
+    },
+    "60520157": {
+      "nombre": "LOPEZ CRUZ DIEGO LEONEL",
+      "cargo": "COSECHA"
+    },
+    "60936858": {
+      "nombre": "MENDOZA ESPINOZA CAROLINA ELISANDRA",
+      "cargo": "COSECHA"
+    },
+    "61232049": {
+      "nombre": "LARA CERQUERA ANELIDA",
+      "cargo": "COSECHA"
+    },
+    "62371640": {
+      "nombre": "CUBAS COTRINA YANIRA LIZBETH",
+      "cargo": "COSECHA"
+    },
+    "70359784": {
+      "nombre": "DELGADO VELASQUEZ ESTHER NOEMI",
+      "cargo": "COSECHA"
+    },
+    "70468887": {
+      "nombre": "VARAS VILCA VERONICA MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "71330286": {
+      "nombre": "ANDRADE RENGIFO GUSTAVO MANUEL",
+      "cargo": "COSECHA"
+    },
+    "71654244": {
+      "nombre": "LLAPO MELCHOR ERLITA NIALKINA",
+      "cargo": "COSECHA"
+    },
+    "71811829": {
+      "nombre": "GONZALES GARCIA YASENIA MARILU",
+      "cargo": "COSECHA"
+    },
+    "74093332": {
+      "nombre": "QUISQUICHE CARRANZA GERSON WILFREDO",
+      "cargo": "COSECHA"
+    },
+    "74137145": {
+      "nombre": "HILARIO VILLANUEVA BRAYAN EDUARDO",
+      "cargo": "COSECHA"
+    },
+    "74664117": {
+      "nombre": "BACILIO BURGOS YANELA LIZETH",
+      "cargo": "COSECHA"
+    },
+    "74686408": {
+      "nombre": "MENDOZA ESPINOZA ERIKA ALELY",
+      "cargo": "COSECHA"
+    },
+    "74875375": {
+      "nombre": "LLAPO MELCHOR YANSIN MELVIN",
+      "cargo": "COSECHA"
+    },
+    "74993077": {
+      "nombre": "TOCAS LARA NELSON NATAEL",
+      "cargo": "COSECHA"
+    },
+    "75578394": {
+      "nombre": "HUAMAN HUANCAY ELMER MISAEL",
+      "cargo": "COSECHA"
+    },
+    "76670670": {
+      "nombre": "CHAMORRO VERA MARIA GLADYS",
+      "cargo": "COSECHA"
+    },
+    "77648249": {
+      "nombre": "BARDALES HUACCHA MILAIDY DALY",
+      "cargo": "COSECHA"
+    },
+    "79218558": {
+      "nombre": "CASTILLO GUERRERO SARAI NICOLLE",
+      "cargo": "COSECHA"
+    },
+    "74047419": {
+      "nombre": "NAMOC NARRO BIVIANA DE LOS ANGELES",
+      "cargo": "COSECHA"
+    },
+    "60532149": {
+      "nombre": "RAMIREZ VERA LEANDRO DAVID",
+      "cargo": "SCANER"
+    },
+    "74959142": {
+      "nombre": "DELGADO ABANTO SUSAN SUE",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "71661198": {
+      "nombre": "MINCHOLA CONTRERAS MARIA MERLY",
+      "cargo": "COSECHA"
+    },
+    "70287066": {
+      "nombre": "MALCA VALERIANO KEVIN MAILIN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "72703003": {
+      "nombre": "SALDAÑA PAREDES DARVI GABRIEL",
+      "cargo": "SCANER"
+    },
+    "19548946": {
+      "nombre": "VARELA AVILA JACINTO",
+      "cargo": "COSECHA"
+    },
+    "19573554": {
+      "nombre": "CAIPO GARCIA LEONOR",
+      "cargo": "COSECHA"
+    },
+    "26725870": {
+      "nombre": "SALDAÑA VARGAS MARIA SOLEDAD",
+      "cargo": "COSECHA"
+    },
+    "27578474": {
+      "nombre": "MENDOZA JAMBO MARIA IRMA",
+      "cargo": "COSECHA"
+    },
+    "40347396": {
+      "nombre": "SALVATIERRA RODRIGUEZ VIRGINIA YSABEL",
+      "cargo": "COSECHA"
+    },
+    "40610796": {
+      "nombre": "JULCA LOZANO SANTOS JOSELITO",
+      "cargo": "COSECHA"
+    },
+    "41529440": {
+      "nombre": "RODRIGUEZ BARRIOS MARTINA CARMELA",
+      "cargo": "COSECHA"
+    },
+    "41724824": {
+      "nombre": "VASQUEZ UGARTE ROSA DORIS",
+      "cargo": "COSECHA"
+    },
+    "42694960": {
+      "nombre": "MONZON OLIVA EUGENIO",
+      "cargo": "COSECHA"
+    },
+    "43296802": {
+      "nombre": "SOLANO NIEVES ESMILDA HERMELINDA",
+      "cargo": "COSECHA"
+    },
+    "44066292": {
+      "nombre": "VALVERDE RAMOS DELIA JOBITA",
+      "cargo": "COSECHA"
+    },
+    "44230986": {
+      "nombre": "SAMANA SATALAYA DIANA CAROLINA",
+      "cargo": "COSECHA"
+    },
+    "45261864": {
+      "nombre": "VASQUEZ SILVESTRE OVELIA BENILDA",
+      "cargo": "COSECHA"
+    },
+    "45296946": {
+      "nombre": "LLAPO RIVEROS VIZNNEY ROSMELINDA",
+      "cargo": "COSECHA"
+    },
+    "45793762": {
+      "nombre": "PONCE RUIZ CONFESOR GILMER",
+      "cargo": "COSECHA"
+    },
+    "46459061": {
+      "nombre": "OCAS GARCIA YURI MELISSA",
+      "cargo": "COSECHA"
+    },
+    "47043832": {
+      "nombre": "ROJAS QUIROZ FANNY",
+      "cargo": "COSECHA"
+    },
+    "47263851": {
+      "nombre": "CHUMPI KUJA FLOR",
+      "cargo": "COSECHA"
+    },
+    "47312853": {
+      "nombre": "PONCE JARA AUREA",
+      "cargo": "COSECHA"
+    },
+    "47703705": {
+      "nombre": "SAMANA SATALAYA PAMELA ESTEFANIA",
+      "cargo": "COSECHA"
+    },
+    "47987119": {
+      "nombre": "ARTEAGA RODRIGUEZ ROSA ELENA",
+      "cargo": "COSECHA"
+    },
+    "48219080": {
+      "nombre": "RIVEROS RIVEROS MILEYCI ROSITA",
+      "cargo": "COSECHA"
+    },
+    "48283799": {
+      "nombre": "GONZALES ARENAS DANI MARIANELA",
+      "cargo": "COSECHA"
+    },
+    "60141779": {
+      "nombre": "ESPEJO CAMPOS MELVELIN",
+      "cargo": "COSECHA"
+    },
+    "61275146": {
+      "nombre": "SALVATIERRA ARANDA ILDER CESAR",
+      "cargo": "COSECHA"
+    },
+    "63267792": {
+      "nombre": "GERONIMO RIVEROS SINDY YANELI",
+      "cargo": "COSECHA"
+    },
+    "71052484": {
+      "nombre": "QUISPE VARGAS OLGA ROCIO",
+      "cargo": "COSECHA"
+    },
+    "71560977": {
+      "nombre": "BARTOLO PAREDES ANGEL TOMAS",
+      "cargo": "COSECHA"
+    },
+    "71760719": {
+      "nombre": "BENITES REYES MIRTHA YOLY",
+      "cargo": "COSECHA"
+    },
+    "73993627": {
+      "nombre": "GONZALES SANCHEZ JEIMI ALEXANDER",
+      "cargo": "COSECHA"
+    },
+    "76047637": {
+      "nombre": "PONCE JARA ESTELA MICAELA",
+      "cargo": "COSECHA"
+    },
+    "76982943": {
+      "nombre": "MANTILLA CAIPO PEDRO JAIME",
+      "cargo": "COSECHA"
+    },
+    "80359863": {
+      "nombre": "CASTILLO GARCIA EMILIANA",
+      "cargo": "COSECHA"
+    },
+    "44456891": {
+      "nombre": "PONCE RUIZ FERNANDO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74560811": {
+      "nombre": "TANTA CORREA LUIS JOSIAS",
+      "cargo": "COSECHA"
+    },
+    "60208199": {
+      "nombre": "BLANCO SANCHEZ JHOSELYN SOLEDAD",
+      "cargo": "SCANER"
+    },
+    "74067759": {
+      "nombre": "VASQUEZ VALQUI CRISTIAN ALEXANDER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "61156993": {
+      "nombre": "SALINAS CORCUERA MELANY MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "18019664": {
+      "nombre": "OTINIANO SANCHEZ ROSSMERY EDITH",
+      "cargo": "COSECHA"
+    },
+    "18856573": {
+      "nombre": "RONCAL CARDENAS JORGE ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "18861609": {
+      "nombre": "GARCIA ZURITA ZOILA YESENIA",
+      "cargo": "COSECHA"
+    },
+    "18893031": {
+      "nombre": "VILLAR VARGAS MIGUEL",
+      "cargo": "COSECHA"
+    },
+    "18906103": {
+      "nombre": "IGLESIAS CASTILLO SOLEDAD",
+      "cargo": "COSECHA"
+    },
+    "26699362": {
+      "nombre": "TEATINO APOLITANO PEDRO PABLO",
+      "cargo": "COSECHA"
+    },
+    "26954006": {
+      "nombre": "IPARRAGUIRRE POLO BASILIA EUGENIA",
+      "cargo": "COSECHA"
+    },
+    "27421961": {
+      "nombre": "VILLANUEVA CASIANO MARIA",
+      "cargo": "COSECHA"
+    },
+    "27570866": {
+      "nombre": "ESPINOZA RAMOS FABIAN",
+      "cargo": "COSECHA"
+    },
+    "40575830": {
+      "nombre": "SEGURA INFANTES GREGORIA",
+      "cargo": "COSECHA"
+    },
+    "43495068": {
+      "nombre": "MALUQUISH HUAMAN RICHAR UVELSER",
+      "cargo": "COSECHA"
+    },
+    "43951818": {
+      "nombre": "URIARTE PEÑA JOVANI ARACELI",
+      "cargo": "COSECHA"
+    },
+    "44770040": {
+      "nombre": "BADA POLO ROCIO MARLENI",
+      "cargo": "COSECHA"
+    },
+    "45285672": {
+      "nombre": "MAYTA ESCOBAR DILSER JEINER",
+      "cargo": "COSECHA"
+    },
+    "45501311": {
+      "nombre": "YACOPAICO ORTIZ JUANA",
+      "cargo": "COSECHA"
+    },
+    "46491539": {
+      "nombre": "FLORES OTINIANO CINTHIA ELIZABETH",
+      "cargo": "COSECHA"
+    },
+    "46930319": {
+      "nombre": "SANCHEZ VASQUEZ DORALIZA",
+      "cargo": "COSECHA"
+    },
+    "47242764": {
+      "nombre": "JULON MEJIA LEDIS ROXANA",
+      "cargo": "COSECHA"
+    },
+    "47330928": {
+      "nombre": "ACEVEDO POLO MERCEDES ALICIA",
+      "cargo": "COSECHA"
+    },
+    "47621601": {
+      "nombre": "SANCHEZ ALVARADO JONATHAN ENRIQUE",
+      "cargo": "COSECHA"
+    },
+    "48605541": {
+      "nombre": "GARCIA INUMA HAMILTON RIVER",
+      "cargo": "COSECHA"
+    },
+    "60220497": {
+      "nombre": "ESPINOZA HUAMAN RONALDIÑO",
+      "cargo": "COSECHA"
+    },
+    "60438482": {
+      "nombre": "FARFAN PARIONA ANA LUZ",
+      "cargo": "COSECHA"
+    },
+    "60536104": {
+      "nombre": "HERRERA MENDOZA RAHI ELMORE VALENTINO",
+      "cargo": "COSECHA"
+    },
+    "61013985": {
+      "nombre": "HILARIO FLORES ANTONY ADYUVI",
+      "cargo": "COSECHA"
+    },
+    "61600841": {
+      "nombre": "MEZA CANAQUIRI MARILI NAYELI",
+      "cargo": "COSECHA"
+    },
+    "63131492": {
+      "nombre": "CALLE HUAYUNGA KAYRA RAQUEL",
+      "cargo": "COSECHA"
+    },
+    "70797514": {
+      "nombre": "YGNACIO QUISPE PERCI",
+      "cargo": "COSECHA"
+    },
+    "71767032": {
+      "nombre": "FLORES VENTURO ROSTANI MILER",
+      "cargo": "COSECHA"
+    },
+    "71960668": {
+      "nombre": "HIPOLITO VILCA NADIA MARYLIN",
+      "cargo": "COSECHA"
+    },
+    "72464793": {
+      "nombre": "RAMIREZ BAUTISTA ALEX HUMBERTO",
+      "cargo": "COSECHA"
+    },
+    "73767329": {
+      "nombre": "LOZANO VALVERDE ELVIS",
+      "cargo": "COSECHA"
+    },
+    "80313087": {
+      "nombre": "VALVERDE MENDIETA JUDITH",
+      "cargo": "COSECHA"
+    },
+    "81545462": {
+      "nombre": "SANCHEZ DELGADO SONIA",
+      "cargo": "COSECHA"
+    },
+    "60501255": {
+      "nombre": "QUISPE ALFARO JOSE ENRRIQUE",
+      "cargo": "SCANER"
+    },
+    "61158245": {
+      "nombre": "LOPEZ CASTRO ANDERSON HECTOR",
+      "cargo": "SCANER"
+    },
+    "18851808": {
+      "nombre": "AGUIRRE NORIEGA MARCO ANTONIO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "76357590": {
+      "nombre": "TRUJILLO MENDOZA ROSMEL KENYI",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "75592884": {
+      "nombre": "FERNANDEZ MARIN FIDEL CRUZ",
+      "cargo": "OPERADOR DE FILTRADO"
+    },
+    "74292250": {
+      "nombre": "VIGO QUITO JAIRO JEANPIER",
+      "cargo": "REGADORES"
+    },
+    "60412475": {
+      "nombre": "SANCHEZ VARGAS ELIAS ADRIAN",
+      "cargo": "REGADORES"
+    },
+    "48529665": {
+      "nombre": "CHIGNE QUISPE ARTURO JUAN MERARDO",
+      "cargo": "REGADORES"
+    },
+    "44362126": {
+      "nombre": "RISCO VARGAS OSCAR YVAN",
+      "cargo": "REGADORES"
+    },
+    "60546118": {
+      "nombre": "HIDALGO CASTILLO JEFFERSON HORACIO",
+      "cargo": "TÉCNICO DE MANTENIMIENTO"
+    },
+    "62955320": {
+      "nombre": "PEREZ ASMAT AXEL BRAYAN",
+      "cargo": "POCERO"
+    },
+    "76505752": {
+      "nombre": "DIAZ ARISMENDIZ MIGUEL ANGEL",
+      "cargo": "POCERO"
+    },
+    "45999328": {
+      "nombre": "SANCHEZ BAUTISTA HENRIK DAIMLER",
+      "cargo": "PREMEZCLADOR"
+    },
+    "74574838": {
+      "nombre": "PAREDES BURGOS EVELYN GIANELLA",
+      "cargo": "AUXILIAR DE RIEGO"
+    },
+    "76754739": {
+      "nombre": "NARRO QUIROZ JHENIFFER LIZZETT",
+      "cargo": "AUXILIAR DE RIEGO"
+    },
+    "26954227": {
+      "nombre": "BRICEÑO SANTOS JULIO EMILIO",
+      "cargo": "COSECHA"
+    },
+    "40173234": {
+      "nombre": "VASQUEZ CASTILLO MARIA ASUNCIONA",
+      "cargo": "COSECHA"
+    },
+    "41539043": {
+      "nombre": "SANDOVAL CHUGNAS ANA CECILIA",
+      "cargo": "COSECHA"
+    },
+    "43213457": {
+      "nombre": "VEGA ESQUIVEL CHARITO NOEMY",
+      "cargo": "COSECHA"
+    },
+    "43551906": {
+      "nombre": "DIAZ LEYVA CARMEN BERANISE",
+      "cargo": "COSECHA"
+    },
+    "43784033": {
+      "nombre": "MERCEDES SEGURA ELSA MARLENY",
+      "cargo": "COSECHA"
+    },
+    "45465727": {
+      "nombre": "JAVE ORBEGOSO DIEGO ARMANDO",
+      "cargo": "COSECHA"
+    },
+    "46846093": {
+      "nombre": "ROJAS HUAMAN PERCY",
+      "cargo": "COSECHA"
+    },
+    "46874400": {
+      "nombre": "AREDO UCEDA MILTHON CESAR",
+      "cargo": "COSECHA"
+    },
+    "47580442": {
+      "nombre": "CASTILLO LUJAN ROSMERY MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "47765331": {
+      "nombre": "RAMOS LOPEZ ISABEL NOEMI",
+      "cargo": "COSECHA"
+    },
+    "48675703": {
+      "nombre": "TAPAYURI MURAYARI PALMIRA",
+      "cargo": "COSECHA"
+    },
+    "60554510": {
+      "nombre": "PEREZ LAIZA MELANY ROXANA",
+      "cargo": "COSECHA"
+    },
+    "60577977": {
+      "nombre": "RUIZ ROMAN CELENA LYSBET",
+      "cargo": "COSECHA"
+    },
+    "60818494": {
+      "nombre": "FLORES CHAVARRI ROSMEL IDELSO",
+      "cargo": "COSECHA"
+    },
+    "70747319": {
+      "nombre": "PEREZ MAURICIO YOLI ANALI",
+      "cargo": "COSECHA"
+    },
+    "71192011": {
+      "nombre": "VASQUEZ RODRIGUEZ DANIELA",
+      "cargo": "COSECHA"
+    },
+    "71767079": {
+      "nombre": "AREDO UCEDA LUIS RENZO",
+      "cargo": "COSECHA"
+    },
+    "71767080": {
+      "nombre": "AREDO UCEDA MAICOL ABEL",
+      "cargo": "COSECHA"
+    },
+    "72842384": {
+      "nombre": "QUIROZ MERLO ANDERSON ALDAIR",
+      "cargo": "COSECHA"
+    },
+    "73432975": {
+      "nombre": "TOLEDO TORRES JUAN MOISES",
+      "cargo": "COSECHA"
+    },
+    "73432976": {
+      "nombre": "TOLEDO TORRES JESUS ABEL",
+      "cargo": "COSECHA"
+    },
+    "75102005": {
+      "nombre": "ARGOMEDO BENITES ISELA ARALIZA",
+      "cargo": "COSECHA"
+    },
+    "75948479": {
+      "nombre": "HUATAY VASQUEZ ERNESTO DAVID",
+      "cargo": "COSECHA"
+    },
+    "77420724": {
+      "nombre": "CHOMBA CHAVARRI NILSON ROBERTO",
+      "cargo": "COSECHA"
+    },
+    "47976667": {
+      "nombre": "HERRERA MUÑOZ SANTOS RICHARD",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "45445951": {
+      "nombre": "NICOLAS RODRIGUEZ GABY",
+      "cargo": "SCANER"
+    },
+    "74954115": {
+      "nombre": "SIFUENTES VIDAL CRISTIAN DAVID",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "18857823": {
+      "nombre": "MEJIA HUACCHA TOMAS ALBERTO",
+      "cargo": "ELECTRICISTA"
+    },
+    "72327656": {
+      "nombre": "MARIÑAS CAMACHO RICHARDSON ALDEIR",
+      "cargo": "AUXILIAR DE ALMACÉN"
+    },
+    "46506951": {
+      "nombre": "RODRIGUEZ CUZCO ROMINA",
+      "cargo": "DESHIERBO"
+    },
+    "47735150": {
+      "nombre": "MARTINEZ GUTIERREZ EMMY LIZ",
+      "cargo": "DESHIERBO"
+    },
+    "17938263": {
+      "nombre": "GADEA VILLALTA EDGARD JAIME",
+      "cargo": "DESHIERBO"
+    },
+    "18832349": {
+      "nombre": "NAVARRETE RAFAEL SANTOS VICTOR",
+      "cargo": "DESHIERBO"
+    },
+    "18863592": {
+      "nombre": "RODRIGUEZ CHAVEZ CESAR FELIX",
+      "cargo": "DESHIERBO"
+    },
+    "19052909": {
+      "nombre": "LUJAN GARCIA ANGELA GREGORIA",
+      "cargo": "DESHIERBO"
+    },
+    "19416587": {
+      "nombre": "TRUJILLO MATOS LUIS BELTRAN",
+      "cargo": "DESHIERBO"
+    },
+    "19701804": {
+      "nombre": "ORTIZ CABALLERO FELIPA HERMELINDA",
+      "cargo": "DESHIERBO"
+    },
+    "26713214": {
+      "nombre": "INTOR MURRUGARRA JESUS MANUEL",
+      "cargo": "DESHIERBO"
+    },
+    "40682928": {
+      "nombre": "BOCANEGRA AGUILAR IVAN MARTIN",
+      "cargo": "DESHIERBO"
+    },
+    "41865351": {
+      "nombre": "VEGA VILLANUEVA JUAN CARLOS",
+      "cargo": "DESHIERBO"
+    },
+    "45897563": {
+      "nombre": "MIRANDA BLAS DE LLONTOP MILAGROS VERONICA",
+      "cargo": "DESHIERBO"
+    },
+    "46574162": {
+      "nombre": "BUÑON RODRIGUEZ MARIA ROSANGELA",
+      "cargo": "DESHIERBO"
+    },
+    "47032665": {
+      "nombre": "CABRERA VILLARREAL JULIO CESAR",
+      "cargo": "DESHIERBO"
+    },
+    "70603942": {
+      "nombre": "ALCANTARA TANTA FIORELA LISBETH",
+      "cargo": "DESHIERBO"
+    },
+    "70879664": {
+      "nombre": "VASQUEZ GUTIERREZ JOSE ARNIE KLEBERSON",
+      "cargo": "DESHIERBO"
+    },
+    "71098422": {
+      "nombre": "ZETA ROSAS ADRIAN JOSE",
+      "cargo": "DESHIERBO"
+    },
+    "73130060": {
+      "nombre": "TELLO BAZAURI LUISA KATHERINE",
+      "cargo": "DESHIERBO"
+    },
+    "74728889": {
+      "nombre": "HUACCHA CONTRERAS JOSE ALBERTO",
+      "cargo": "DESHIERBO"
+    },
+    "75135560": {
+      "nombre": "ROMERO ESCOBAL MARIA LUISA",
+      "cargo": "DESHIERBO"
+    },
+    "76173236": {
+      "nombre": "VEGA VIGO JOSUE MOISES",
+      "cargo": "DESHIERBO"
+    },
+    "80580199": {
+      "nombre": "HUACCHA GOMEZ ALBERTO",
+      "cargo": "DESHIERBO"
+    },
+    "81760672": {
+      "nombre": "QUIROZ QUISPE ANDRES NICOLAS",
+      "cargo": "DESHIERBO"
+    },
+    "01004676": {
+      "nombre": "RODRIGUEZ VALLES ROSA MAGNOLIA",
+      "cargo": "DESHIERBO"
+    },
+    "10167154": {
+      "nombre": "RAMIREZ QUEREBALU EMPERATRIZ ELENA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "18897616": {
+      "nombre": "GARCIA LLERENA MARIA ELENA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "46675261": {
+      "nombre": "CORDOVA SAUCEDO KATTIA CARMEN",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "46746364": {
+      "nombre": "ROJAS CARRERA YOLANDA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "48537772": {
+      "nombre": "JIMENEZ JARA IRMA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "62488692": {
+      "nombre": "CALUA ACUÑA VANESA FIORELA",
+      "cargo": "LIMPIEZA DE AMBIENTES"
+    },
+    "41352859": {
+      "nombre": "GARCIA NARVAEZ UFEMIO DEMETRIO",
+      "cargo": "ALAMBRADO DE MACETAS"
+    },
+    "48557832": {
+      "nombre": "VILLEGAS DIAZ GIANMARCO",
+      "cargo": "ALAMBRADO DE MACETAS"
+    },
+    "62749447": {
+      "nombre": "OCAS VARGAS JUAN JOSE",
+      "cargo": "CETRERÍA"
+    },
+    "80194059": {
+      "nombre": "ALVA PERALTA SEGUNDO ALFONSO",
+      "cargo": "CETRERÍA"
+    },
+    "41927043": {
+      "nombre": "RODRIGUEZ AVALOS ANTONY NELSON",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "43658154": {
+      "nombre": "LARA HUAMAN VICTOR ALAN",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "48139357": {
+      "nombre": "ROJAS CARRERA JOSE ELAR",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "48375880": {
+      "nombre": "COSAVALENTE CHAVEZ JEAN FRANCO",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "75652752": {
+      "nombre": "ROJAS BRIONES MAICOL YECSOR",
+      "cargo": "RIEGO DE CAMINOS"
+    },
+    "42913214": {
+      "nombre": "ESPINOZA CASTAÑEDA JHON WILLY",
+      "cargo": "AUXILIAR DE CAMPO"
+    },
+    "40960301": {
+      "nombre": "FLORES RENGIFO GUILLERMO GUIDO",
+      "cargo": "MECANICO"
+    },
+    "40828800": {
+      "nombre": "COTRINA TORRES SEGUNDO ANGEL",
+      "cargo": "ESTIBA KIA"
+    },
+    "41280511": {
+      "nombre": "BUENO SANDOVAL WILSON FELIPE",
+      "cargo": "ESTIBA KIA"
+    },
+    "41737852": {
+      "nombre": "SANCHEZ TOCAS JOSE HILARIO",
+      "cargo": "ESTIBA KIA"
+    },
+    "42473643": {
+      "nombre": "SALDAÑA PAREDES RENE EDER",
+      "cargo": "ESTIBA KIA"
+    },
+    "45584688": {
+      "nombre": "MENDOZA MARTINEZ DARWIN ADELMAR",
+      "cargo": "ESTIBA KIA"
+    },
+    "60383323": {
+      "nombre": "HUACCHA BACON JHON ALEXANDER",
+      "cargo": "ESTIBA KIA"
+    },
+    "60425500": {
+      "nombre": "MARQUINA CABELLOS LUCAS DAVID",
+      "cargo": "ESTIBA KIA"
+    },
+    "70266545": {
+      "nombre": "PASTOR POLANCO PETTER JHONATAN",
+      "cargo": "ESTIBA KIA"
+    },
+    "72678204": {
+      "nombre": "SIPIRAN TIRADO JAMBRY JOHANNES STHEFANO",
+      "cargo": "ESTIBA KIA"
+    },
+    "76293442": {
+      "nombre": "PAREDES GALLARDO JHEYSON JHAHIR",
+      "cargo": "ESTIBA KIA"
+    },
+    "80533677": {
+      "nombre": "AGUILAR VIGO JOSE EDUARDO",
+      "cargo": "ESTIBA KIA"
+    },
+    "73866983": {
+      "nombre": "POLO VILLANUEVA JHRODY MICHAEL",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "75427949": {
+      "nombre": "YARLEQUE SUAREZ DEIBY JESUS",
+      "cargo": "EVALUADOR DE PESOS Y CALIBRES"
+    },
+    "18078778": {
+      "nombre": "ASTOPILCO VALENCIA BLANCA RUTH",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "18897968": {
+      "nombre": "ALVARADO FLORES FELIX",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "61158280": {
+      "nombre": "MORENO VELASQUEZ CRISTHIAN ESTEBAN",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "72214708": {
+      "nombre": "BAUTISTA AZAÑERO LUIS GUILLERMO",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "75054748": {
+      "nombre": "MUÑOZ VIGO AYDEE",
+      "cargo": "LAVADO DE JARRAS"
+    },
+    "73918368": {
+      "nombre": "CHAVEZ QUIROZ RODRIGO ALEJANDRO",
+      "cargo": "PROYECCIÓN"
+    },
+    "44917671": {
+      "nombre": "CHILON BARRERA JOSE ELMER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "47055637": {
+      "nombre": "TINEO GUERRERO JHON MIGUEL",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74292254": {
+      "nombre": "MORENO MANTILLA JAHAZIEL MOISES",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74458773": {
+      "nombre": "PONCE JARA JAVIER ORLANDO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "80447458": {
+      "nombre": "POLO RODRIGUEZ SANTOS TIMOTEO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "44663517": {
+      "nombre": "CORTEZ SANCHEZ JUAN CARLOS",
+      "cargo": "SUPERVISOR DE ACOPIO"
+    },
+    "75049415": {
+      "nombre": "RUIZ TIZNADO CORAIMA YSABEL",
+      "cargo": "ESTIBA ACOPIO"
+    },
+    "76627465": {
+      "nombre": "PAREDES GARCIA MELVIN ENDRICK",
+      "cargo": "SCANER"
+    },
+    "76427792": {
+      "nombre": "VALVERDE REYES ANDY MIGUEL",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "75064955": {
+      "nombre": "MENDOZA FLORES ANA MARICELA",
+      "cargo": "COSECHA"
+    },
+    "48402226": {
+      "nombre": "ABANTO CUEVA JOSE LUIS",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "61353544": {
+      "nombre": "SANDOVAL NAVIDAD JUAN JOSE EDU",
+      "cargo": "COSECHA"
+    },
+    "62257812": {
+      "nombre": "MEDINA CORTEZ JOSE JAVIER",
+      "cargo": "COSECHA"
+    },
+    "62339656": {
+      "nombre": "PEREZ SILVA ALEJANDRO JESUS",
+      "cargo": "COSECHA"
+    },
+    "74239909": {
+      "nombre": "PADILLA NUÑEZ JESUS MARIA",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "76973412": {
+      "nombre": "PEREZ DE LA CRUZ KEYLI MADAHI",
+      "cargo": "COSECHA"
+    },
+    "47811732": {
+      "nombre": "YAHUARCANI MANIHUARI VICTOR ATILIO",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "61561719": {
+      "nombre": "GARCIA VILLACORTA YANIRA",
+      "cargo": "COSECHA"
+    },
+    "06601132": {
+      "nombre": "06601132",
+      "cargo": "COSECHA"
+    },
+    "71533083": {
+      "nombre": "VILLALOBOS PUMAYALLA EDWIN JEHU",
+      "cargo": "SCANER"
+    },
+    "70380588": {
+      "nombre": "CHIGNE ALFARO SHARON MEDALLIT",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "27575643": {
+      "nombre": "HUAMAN CHOROCO JOSE SANTOS",
+      "cargo": "COSECHA"
+    },
+    "73317860": {
+      "nombre": "NAVARRO MANTILLA ARNOLD JAFET",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "72799496": {
+      "nombre": "VASQUEZ CARDENAS CRISTIAN OLIVER",
+      "cargo": "AUXILIAR DE CALIDAD"
+    },
+    "45608103": {
+      "nombre": "GAVIDIA RAMIREZ LUIGI ANDERSON",
+      "cargo": "CALIDAD"
+    },
+    "47407697": {
+      "nombre": "ROLDAN PEREZ JULIO ANTONIO",
+      "cargo": "CALIDAD"
+    },
+    "61256446": {
+      "nombre": "RUMAY DIAZ KEVIN ELISEO",
+      "cargo": "CALIDAD"
+    },
+    "61256447": {
+      "nombre": "RUMAY DIAZ LAZARO RENE",
+      "cargo": "CALIDAD"
+    },
+    "61669930": {
+      "nombre": "SEGURA NEYRA YENNY LISET",
+      "cargo": "CALIDAD"
+    },
+    "70132627": {
+      "nombre": "MIRANDA PALACIOS ERNESTINA EVELYN",
+      "cargo": "CALIDAD"
+    },
+    "70901533": {
+      "nombre": "GALLARDO CHUQUIPOMA KENIA STEPHANY",
+      "cargo": "CALIDAD"
+    },
+    "72096348": {
+      "nombre": "DIOSES MENDOZA FLOR MARIA",
+      "cargo": "CALIDAD"
+    },
+    "72743323": {
+      "nombre": "VILLANUEVA CAYPO ELIZABETH NOEMI",
+      "cargo": "CALIDAD"
+    },
+    "75023887": {
+      "nombre": "SIPIRAN BAUTISTA OSCAR RUBEN",
+      "cargo": "CALIDAD"
+    },
+    "76977945": {
+      "nombre": "CASTRO SANCHEZ MARIA VALENTINA",
+      "cargo": "CALIDAD"
+    },
+    "77505282": {
+      "nombre": "LANDAURO GUTIERREZ SARALEE SOFIA",
+      "cargo": "CALIDAD"
+    },
+    "76879186": {
+      "nombre": "PEREZ SANCHEZ JOSE ANTONIO",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "41070370": {
+      "nombre": "LEON GUZMAN SEGUNDO MAURO",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "71241946": {
+      "nombre": "RODRIGUEZ MUÑOZ ANGEL ANIBAL",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "40206115": {
+      "nombre": "SANCHEZ TOCAS SEGUNDO HUMBERTO",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "77032583": {
+      "nombre": "LARA SOLIS JHOVANNY PABLO",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "48255807": {
+      "nombre": "TARAZONA FLORES FABIAN",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "74291791": {
+      "nombre": "LEON ALCANTARA JUNIOR JEANPIER",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "74292710": {
+      "nombre": "CHUQUIRUNA ESTACIO OMAR BRANDOLI",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "47917243": {
+      "nombre": "NUREÑA DIAZ EDIN MARTIN",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "62706911": {
+      "nombre": "NIQUIN TORRES PEDRO DANILO",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "70654469": {
+      "nombre": "SANCHEZ DE LA CRUZ NAYRA ROSARIO",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "74419867": {
+      "nombre": "VIGO GARCIA ALBERT ARMANDO",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "74713177": {
+      "nombre": "ALFARO PLASENCIA YURICO ESTHER",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "76203172": {
+      "nombre": "BARRETO CHAPOÑAN SAMUEL MODESTO",
+      "cargo": "SUPERVISOR DE FITOSANIDAD"
+    },
+    "70653354": {
+      "nombre": "GONZALES FLORES JORKAELF",
+      "cargo": "SUPERVISOR DE FITOSANIDAD"
+    },
+    "72911037": {
+      "nombre": "VASQUEZ COTRINA EVELYN RUVIT",
+      "cargo": "DIGITADOR DE SANIDAD"
+    },
+    "48376024": {
+      "nombre": "ROMERO JAMBO LUIS ALEXANDER",
+      "cargo": "PRE MEZCLA"
+    },
+    "72635624": {
+      "nombre": "SANDOVAL LARA CARLOS ANDERSON",
+      "cargo": "PRE MEZCLA"
+    },
+    "18076512": {
+      "nombre": "RODRIGUEZ ROJAS GLORIA ISABEL",
+      "cargo": "COSECHA"
+    },
+    "18143728": {
+      "nombre": "FLORES YALLI GLORIA",
+      "cargo": "COSECHA"
+    },
+    "40029846": {
+      "nombre": "REYES GERONIMO EDUARDA",
+      "cargo": "COSECHA"
+    },
+    "40806046": {
+      "nombre": "PATIÑO PEÑA RUDIC LILIANA",
+      "cargo": "COSECHA"
+    },
+    "43437449": {
+      "nombre": "MERINO QUEVEDO ARACELY DEL PILAR",
+      "cargo": "COSECHA"
+    },
+    "48084305": {
+      "nombre": "ALAMA BRAVO DIANA YAQUELINE",
+      "cargo": "COSECHA"
+    },
+    "60600081": {
+      "nombre": "VERA ZAMBRANO ANDY ESTEFANO",
+      "cargo": "COSECHA"
+    },
+    "70113477": {
+      "nombre": "OLIVARES SALVADOR LUIS ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "80636113": {
+      "nombre": "GUZMAN GARCIA SANTOS NANCY",
+      "cargo": "COSECHA"
+    },
+    "48755325": {
+      "nombre": "VIGO AZABACHE YURI YOSELIN",
+      "cargo": "SCANER"
+    },
+    "47358765": {
+      "nombre": "VASQUEZ VASQUEZ CARLOS ALEXANDER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "17854147": {
+      "nombre": "VILLALOBOS VIDAL MARIA ZULEIZA",
+      "cargo": "COSECHA"
+    },
+    "18125373": {
+      "nombre": "VILLENA LOPEZ LUZ MARY",
+      "cargo": "COSECHA"
+    },
+    "18144746": {
+      "nombre": "CARRANZA SIMON ROSA MARIA",
+      "cargo": "COSECHA"
+    },
+    "19032981": {
+      "nombre": "ABANTO ROJAS ROBERTH",
+      "cargo": "COSECHA"
+    },
+    "42494461": {
+      "nombre": "PAZ HURTADO ROSA DINA",
+      "cargo": "COSECHA"
+    },
+    "42534619": {
+      "nombre": "POLO MIGUEL JUAN ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "43294619": {
+      "nombre": "TORRES LLANOS KARINA XIOSMARA",
+      "cargo": "COSECHA"
+    },
+    "45296942": {
+      "nombre": "GERONIMO DIAZ JULIA",
+      "cargo": "COSECHA"
+    },
+    "45406936": {
+      "nombre": "ALCANTARA DIAZ MARIA BELSY",
+      "cargo": "COSECHA"
+    },
+    "45560102": {
+      "nombre": "RODRIGUEZ FLORES MAGALI MARIANELA",
+      "cargo": "COSECHA"
+    },
+    "46557389": {
+      "nombre": "MONTEZA ALTAMIRANO HIDALI",
+      "cargo": "COSECHA"
+    },
+    "47724655": {
+      "nombre": "GARCIA CASTILLO FIMA MILAGRITOS",
+      "cargo": "COSECHA"
+    },
+    "48181257": {
+      "nombre": "MARTINEZ GARCIA JUAN CARLOS",
+      "cargo": "COSECHA"
+    },
+    "48775118": {
+      "nombre": "REYES MEDINA WENDY ESTEFFANI",
+      "cargo": "COSECHA"
+    },
+    "60596122": {
+      "nombre": "PAREDES ANDRADE LEITON YAMIR",
+      "cargo": "COSECHA"
+    },
+    "61317149": {
+      "nombre": "ANGULO RUIZ ARACELY ANALY",
+      "cargo": "COSECHA"
+    },
+    "62790845": {
+      "nombre": "POLO TORRES ANTHONY JANPIER",
+      "cargo": "COSECHA"
+    },
+    "63070760": {
+      "nombre": "ROJAS SANTILLAN MAGDALENA GEMMA",
+      "cargo": "COSECHA"
+    },
+    "71752132": {
+      "nombre": "CABRERA VEGA ROYDIN JEFERSON",
+      "cargo": "COSECHA"
+    },
+    "72475978": {
+      "nombre": "REBAZA SANTILLAN MARQUITA MARLENY",
+      "cargo": "COSECHA"
+    },
+    "72527557": {
+      "nombre": "RODRIGUEZ ROBLES YUVER",
+      "cargo": "COSECHA"
+    },
+    "75092087": {
+      "nombre": "GOMEZ RUIZ ROSA LIZBETH",
+      "cargo": "COSECHA"
+    },
+    "75241450": {
+      "nombre": "INFANTES GAMBOA LUIS FERNANDO",
+      "cargo": "COSECHA"
+    },
+    "75332629": {
+      "nombre": "CONCHA SABALETA SILVIA MARIA",
+      "cargo": "COSECHA"
+    },
+    "75332630": {
+      "nombre": "CONCHA SABALETA CARLOS ENRIQUE",
+      "cargo": "COSECHA"
+    },
+    "75553481": {
+      "nombre": "YAJAHUANCA AGURTO ROSA VIOLETA",
+      "cargo": "COSECHA"
+    },
+    "76859103": {
+      "nombre": "SANCHEZ PALACIOS ROXANA",
+      "cargo": "COSECHA"
+    },
+    "76939201": {
+      "nombre": "CHAMAY PEREZ MARIA DULCELINA",
+      "cargo": "COSECHA"
+    },
+    "77820301": {
+      "nombre": "ROJAS TOLENTINO JEYZON KEYFER",
+      "cargo": "COSECHA"
+    },
+    "78018393": {
+      "nombre": "VEGA RODRIGUEZ ROMARIO",
+      "cargo": "COSECHA"
+    },
+    "79985177": {
+      "nombre": "BLAS CUENCA MARICIELO NICOL",
+      "cargo": "COSECHA"
+    },
+    "76418254": {
+      "nombre": "BALERIO CARRANZA ERICK IVAN",
+      "cargo": "SCANER"
+    },
+    "19260959": {
+      "nombre": "FLORES YENGLE MARGARITA BERTILDE",
+      "cargo": "COSECHA"
+    },
+    "42273974": {
+      "nombre": "NIETO REYES JORGE EDUARDO",
+      "cargo": "COSECHA"
+    },
+    "42697110": {
+      "nombre": "CAIPO ALFARO SANTOS MANUEL",
+      "cargo": "COSECHA"
+    },
+    "43930178": {
+      "nombre": "PASTOR VIGO JARUMY CORINA",
+      "cargo": "COSECHA"
+    },
+    "45417573": {
+      "nombre": "CASTILLO VALDERRAMA JHON DAVE",
+      "cargo": "COSECHA"
+    },
+    "45554365": {
+      "nombre": "MINCHOLA POLO EMITERIO",
+      "cargo": "COSECHA"
+    },
+    "61669933": {
+      "nombre": "SANCHEZ YUPANQUI ROCIO",
+      "cargo": "COSECHA"
+    },
+    "71198820": {
+      "nombre": "TORREZ CABANILLAS NOE",
+      "cargo": "COSECHA"
+    },
+    "74052293": {
+      "nombre": "SANCHEZ YUPANQUI LEYDIS",
+      "cargo": "COSECHA"
+    },
+    "74293127": {
+      "nombre": "CARDENAS HUAMAN SHIRLEY ALEJANDRINA",
+      "cargo": "COSECHA"
+    },
+    "74456550": {
+      "nombre": "MEDINA CRESPIN JAIVER SERGIO",
+      "cargo": "COSECHA"
+    },
+    "74481806": {
+      "nombre": "VALDEZ RIOS SELENE MAGDIEL",
+      "cargo": "COSECHA"
+    },
+    "76908988": {
+      "nombre": "ARBILDO ICOMENA DEIVID",
+      "cargo": "COSECHA"
+    },
+    "80300260": {
+      "nombre": "GIL MUÑOZ DE AZAÑERO MARITZA MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "60727191": {
+      "nombre": "SAUCEDO ARISTA ANGEL STALYN",
+      "cargo": "SCANER"
+    },
+    "47289595": {
+      "nombre": "HUAMAN MUÑOZ MARIELA",
+      "cargo": "COSECHA"
+    },
+    "61425114": {
+      "nombre": "SHUNTA AHUANANCHI CATTYA FIORELA",
+      "cargo": "COSECHA"
+    },
+    "62966252": {
+      "nombre": "MORA PABLO EDWIN FELIPE",
+      "cargo": "COSECHA"
+    },
+    "71708304": {
+      "nombre": "GOICOCHEA PARDO AUNER",
+      "cargo": "COSECHA"
+    },
+    "75394507": {
+      "nombre": "ABANTO JUAREZ LEYDI ELIZABETH",
+      "cargo": "COSECHA"
+    },
+    "06216115": {
+      "nombre": "06216115",
+      "cargo": "COSECHA"
+    },
+    "81560694": {
+      "nombre": "VILLANUEVA FLORES JACKELINE",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "63090039": {
+      "nombre": "VARGAS SIQUIHUA ROYER JHAIR",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "75023865": {
+      "nombre": "GONZALES TIRADO JOSE ALBERTO",
+      "cargo": "PRE MEZCLA"
+    },
+    "80182137": {
+      "nombre": "CHIRINOS TORRES HENRY LUIS",
+      "cargo": "MANTENIMIENTO DE CERCO VIVO"
+    },
+    "75859900": {
+      "nombre": "TERRONES MEDINA IDELSO",
+      "cargo": "MANTENIMIENTO DE CAMPO"
+    },
+    "18897808": {
+      "nombre": "ROMERO GARCIA CARLOS FELIPE",
+      "cargo": "CETRERÍA"
+    },
+    "44568145": {
+      "nombre": "RAMIREZ BALTAZAR ISMAEL CRISTOBAL",
+      "cargo": "CETRERÍA"
+    },
+    "15753372": {
+      "nombre": "RAMIREZ QUISPE NATIVIDAD",
+      "cargo": "CARPINTERÍA"
+    },
+    "73927645": {
+      "nombre": "VEGA ARAUJO EMMANUEL ALESSANDRO",
+      "cargo": "SCANER"
+    },
+    "76988972": {
+      "nombre": "VASQUEZ HUINGO JUNIOR ALEXANDER",
+      "cargo": "OPERADOR DE FILTRADO"
+    },
+    "77161163": {
+      "nombre": "GAMBOA CAMPOS ROGER ALEXANDER",
+      "cargo": "OPERADOR DE FILTRADO"
+    },
+    "72468528": {
+      "nombre": "MORALES QUIROZ EDUARDO YAIR",
+      "cargo": "REGADORES"
+    },
+    "41613772": {
+      "nombre": "VIGO VILLANUEVA MIGUEL ANGEL",
+      "cargo": "REGADORES"
+    },
+    "48983551": {
+      "nombre": "JIMENEZ MUÑOZ DAMIAN JONY",
+      "cargo": "POCERO"
+    },
+    "72751676": {
+      "nombre": "ROJAS ALVA CRISTIAN FELIPE",
+      "cargo": "SUPERVISOR DE CALIDAD"
+    },
+    "70657242": {
+      "nombre": "UCEDA ARIAS JOEL ALEXANDER",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "60508135": {
+      "nombre": "SERIN MELGAREJO FRANKLIN YADILSON",
+      "cargo": "COSECHA"
+    },
+    "75091579": {
+      "nombre": "RIVEROS REYES KARLIN AYAMALID",
+      "cargo": "COSECHA"
+    },
+    "73300943": {
+      "nombre": "DE LA CRUZ URIOL VANIA NAYELI",
+      "cargo": "SCANER"
+    },
+    "72961122": {
+      "nombre": "TORRES GONZALEZ DE AQUINO MARTHA KARINA",
+      "cargo": "EVALUADOR DE I&D"
+    },
+    "74037870": {
+      "nombre": "CALDERON VILLANUEVA MARIA DE LOS ANGELES",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "02198156": {
+      "nombre": "02198156",
+      "cargo": "COSECHA"
+    },
+    "60593803": {
+      "nombre": "PONCE ROJAS JOSE FERNANDO",
+      "cargo": "SCANER"
+    },
+    "74983128": {
+      "nombre": "VARGAS ALFARO JARUMI DAYANA",
+      "cargo": "SCANER"
+    },
+    "43662384": {
+      "nombre": "CUENCA FLORES ELADIO",
+      "cargo": "REGADORES"
+    },
+    "42479113": {
+      "nombre": "RISCO VARGAS JHONNY WILLIAN",
+      "cargo": "REGADORES"
+    },
+    "71781641": {
+      "nombre": "RODRIGUEZ BRICEÑO VALERIO BERNABE",
+      "cargo": "TÉCNICO DE MANTENIMIENTO"
+    },
+    "77289202": {
+      "nombre": "GONZALEZ ROMERO RONALDO SAUL",
+      "cargo": "OPERADOR OSMOSIS"
+    },
+    "74353111": {
+      "nombre": "PERALTA SOTO AZUCENA MARISOL",
+      "cargo": "COSECHA"
+    },
+    "74292194": {
+      "nombre": "IZQUIERDO VILCA YAJAIRA NOEMI",
+      "cargo": "SCANER"
+    },
+    "48784636": {
+      "nombre": "RAMIREZ SALIRROSAS FRANCISCO MOISES",
+      "cargo": "COSECHA"
+    },
+    "47613298": {
+      "nombre": "MIRANDA CULQUE JOSE DAVID",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "74578632": {
+      "nombre": "LOPEZ GARCIA BRAYAN JOLSEN",
+      "cargo": "COSECHA"
+    },
+    "75600174": {
+      "nombre": "DEZA SANCHEZ ESTEFANI ANTONIETA",
+      "cargo": "COSECHA"
+    },
+    "47188311": {
+      "nombre": "PEREIRA VASQUEZ LUCELIA LEONORA",
+      "cargo": "CALIDAD"
+    },
+    "40621686": {
+      "nombre": "PULIDO MONTES JOSE LUIS",
+      "cargo": "COSECHA"
+    },
+    "72745916": {
+      "nombre": "URQUIAGA VALVERDE RICARDO ANGEL",
+      "cargo": "COSECHA"
+    },
+    "92579456": {
+      "nombre": "VALVERDE ROSALES JUAN DAVID",
+      "cargo": "COSECHA"
+    },
+    "07430657": {
+      "nombre": "07430657",
+      "cargo": "COSECHA"
+    },
+    "06247106": {
+      "nombre": "06247106",
+      "cargo": "COSECHA"
+    },
+    "76537917": {
+      "nombre": "ASUNCION RUBIO ROXANA ESTHER",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "76691428": {
+      "nombre": "SALAZAR CHUQUILIN THALIA ESTELITA",
+      "cargo": "COSECHA"
+    },
+    "04587156": {
+      "nombre": "04587156",
+      "cargo": "COSECHA"
+    },
+    "46369609": {
+      "nombre": "LAVADO CAIPO ROSITA FELICITA",
+      "cargo": "COSECHA"
+    },
+    "18897294": {
+      "nombre": "CHUQUIPOMA ZELADA LUIS ALBERTO",
+      "cargo": "POCERO"
+    },
+    "75498845": {
+      "nombre": "JARA ROMERO MILAGRITOS GERALDINE",
+      "cargo": "PROYECCIÓN"
+    },
+    "18081422": {
+      "nombre": "LOPEZ AVALOS GREGORIO FERMIN",
+      "cargo": "COSECHA"
+    },
+    "41620900": {
+      "nombre": "REYNA LOLOY DANILA MARIBEL",
+      "cargo": "COSECHA"
+    },
+    "42649405": {
+      "nombre": "ARANA CRISOLOGO MAGALI JANETT",
+      "cargo": "COSECHA"
+    },
+    "47429960": {
+      "nombre": "HORNA ZAVALA ROSITA YAJAIRA",
+      "cargo": "COSECHA"
+    },
+    "08870391": {
+      "nombre": "08870391",
+      "cargo": "COSECHA"
+    },
+    "06318147": {
+      "nombre": "06318147",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "72132952": {
+      "nombre": "ALFARO MORENO MIGUEL ANGEL",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "75709025": {
+      "nombre": "75709025",
+      "cargo": "COSECHA"
+    },
+    "43295414": {
+      "nombre": "LLAPO CALDERON KARIN YESENIA",
+      "cargo": "COSECHA"
+    },
+    "43359899": {
+      "nombre": "VALIENTE URIOL ROSA DICDALIA",
+      "cargo": "COSECHA"
+    },
+    "48114605": {
+      "nombre": "GONZALEZ FLORES JOSE LUIS",
+      "cargo": "COSECHA"
+    },
+    "63303804": {
+      "nombre": "CABRERA VILLALOBOS RENZO DAVID",
+      "cargo": "COSECHA"
+    },
+    "70497422": {
+      "nombre": "GARCIA VASQUEZ JHANNY MIRELE",
+      "cargo": "COSECHA"
+    },
+    "77691933": {
+      "nombre": "PINILLOS QUEZADA CARLOS ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "43849130": {
+      "nombre": "AGUILAR AZAÑERO QUELINDA ROSMERY",
+      "cargo": "COSECHA"
+    },
+    "44178848": {
+      "nombre": "GIL PEREZ PAULA YELITSA",
+      "cargo": "COSECHA"
+    },
+    "45483786": {
+      "nombre": "CABRERA JULCA JEEN FRANDY",
+      "cargo": "COSECHA"
+    },
+    "62301869": {
+      "nombre": "PETSAYIT NUGKUM SUMMY LINDA",
+      "cargo": "COSECHA"
+    },
+    "70551350": {
+      "nombre": "FLORES GUTIERREZ MARICIELO CAROLINA",
+      "cargo": "COSECHA"
+    },
+    "72763020": {
+      "nombre": "DIAZ CERQUIN JHONATAN ANTHONY",
+      "cargo": "COSECHA"
+    },
+    "73951560": {
+      "nombre": "BENITES NOVOA JOSE RAUL",
+      "cargo": "COSECHA"
+    },
+    "74482693": {
+      "nombre": "PORTAL BRICEÑO YOJAN SOTIL",
+      "cargo": "COSECHA"
+    },
+    "77145076": {
+      "nombre": "BUSTAMANTE DELGADO JUAN CRISTHIAN",
+      "cargo": "COSECHA"
+    },
+    "77321069": {
+      "nombre": "GARCIA VILLALOBOS DOMILIA",
+      "cargo": "COSECHA"
+    },
+    "17946500": {
+      "nombre": "VILCA GIL YANE",
+      "cargo": "COSECHA"
+    },
+    "18899288": {
+      "nombre": "NINAQUISPE MERCADO ROGER RAFAEL",
+      "cargo": "COSECHA"
+    },
+    "19072611": {
+      "nombre": "MORALES RODRIGUEZ BETY",
+      "cargo": "COSECHA"
+    },
+    "26687765": {
+      "nombre": "MINCHAN CARMONA JOSE CELSO",
+      "cargo": "COSECHA"
+    },
+    "26737932": {
+      "nombre": "CUENCA FLORES PEDRO",
+      "cargo": "COSECHA"
+    },
+    "42525914": {
+      "nombre": "DE LA CRUZ PIÑA ESTHER",
+      "cargo": "COSECHA"
+    },
+    "42581310": {
+      "nombre": "MINCHAN TORRES JORGE LOUIS",
+      "cargo": "COSECHA"
+    },
+    "45284553": {
+      "nombre": "VERA LAYZA SARELA MIRIAN",
+      "cargo": "COSECHA"
+    },
+    "45400149": {
+      "nombre": "RUIZ RODRIGUEZ ALBERTO RANIERY",
+      "cargo": "COSECHA"
+    },
+    "46601366": {
+      "nombre": "VILLA PEÑA MARIA MERCEDES",
+      "cargo": "COSECHA"
+    },
+    "46875245": {
+      "nombre": "MERCEDES MARTINEZ GREGORIA FELICITA",
+      "cargo": "COSECHA"
+    },
+    "47575074": {
+      "nombre": "VARGAS LOLOY MILY ESMERALDA",
+      "cargo": "COSECHA"
+    },
+    "48537767": {
+      "nombre": "VASQUEZ VILCA ROSITA MILAGROS",
+      "cargo": "COSECHA"
+    },
+    "48698257": {
+      "nombre": "LOLOY RODRIGUEZ YHONATAN UBER",
+      "cargo": "COSECHA"
+    },
+    "48860965": {
+      "nombre": "OLIVERA DIAZ NEFTALI NEAL",
+      "cargo": "COSECHA"
+    },
+    "60038895": {
+      "nombre": "VALDEZ MENDOZA SAUL",
+      "cargo": "COSECHA"
+    },
+    "60052669": {
+      "nombre": "CIEZA VEGA RUTH SADIT",
+      "cargo": "COSECHA"
+    },
+    "62584860": {
+      "nombre": "VERA OLIVEROS NILTON ABEL",
+      "cargo": "COSECHA"
+    },
+    "63777720": {
+      "nombre": "NARRO DAVALOS JHAN CARLOS",
+      "cargo": "COSECHA"
+    },
+    "70938559": {
+      "nombre": "AVALOS MORALES ROLANDO ALEXIS",
+      "cargo": "COSECHA"
+    },
+    "72087150": {
+      "nombre": "VARGAS GUERRERO NEYLA YIRELLI",
+      "cargo": "COSECHA"
+    },
+    "72797659": {
+      "nombre": "OLIVARES LAIZA FAUSTINO NARCISO",
+      "cargo": "COSECHA"
+    },
+    "73575670": {
+      "nombre": "VARGAS LOLOY SARA BANI",
+      "cargo": "COSECHA"
+    },
+    "73662018": {
+      "nombre": "VASQUEZ HUIMAN KEVIN JUAN",
+      "cargo": "COSECHA"
+    },
+    "75095518": {
+      "nombre": "NARRO RAVELO DANIEL ALEXANDER",
+      "cargo": "COSECHA"
+    },
+    "75364074": {
+      "nombre": "MOSTACERO NAMOC DEYVI EDWIN",
+      "cargo": "COSECHA"
+    },
+    "76342485": {
+      "nombre": "YAJAHUANCA GARCIA GEINER",
+      "cargo": "COSECHA"
+    },
+    "76775687": {
+      "nombre": "MESTANZA TAPIA MARIA NORELY",
+      "cargo": "COSECHA"
+    },
+    "76932672": {
+      "nombre": "CORONEL HEREDIA KEILER",
+      "cargo": "COSECHA"
+    },
+    "77032457": {
+      "nombre": "CHINCHAY LIVIA OLMEDO",
+      "cargo": "COSECHA"
+    },
+    "78547224": {
+      "nombre": "MENDOZA ALCANTARA JUAN GUSTAVO",
+      "cargo": "COSECHA"
+    },
+    "78635158": {
+      "nombre": "CRISÓLOGO MENDOZA DENIS MICHAEL",
+      "cargo": "COSECHA"
+    },
+    "79545185": {
+      "nombre": "CRISOLOGO MENDOZA DANY SAUL",
+      "cargo": "COSECHA"
+    },
+    "80174577": {
+      "nombre": "MINCHAN TORRES JOE DICK",
+      "cargo": "COSECHA"
+    },
+    "80179120": {
+      "nombre": "DE LA CRUZ CRISOLOGO MARIA NELLY",
+      "cargo": "COSECHA"
+    },
+    "03329610": {
+      "nombre": "CRUZ CORDOVA MANUEL",
+      "cargo": "COSECHA"
+    },
+    "17625986": {
+      "nombre": "SAAVEDRA CARRASCO VILMA",
+      "cargo": "COSECHA"
+    },
+    "19064727": {
+      "nombre": "VARAS VILLALOBOS WALTER",
+      "cargo": "COSECHA"
+    },
+    "40930239": {
+      "nombre": "MANTILLA GOMEZ ESTHER RAQUEL",
+      "cargo": "COSECHA"
+    },
+    "40959142": {
+      "nombre": "LOPEZ RODRIGUEZ ANA DELA",
+      "cargo": "COSECHA"
+    },
+    "40965662": {
+      "nombre": "VALERA REYES ERMELINDA",
+      "cargo": "COSECHA"
+    },
+    "41492148": {
+      "nombre": "LEON BENITES ROSA ISABEL",
+      "cargo": "COSECHA"
+    },
+    "42763470": {
+      "nombre": "ULLOA CASTILLO TEOFILO LORENZO",
+      "cargo": "COSECHA"
+    },
+    "43786748": {
+      "nombre": "RODRIGUEZ VASQUEZ MARIA EMERITA",
+      "cargo": "COSECHA"
+    },
+    "43804881": {
+      "nombre": "VALDERRAMA RAMIREZ JULIA",
+      "cargo": "COSECHA"
+    },
+    "43914362": {
+      "nombre": "CARRION RONDO GREGORIA EUFEMIA",
+      "cargo": "COSECHA"
+    },
+    "44829092": {
+      "nombre": "TRUJILLO CORONADO JOAB MOISES",
+      "cargo": "COSECHA"
+    },
+    "47347510": {
+      "nombre": "CARBAJAL BECERRA LAURA KATHERINE JULISSA",
+      "cargo": "COSECHA"
+    },
+    "47845070": {
+      "nombre": "ROSAS GUERRA DORIS GABI",
+      "cargo": "COSECHA"
+    },
+    "48742739": {
+      "nombre": "MARIN GUZMAN DONA ELIZA",
+      "cargo": "COSECHA"
+    },
+    "48988640": {
+      "nombre": "VALLES TUANAMA ROSA CATALINA",
+      "cargo": "COSECHA"
+    },
+    "60566141": {
+      "nombre": "CHUSHO ROMERO MARCIA JENILCA",
+      "cargo": "COSECHA"
+    },
+    "61353744": {
+      "nombre": "RUIZ VALERA ANA ISABEL",
+      "cargo": "COSECHA"
+    },
+    "61370224": {
+      "nombre": "SOLANO LOPEZ OSCAR DAVID",
+      "cargo": "COSECHA"
+    },
+    "62063184": {
+      "nombre": "CHUMACERO CAMPOS LEYDI",
+      "cargo": "COSECHA"
+    },
+    "63361396": {
+      "nombre": "URQUIZA JUAREZ SONIA MARITZA",
+      "cargo": "COSECHA"
+    },
+    "70183189": {
+      "nombre": "RUBIO VASQUEZ ORLANDO FRANCISCO",
+      "cargo": "COSECHA"
+    },
+    "71255141": {
+      "nombre": "SANCHEZ SICCHA SANTOS CATALINA",
+      "cargo": "COSECHA"
+    },
+    "71585231": {
+      "nombre": "CORREA VARGAS ELVIS",
+      "cargo": "COSECHA"
+    },
+    "71585999": {
+      "nombre": "GUEVARA LOPEZ LUZ DELMIRA",
+      "cargo": "COSECHA"
+    },
+    "71603094": {
+      "nombre": "COTRINA GUEVARA DEYSI ANABEL",
+      "cargo": "COSECHA"
+    },
+    "71966919": {
+      "nombre": "TORRES CACEDA RENATO ALEJANDRO",
+      "cargo": "COSECHA"
+    },
+    "73767364": {
+      "nombre": "CASTILLO VASQUEZ JHONY FRANS",
+      "cargo": "COSECHA"
+    },
+    "74040525": {
+      "nombre": "LOLOY RODRIGUEZ JANET CATERINE",
+      "cargo": "COSECHA"
+    },
+    "75691852": {
+      "nombre": "SANCHEZ LOPEZ ANITA BELEN",
+      "cargo": "COSECHA"
+    },
+    "75892031": {
+      "nombre": "ALVA PALOMINO ROBIN WILLIAN",
+      "cargo": "COSECHA"
+    },
+    "76151272": {
+      "nombre": "CABRERA ANTICONA MABEL KATERINE",
+      "cargo": "COSECHA"
+    },
+    "76613914": {
+      "nombre": "SALDAÑA LEYVA WILMER",
+      "cargo": "COSECHA"
+    },
+    "77385600": {
+      "nombre": "CHUGNAS ROJAS VIVIANA ROSALIA",
+      "cargo": "COSECHA"
+    },
+    "85004382": {
+      "nombre": "85004382",
+      "cargo": "COSECHA"
+    },
+    "17981161": {
+      "nombre": "VIDAL CABRERA RAMIRO",
+      "cargo": "COSECHA"
+    },
+    "18029011": {
+      "nombre": "ANGULO RAVELO CARMEN ROSA",
+      "cargo": "COSECHA"
+    },
+    "18131579": {
+      "nombre": "SARE JARA JHONNY CESAR",
+      "cargo": "COSECHA"
+    },
+    "18203717": {
+      "nombre": "ANTICONA RISCO JESSICA LISBY",
+      "cargo": "COSECHA"
+    },
+    "18833946": {
+      "nombre": "AGUILAR RAMOS MODESTO ALFREDO",
+      "cargo": "COSECHA"
+    },
+    "19069268": {
+      "nombre": "VARELA CALDERON FLORENCIO ANDRES",
+      "cargo": "COSECHA"
+    },
+    "19562742": {
+      "nombre": "TORIBIO JOAQUIN SANTOS",
+      "cargo": "COSECHA"
+    },
+    "26683020": {
+      "nombre": "MANTILLA SANGAY MARTIN",
+      "cargo": "COSECHA"
+    },
+    "27555861": {
+      "nombre": "GARCIA BLANCO MARIA DALILA",
+      "cargo": "COSECHA"
+    },
+    "27979012": {
+      "nombre": "CANCINO RODAS JAIME",
+      "cargo": "COSECHA"
+    },
+    "40123343": {
+      "nombre": "CRUZADO REYES MARIA BALVINA",
+      "cargo": "COSECHA"
+    },
+    "41133268": {
+      "nombre": "SAENZ SIMON MERCEDES MARTHA",
+      "cargo": "COSECHA"
+    },
+    "42401968": {
+      "nombre": "CAPCHA QUINTANA SENAYDA",
+      "cargo": "COSECHA"
+    },
+    "43390559": {
+      "nombre": "AMPUERO SANCHEZ RACIEL CARLOS",
+      "cargo": "COSECHA"
+    },
+    "43831602": {
+      "nombre": "RISCO HUIMAN ANTONIA",
+      "cargo": "COSECHA"
+    },
+    "44020607": {
+      "nombre": "REYES INCA JOSE LUIS",
+      "cargo": "COSECHA"
+    },
+    "44567395": {
+      "nombre": "LIZARRAGA RODRIGUEZ JOSIMAR ALEXANDER",
+      "cargo": "COSECHA"
+    },
+    "45790300": {
+      "nombre": "BLANCO BLANCO BRESILDA MARIVEL",
+      "cargo": "COSECHA"
+    },
+    "46437601": {
+      "nombre": "URIOL JARA DIANA YENI",
+      "cargo": "COSECHA"
+    },
+    "47653794": {
+      "nombre": "PEÑA HERRERA LORENA MELISSA",
+      "cargo": "COSECHA"
+    },
+    "47842073": {
+      "nombre": "MENDOZA JUAREZ MARLENE",
+      "cargo": "COSECHA"
+    },
+    "61089152": {
+      "nombre": "SANTAMARIA SUCLUPE MARIA DEL PILAR",
+      "cargo": "COSECHA"
+    },
+    "62790740": {
+      "nombre": "LIZARRAGA RODRIGUEZ YAJAIRA LIZBETH",
+      "cargo": "COSECHA"
+    },
+    "63257733": {
+      "nombre": "HERRERA SANTISTEBAN WILLIAMS EMAEL",
+      "cargo": "COSECHA"
+    },
+    "70541394": {
+      "nombre": "RUIZ RODRIGUEZ YNES GRECIA",
+      "cargo": "COSECHA"
+    },
+    "70968122": {
+      "nombre": "ALVA SARACHAGA JESÚS MANUEL",
+      "cargo": "COSECHA"
+    },
+    "74476269": {
+      "nombre": "KUJI PUANCHIG CHANELA",
+      "cargo": "COSECHA"
+    },
+    "74502844": {
+      "nombre": "GIL QUIROZ CLEIDER LISTER",
+      "cargo": "COSECHA"
+    },
+    "75082212": {
+      "nombre": "VALDERRAMA RIVEROS YENIFER YULISA",
+      "cargo": "COSECHA"
+    },
+    "75951720": {
+      "nombre": "AMPUERO SANCHEZ FRANK MICHAEL",
+      "cargo": "COSECHA"
+    },
+    "76554000": {
+      "nombre": "DELGADO SANTA MARIA MARIA TERESA",
+      "cargo": "COSECHA"
+    },
+    "76630584": {
+      "nombre": "MIRANDA AZAÑERO SMITH LISBETH",
+      "cargo": "COSECHA"
+    },
+    "77331651": {
+      "nombre": "BRICEÑO TORRES VILMA NOEMI",
+      "cargo": "COSECHA"
+    },
+    "80143588": {
+      "nombre": "MUÑOZ TARRILLO ALFONSINA",
+      "cargo": "COSECHA"
+    },
+    "17977385": {
+      "nombre": "JULCA JULCA MAURA BALBINA",
+      "cargo": "COSECHA"
+    },
+    "18028837": {
+      "nombre": "GUTIERREZ QUEVEDO ELDER CLAUDIO",
+      "cargo": "COSECHA"
+    },
+    "18107904": {
+      "nombre": "AVILA MONTOYA JOSE MILTON",
+      "cargo": "COSECHA"
+    },
+    "18224239": {
+      "nombre": "SANCHEZ LUJAN ROSA NERY",
+      "cargo": "COSECHA"
+    },
+    "18903046": {
+      "nombre": "ALVA MOSTACERO MARTHA MANUELA",
+      "cargo": "COSECHA"
+    },
+    "19042654": {
+      "nombre": "REYES CRUZADO TERESA",
+      "cargo": "COSECHA"
+    },
+    "19080868": {
+      "nombre": "REYES CRUZADO MARIA YSABEL",
+      "cargo": "COSECHA"
+    },
+    "19539528": {
+      "nombre": "ARANDA LAGUNA VICTORIA BLANCA",
+      "cargo": "COSECHA"
+    },
+    "19704067": {
+      "nombre": "ARENAS AGUILAR TEOFILO ELEUTERIO",
+      "cargo": "COSECHA"
+    },
+    "26642638": {
+      "nombre": "AGUILAR SANCHEZ GUILLERMO",
+      "cargo": "COSECHA"
+    },
+    "41431388": {
+      "nombre": "SICCHA CERNA LUIS ALBERTO",
+      "cargo": "COSECHA"
+    },
+    "42482166": {
+      "nombre": "RODRIGUEZ API HAYDEE GIOVANNA",
+      "cargo": "COSECHA"
+    },
+    "42717056": {
+      "nombre": "ANGEL SAAVEDRA NATIVIDAD",
+      "cargo": "COSECHA"
+    },
+    "43260395": {
+      "nombre": "ALCANTARA ALCANTARA SAMUEL JESUS",
+      "cargo": "COSECHA"
+    },
+    "44620179": {
+      "nombre": "ARANA FLORES MARUJA",
+      "cargo": "COSECHA"
+    },
+    "47300869": {
+      "nombre": "BACA CABRERA LADY DIANA",
+      "cargo": "COSECHA"
+    },
+    "47441082": {
+      "nombre": "AGUILAR VALIENTE YERTI VANESA",
+      "cargo": "COSECHA"
+    },
+    "47592296": {
+      "nombre": "ARANA FLORES ALEJANDRINA JESUS",
+      "cargo": "COSECHA"
+    },
+    "61069931": {
+      "nombre": "ALVA GUERRA WILLIAM",
+      "cargo": "COSECHA"
+    },
+    "61189668": {
+      "nombre": "AREDO ABANTO ABIGAIL MERARI",
+      "cargo": "COSECHA"
+    },
+    "62894695": {
+      "nombre": "ANGULO PLASENCIA ANGHELO JOEL",
+      "cargo": "COSECHA"
+    },
+    "70274533": {
+      "nombre": "AVILA SOTO NICKE KEYSER",
+      "cargo": "COSECHA"
+    },
+    "70794040": {
+      "nombre": "BOCANEGRA RODRIGUEZ JOHAN RAUL",
+      "cargo": "COSECHA"
+    },
+    "71766956": {
+      "nombre": "ALVITREZ SAAVEDRA YORK KENNEDY",
+      "cargo": "COSECHA"
+    },
+    "71827000": {
+      "nombre": "ACEVEDO TORIBIO NELLY",
+      "cargo": "COSECHA"
+    },
+    "73530089": {
+      "nombre": "HENRIQUEZ ARMAS HANDER BORIS",
+      "cargo": "COSECHA"
+    },
+    "73680390": {
+      "nombre": "CABRERA ALFARO GIAN MARCO",
+      "cargo": "COSECHA"
+    },
+    "74739973": {
+      "nombre": "ROJAS PORTAL SEGUNDO RONALD",
+      "cargo": "COSECHA"
+    },
+    "74983121": {
+      "nombre": "ABANTO ZELADA ABRAHAN MOISES",
+      "cargo": "COSECHA"
+    },
+    "76603547": {
+      "nombre": "BURGA SAMAME YOSELI",
+      "cargo": "COSECHA"
+    },
+    "76808750": {
+      "nombre": "ARROYO ROJAS YENI ANELY",
+      "cargo": "COSECHA"
+    },
+    "72890871": {
+      "nombre": "72890871",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "16626681": {
+      "nombre": "CUEVA TORRES MARLENY",
+      "cargo": "COSECHA"
+    },
+    "17868405": {
+      "nombre": "BURGOS LAZARO DE TUFINIO JULIA",
+      "cargo": "COSECHA"
+    },
+    "18063391": {
+      "nombre": "VALDERRAMA VARAS EDILBERTO ANOR",
+      "cargo": "COSECHA"
+    },
+    "18136682": {
+      "nombre": "ESPINOZA INFANTES CAROL JACQUELINE",
+      "cargo": "COSECHA"
+    },
+    "18166748": {
+      "nombre": "PASCUAL HERRERA SEMIRA GRABIELA",
+      "cargo": "COSECHA"
+    },
+    "18178020": {
+      "nombre": "POLO ACEVEDO ROSA",
+      "cargo": "COSECHA"
+    },
+    "18198355": {
+      "nombre": "NEYRA OLGUIN FREDDY ROBERT",
+      "cargo": "COSECHA"
+    },
+    "18216188": {
+      "nombre": "VIGO GUARNIZ EDITH NOEDINN",
+      "cargo": "COSECHA"
+    },
+    "19099278": {
+      "nombre": "RUIZ GARCIA YNOVERTI LEONELI",
+      "cargo": "COSECHA"
+    },
+    "19248647": {
+      "nombre": "TAFUR OCAS MARIA GUILLERMINA",
+      "cargo": "COSECHA"
+    },
+    "19550050": {
+      "nombre": "SALVATIERRA AGUILAR SANTOS FELICITA CIRILA",
+      "cargo": "COSECHA"
+    },
+    "19662720": {
+      "nombre": "GOMEZ VILLANUEVA LUISA DE FRANCIA",
+      "cargo": "COSECHA"
+    },
+    "19671826": {
+      "nombre": "GARCIA VALENCIA SANTOS BERTHA",
+      "cargo": "COSECHA"
+    },
+    "26725990": {
+      "nombre": "CASSANA SAUCEDO CRECENCIA",
+      "cargo": "COSECHA"
+    },
+    "27142789": {
+      "nombre": "MURRUGARRA PAREDES SONIA ROSINDA",
+      "cargo": "COSECHA"
+    },
+    "27144229": {
+      "nombre": "MIRANDA ROJAS ROGER LUCAS",
+      "cargo": "COSECHA"
+    },
+    "27147764": {
+      "nombre": "LEON SAAVEDRA LUIS ENRIQUE",
+      "cargo": "COSECHA"
+    },
+    "27158943": {
+      "nombre": "FUENTES CHAVEZ LIVERIADES",
+      "cargo": "COSECHA"
+    },
+    "27566699": {
+      "nombre": "VASQUEZ URRUTIA SANTIAGO ALEJANDRO",
+      "cargo": "COSECHA"
+    },
+    "33826578": {
+      "nombre": "LEON MEDINA ROSA ELA",
+      "cargo": "COSECHA"
+    },
+    "40032239": {
+      "nombre": "HERRERA ALVA FRANCISCO",
+      "cargo": "COSECHA"
+    },
+    "40071312": {
+      "nombre": "PEÑA PAICO ESTELA",
+      "cargo": "COSECHA"
+    },
+    "40499993": {
+      "nombre": "CHACON MANTILLA PATRICIA YELI",
+      "cargo": "COSECHA"
+    },
+    "41787908": {
+      "nombre": "FLORES CARDENAS JOSE ANTONIO",
+      "cargo": "COSECHA"
+    },
+    "41919939": {
+      "nombre": "PEREZ AMASIFUEN JUANITA",
+      "cargo": "COSECHA"
+    },
+    "42468476": {
+      "nombre": "CRUZ RODRIGUEZ LAURA",
+      "cargo": "COSECHA"
+    },
+    "43207607": {
+      "nombre": "EUGENIO AGUILAR RAMON",
+      "cargo": "COSECHA"
+    },
+    "43333664": {
+      "nombre": "VASQUEZ MURGA ANITA RAQUEL",
+      "cargo": "COSECHA"
+    },
+    "43481543": {
+      "nombre": "GONZALES MELENDEZ MARIA IRENE",
+      "cargo": "COSECHA"
+    },
+    "43785146": {
+      "nombre": "CHOROCO HUAYAC JULIA",
+      "cargo": "COSECHA"
+    },
+    "44858091": {
+      "nombre": "EUGENIO QUISPE SABINA",
+      "cargo": "COSECHA"
+    },
+    "46020748": {
+      "nombre": "GAMBOA SANCHEZ SANTOS SOLEDAD",
+      "cargo": "COSECHA"
+    },
+    "46831409": {
+      "nombre": "VASQUEZ LIZANA STALIN",
+      "cargo": "COSECHA"
+    },
+    "47026473": {
+      "nombre": "ORRILLO EUGENIO JHOME YONEL",
+      "cargo": "COSECHA"
+    },
+    "47124745": {
+      "nombre": "OBESO ANTICONA JOVANA VIRGINIA",
+      "cargo": "COSECHA"
+    },
+    "47167499": {
+      "nombre": "ESTRADA GUARNIZ ELSA MARILU",
+      "cargo": "COSECHA"
+    },
+    "47258749": {
+      "nombre": "ESCOBAR LINARES JAIME ROGER",
+      "cargo": "COSECHA"
+    },
+    "48238080": {
+      "nombre": "MARQUINA MARREROS DINA SARA",
+      "cargo": "COSECHA"
+    },
+    "48476852": {
+      "nombre": "JUAREZ PEZANTES MONICA LUCIA",
+      "cargo": "COSECHA"
+    },
+    "62095874": {
+      "nombre": "FERNANDEZ VARELA GLADYS ESTHER",
+      "cargo": "COSECHA"
+    },
+    "62790711": {
+      "nombre": "CUBA VALDERRAMA KEVIN DIEGO",
+      "cargo": "COSECHA"
+    },
+    "70417681": {
+      "nombre": "BARBA ALVAREZ YEFFERSON JENDERSSON",
+      "cargo": "COSECHA"
+    },
+    "71034167": {
+      "nombre": "DIAZ PEREZ JOHANA",
+      "cargo": "COSECHA"
+    },
+    "72502044": {
+      "nombre": "RENGIFO SANCHEZ MARIANELA LISBET",
+      "cargo": "COSECHA"
+    },
+    "73113772": {
+      "nombre": "PECHE ZEVALLOS FRANKLIN JHONATAN",
+      "cargo": "COSECHA"
+    },
+    "73662007": {
+      "nombre": "ALCANTARA RIVAS FREDY ALEXANDER",
+      "cargo": "COSECHA"
+    },
+    "74391777": {
+      "nombre": "GONZALES PERALTA JOSELITO",
+      "cargo": "COSECHA"
+    },
+    "74969322": {
+      "nombre": "LOYOLA GORMAS DARWINS FRANCO",
+      "cargo": "COSECHA"
+    },
+    "75009137": {
+      "nombre": "CUBA VALDERRAMA ESTEFANI GRISET",
+      "cargo": "COSECHA"
+    },
+    "76330299": {
+      "nombre": "MENDOZA CRUZADO ARSELI YOVANI",
+      "cargo": "COSECHA"
+    },
+    "76901594": {
+      "nombre": "CRUZ CHAVEZ MARICIELO MAYUME",
+      "cargo": "COSECHA"
+    },
+    "77069446": {
+      "nombre": "BURGOS CARRANZA MARIA DE LOS ANGELES",
+      "cargo": "COSECHA"
+    },
+    "80030894": {
+      "nombre": "INFANTE TIRADO DORALIZA",
+      "cargo": "COSECHA"
+    },
+    "80243146": {
+      "nombre": "CUEVA BRAVO ELSA",
+      "cargo": "COSECHA"
+    },
+    "80374673": {
+      "nombre": "PAREDES CASTILLO GENARA ISABEL",
+      "cargo": "COSECHA"
+    },
+    "80374680": {
+      "nombre": "PAREDES CASTILLO MARIA TOMASA",
+      "cargo": "COSECHA"
+    },
+    "80408974": {
+      "nombre": "PEÑA PAICO LEONARDA",
+      "cargo": "COSECHA"
+    },
+    "80574840": {
+      "nombre": "PONCE PAREDES CARLOS",
+      "cargo": "COSECHA"
+    },
+    "03897413": {
+      "nombre": "MOGOLLON CALDERON LOURDES YANET",
+      "cargo": "COSECHA"
+    },
+    "48165335": {
+      "nombre": "VASQUEZ EUGENIO HENRY MAGOBER",
+      "cargo": "SCANER"
+    },
+    "14111273": {
+      "nombre": "14111273",
+      "cargo": "COSECHA"
+    },
+    "46750073": {
+      "nombre": "MORI FLORES IRACEMA",
+      "cargo": "COSECHA"
+    },
+    "47594891": {
+      "nombre": "PADILLA VASQUEZ DANY ANALI",
+      "cargo": "COSECHA"
+    },
+    "92418493": {
+      "nombre": "ASTO CRUZ MARIA FERNANDA",
+      "cargo": "COSECHA"
+    },
+    "76687791": {
+      "nombre": "TAFUR NEYRA ALEX IVAN",
+      "cargo": "SUPERVISOR DE COSECHA"
+    },
+    "01186404": {
+      "nombre": "01186404",
+      "cargo": "COSECHA"
+    },
+    "80479533": {
+      "nombre": "RUIZ REYES JULIO MICHEL",
+      "cargo": "APLICACION CON MOCHILA-SANIDAD"
+    },
+    "75049955": {
+      "nombre": "75049955",
+      "cargo": "CALIDAD"
+    },
+    "00862882": {
+      "nombre": "00862882",
+      "cargo": "COSECHA"
+    },
+    "00194316": {
+      "nombre": "00194316",
+      "cargo": "COSECHA"
+    },
+    "47717862": {
+      "nombre": "POLO BRICEÑO YENSIN ANTONY",
+      "cargo": "APLICACION CON TRACTOR-SANIDAD"
+    },
+    "72890979": {
+      "nombre": "72890979",
+      "cargo": "EVALUADOR FITOSANITARIO"
+    },
+    "03775868": {
+      "nombre": "03775868",
+      "cargo": "COSECHA"
+    },
+    "19123660": {
+      "nombre": "19123660",
       "cargo": "COSECHA"
     }
   }

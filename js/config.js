@@ -5,7 +5,7 @@ QB.CONFIG = {
   /** Endpoint codificado (uso interno) */
   _ep: "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4cnI3NGV4a2RnNUtQLURkR3FXWEpWMFNYUFdGOFlac3BDUXdIam4zX2NCQjJGTWk0eURPNTR6Ykk4bElmWS1qajkvZXhlYw==",
   APP_NAME: "Q Berries · Calidad",
-  VERSION: "1.1.84",
+  VERSION: "1.2.1",
   /** URL pública HTTPS para QR / instalación Android */
   PUBLIC_URL: "https://calidad-qberries.netlify.app/install.html",
 };
@@ -14,19 +14,6 @@ QB.CATALOG = {
   variedades: [
     { id: "S. Pop", label: "S. Pop", meta: "Variedad" },
     { id: "Mágica", label: "Mágica", meta: "Variedad" },
-  ],
-  modulos: Array.from({ length: 10 }, (_, i) => ({
-    id: `Módulo ${i + 1}`,
-    label: `Módulo ${i + 1}`,
-    meta: `M${i + 1}`,
-  })),
-  turnos: [
-    { id: "Mañana", label: "Mañana", meta: "Turno" },
-    { id: "Tarde", label: "Tarde", meta: "Turno" },
-    { id: "Noche", label: "Noche", meta: "Turno" },
-  ],
-  evaluacionCaida: [
-    { id: "Después de cosecha", label: "Después de cosecha", meta: "Momento" },
   ],
 };
 

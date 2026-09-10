@@ -207,19 +207,28 @@ QB.App = (() => {
     if (on) {
       if (text) text.textContent = title;
       root.hidden = false;
+      root.setAttribute("aria-busy", "true");
     } else {
       root.hidden = true;
+      root.removeAttribute("aria-busy");
     }
   }
 
+  let confirmBusy_ = false;
   async function confirmCancel() {
-    return feedback({
-      title: "¿Salir de la evaluación?",
-      text: "Los datos quedan en el celular hasta que pulses Guardar.",
-      type: "warn",
-      confirmText: "Salir",
-      cancelText: "Seguir",
-    });
+    if (confirmBusy_) return false;
+    confirmBusy_ = true;
+    try {
+      return await feedback({
+        title: "¿Salir de la evaluación?",
+        text: "Los datos quedan en el celular hasta que pulses Guardar.",
+        type: "warn",
+        confirmText: "Salir",
+        cancelText: "Seguir",
+      });
+    } finally {
+      confirmBusy_ = false;
+    }
   }
 
   function todayISO() {
@@ -228,6 +237,14 @@ QB.App = (() => {
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  /** Día operativo América/Lima — formato UI DD/MM/YYYY */
+  function formatFechaDisplay_(iso) {
+    const s = String(iso || "").trim();
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+    if (!m) return s;
+    return `${m[3]}/${m[2]}/${m[1]}`;
   }
 
   /** Siempre el día de hoy — no dejar fecha pegada de otro día */
@@ -242,22 +259,10 @@ QB.App = (() => {
       const span = trig.querySelector(".value, .placeholder");
       if (span) {
         span.className = "value";
-        span.textContent = QB.DatePicker
-          ? QB.DatePicker.formatDisplay(hoy)
-          : hoy;
+        span.textContent = formatFechaDisplay_(hoy);
       }
     }
     return hoy;
-  }
-
-  /** Día operativo América/Lima — el conteo “hoy” no debe fallar de noche */
-  function localDayISO(iso) {
-    if (QB.API?.localDayKey) return QB.API.localDayKey(iso);
-    const d = iso ? new Date(iso) : new Date();
-    if (Number.isNaN(d.getTime())) return "";
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${d.getFullYear()}-${m}-${day}`;
   }
 
   function nowStamp() {
@@ -325,7 +330,7 @@ QB.App = (() => {
 
   /** Viewport real (iOS + Android): siempre seguir visualViewport — sin huecos blancos */
   function resetViewportLayout() {
-    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open, .date-overlay.open")) {
+    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) {
       return;
     }
 
@@ -385,48 +390,59 @@ QB.App = (() => {
     if (type) clearDraft_(type);
   }
 
+  let startEvalBusy_ = false;
   async function startEval(type) {
-    state.type = type;
-    const draft = loadDraft_(type);
-    if (draft && draft.data) {
-      state.data = { ...draft.data, fecha: todayISO() };
-      state.score = draft.score || null;
-      state.clientId = draft.clientId || null;
-    } else {
-      state.data = { fecha: todayISO() };
-      state.score = null;
-      state.clientId = null;
-    }
-    /* Fruta caída: solo "Después de cosecha" (valor fijo) */
-    if (type === "caida") {
-      state.data.momento = "Después de cosecha";
-    }
-    state.saving = false;
-    if (QB.Data && !QB.Data.isReady()) {
-      setLoading(true, "Cargando catálogos...");
-      await QB.Data.load();
-      setLoading(false);
-    }
-    if (QB.Data?.ensureEvaluadores) {
-      const n = (QB.Data.evaluadorOptions("") || []).length;
-      if (!n) {
-        setLoading(true, "Cargando evaluadores...");
-        await QB.Data.ensureEvaluadores();
-        setLoading(false);
+    if (startEvalBusy_ || state.saving) return;
+    startEvalBusy_ = true;
+    try {
+      state.type = type;
+      const draft = loadDraft_(type);
+      if (draft && draft.data) {
+        state.data = { ...draft.data, fecha: todayISO() };
+        state.score = draft.score || null;
+        state.clientId = draft.clientId || null;
+      } else {
+        state.data = { fecha: todayISO() };
+        state.score = null;
+        state.clientId = null;
       }
+      if (type === "caida") {
+        state.data.momento = "Después de cosecha";
+      }
+      state.saving = false;
+      if (QB.Data && !QB.Data.isReady()) {
+        setLoading(true, "Cargando catálogos...");
+        try {
+          await QB.Data.load();
+        } catch (_) {
+          /* catálogo seed / offline */
+        }
+      }
+      if (QB.Data?.ensureEvaluadores) {
+        const n = (QB.Data.evaluadorOptions("") || []).length;
+        if (!n) {
+          setLoading(true, "Cargando evaluadores...");
+          try {
+            await QB.Data.ensureEvaluadores();
+          } catch (_) {}
+        }
+      }
+      const resumeResumen = draft && draft.screen === "resumen" && draft.score;
+      if (resumeResumen) {
+        renderResumen();
+        showScreen("resumen");
+        $("#progress-fill").style.width = "100%";
+      } else {
+        renderForm();
+        showScreen("form");
+        $("#progress-fill").style.width = "45%";
+      }
+      saveDraft_();
+      if (draft) toast("Borrador recuperado", "info");
+    } finally {
+      setLoading(false);
+      startEvalBusy_ = false;
     }
-    const resumeResumen = draft && draft.screen === "resumen" && draft.score;
-    if (resumeResumen) {
-      renderResumen();
-      showScreen("resumen");
-      $("#progress-fill").style.width = "100%";
-    } else {
-      renderForm();
-      showScreen("form");
-      $("#progress-fill").style.width = "45%";
-    }
-    saveDraft_();
-    if (draft) toast("Borrador recuperado", "info");
   }
 
   /* ——— Icons ——— */
@@ -727,8 +743,9 @@ QB.App = (() => {
       }
     } catch (_) {
       /* ignore */
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     closeSyncModal();
     toast("App actualizada — recargando…", "ok");
     setTimeout(() => {
@@ -753,7 +770,12 @@ QB.App = (() => {
 
     setLoading(true, "Limpiando…");
     try {
-      const keep = new Set(["qb_pending_queue", "qb_activity"]);
+      const keep = new Set([
+        "qb_pending_queue",
+        "qb_activity",
+        "qb_day_stats",
+        "qb_last_sync_at",
+      ]);
       const toRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -775,8 +797,9 @@ QB.App = (() => {
       goHome();
     } catch (_) {
       /* ignore */
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
     closeSyncModal();
     toast("Caché eliminada ✓", "ok");
     setTimeout(() => {
@@ -788,14 +811,6 @@ QB.App = (() => {
 
   function showTipAdvice(tip) {
     const tips = {
-      instalar: {
-        title: "Instalar en Android",
-        text: "Escanea el QR o abre https://calidad-qberries.netlify.app/install.html en Chrome. Pulsa Instalar aplicación → confirma en la pestaña de Chrome → la app se abre sola.",
-      },
-      lote: {
-        title: "Lote primero",
-        text: "Elige el lote y el app completa módulo y turno. Así evitas errores en campo.",
-      },
       offline: {
         title: "Trabajo sin red",
         text: "Si cierras el app, el formulario queda guardado. Al GUARDAR, se envía o queda en cola (pend.) hasta tener señal; ahí se limpia el borrador.",
@@ -813,11 +828,236 @@ QB.App = (() => {
         text: "Si tienes problemas con el app, contacta a support: Paolo León.",
       },
     };
-    const t = tips[tip] || tips.lote;
+    const t = tips[tip] || tips.offline;
     closeSyncModal();
     setTimeout(() => {
       feedback({ title: t.title, text: t.text, type: "info", confirmText: "Entendido" });
     }, 240);
+  }
+
+  /* ——— Modo transferencia (cierre de día · hasta 0 pendientes) ——— */
+  const TRANSFER_FLAG = "qb_transfer_active";
+  let transferAbort_ = null;
+  let transferWake_ = null;
+  let transferRunning_ = false;
+
+  function setTransferUi_(opts = {}) {
+    const root = $("#qb-transfer");
+    const sub = $("#qb-transfer-sub");
+    const count = $("#qb-transfer-count");
+    const fill = $("#qb-transfer-fill");
+    const hint = $("#qb-transfer-hint");
+    const actions = $("#qb-transfer-actions");
+    const spin = root?.querySelector(".qb-transfer-spinner");
+    if (!root) return;
+
+    if (opts.open) {
+      root.hidden = false;
+      requestAnimationFrame(() => root.classList.add("open"));
+    }
+    if (opts.close) {
+      root.classList.remove("open");
+      setTimeout(() => {
+        root.hidden = true;
+      }, 220);
+    }
+    if (sub && opts.message != null) sub.textContent = opts.message;
+    if (hint && opts.hint != null) hint.textContent = opts.hint;
+    const sent = Number(opts.sent) || 0;
+    const remain = Number(opts.remain);
+    const total = Math.max(Number(opts.total) || 0, sent + (Number.isFinite(remain) ? remain : 0), 1);
+    const done = Number.isFinite(remain) ? remain : pendingSafe_();
+    if (count) {
+      count.textContent =
+        opts.doneState
+          ? "0 pendientes"
+          : `${Math.min(sent, total)} / ${total} · quedan ${done}`;
+    }
+    if (fill) {
+      const pct = opts.doneState ? 100 : Math.min(100, Math.round((sent / total) * 100));
+      fill.style.width = `${pct}%`;
+    }
+    if (spin) spin.hidden = !!opts.doneState;
+    if (actions) actions.hidden = !opts.doneState;
+    root.classList.toggle("is-done", !!opts.doneState);
+  }
+
+  function pendingSafe_() {
+    try {
+      return QB.API.pendingCount() || 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  async function acquireWakeLock_() {
+    releaseWakeLock_();
+    try {
+      if (navigator.wakeLock?.request) {
+        transferWake_ = await navigator.wakeLock.request("screen");
+        transferWake_.addEventListener("release", () => {
+          /* se re-pide al volver visible si sigue activo */
+        });
+      }
+    } catch (_) {
+      /* algunos Android bloquean wake lock */
+    }
+  }
+
+  function releaseWakeLock_() {
+    try {
+      transferWake_?.release?.();
+    } catch (_) {}
+    transferWake_ = null;
+  }
+
+  function registerBgSync_() {
+    try {
+      navigator.serviceWorker?.ready?.then((reg) => {
+        if (reg.sync) reg.sync.register("qb-flush-pending").catch(() => {});
+      });
+    } catch (_) {}
+  }
+
+  async function promptTransferMode_() {
+    closeSyncModal();
+    const pend = pendingSafe_();
+    const ok = await feedback({
+      title: "Activar modo transferencia",
+      text:
+        pend > 0
+          ? `Hay ${pend} pendiente(s). Se enviarán TODOS ahora. Deja la app abierta hasta ver 0 pendientes.`
+          : "No hay pendientes ahora. Si guardas más hoy, vuelve a activarlo al cerrar el día.",
+      type: "info",
+      confirmText: pend > 0 ? "Activar y enviar" : "Entendido",
+      cancelText: pend > 0 ? "Cancelar" : null,
+    });
+    if (!ok) return;
+    if (pend > 0) startTransferMode_();
+  }
+
+  async function startTransferMode_() {
+    if (transferRunning_) return;
+    transferRunning_ = true;
+    try {
+      sessionStorage.setItem(TRANSFER_FLAG, "1");
+    } catch (_) {}
+
+    transferAbort_?.abort?.();
+    transferAbort_ = new AbortController();
+
+    closeSyncModal();
+    setTransferUi_({
+      open: true,
+      doneState: false,
+      sent: 0,
+      remain: pendingSafe_(),
+      total: pendingSafe_(),
+      message: "Sincronizando pendientes…",
+      hint: "No cierres ni bloquees el teléfono hasta terminar.",
+    });
+    await acquireWakeLock_();
+    registerBgSync_();
+
+    try {
+      if (QB.API.whenReady) await QB.API.whenReady();
+      const result = await QB.API.flushUntilEmpty({
+        signal: transferAbort_.signal,
+        onProgress: (p) => {
+          setTransferUi_({
+            sent: p.sent || 0,
+            remain: p.remain != null ? p.remain : pendingSafe_(),
+            total: p.total,
+            message: p.message || "Enviando…",
+            hint:
+              p.phase === "offline"
+                ? "Sin internet — se reanuda solo al volver la señal."
+                : "No cierres ni bloquees el teléfono hasta terminar.",
+            doneState: false,
+          });
+          updateStatusUI();
+        },
+      });
+
+      updateStatusUI();
+      renderOpsPanel();
+
+      if (result.ok && !pendingSafe_()) {
+        try {
+          sessionStorage.removeItem(TRANSFER_FLAG);
+        } catch (_) {}
+        setTransferUi_({
+          doneState: true,
+          sent: result.sent || 0,
+          remain: 0,
+          total: result.sent || 1,
+          message: "Día cerrado · todo enviado",
+          hint: "0 pendientes. Ya puedes cerrar la app.",
+        });
+        toast("Transferencia completa · 0 pendientes", "ok");
+      } else if (result.aborted) {
+        setTransferUi_({
+          doneState: true,
+          sent: result.sent || 0,
+          remain: pendingSafe_(),
+          message: "Transferencia pausada",
+          hint: `Quedan ${pendingSafe_()} pendientes. Vuelve a activar el modo.`,
+        });
+      } else {
+        registerBgSync_();
+        setTransferUi_({
+          doneState: true,
+          sent: result.sent || 0,
+          remain: pendingSafe_(),
+          message: "Aún hay pendientes",
+          hint: `Quedan ${pendingSafe_()}. Mantén internet y pulsa de nuevo Modo transferencia.`,
+        });
+        toast(`Quedan ${pendingSafe_()} pendientes`, "warn");
+      }
+    } catch (_) {
+      setTransferUi_({
+        doneState: true,
+        remain: pendingSafe_(),
+        message: "Error de sincronización",
+        hint: "Revisa internet y vuelve a activar Modo transferencia.",
+      });
+    } finally {
+      releaseWakeLock_();
+      transferRunning_ = false;
+    }
+  }
+
+  function closeTransferUi_() {
+    if (transferRunning_ && pendingSafe_() > 0) {
+      feedback({
+        title: "Aún hay pendientes",
+        text: "Si cierras ahora, pueden quedar para mañana. Mejor espera a 0 pendientes.",
+        type: "warn",
+        confirmText: "Seguir enviando",
+      });
+      return;
+    }
+    transferAbort_?.abort?.();
+    releaseWakeLock_();
+    try {
+      if (!pendingSafe_()) sessionStorage.removeItem(TRANSFER_FLAG);
+    } catch (_) {}
+    setTransferUi_({ close: true });
+  }
+
+  function maybeResumeTransfer_() {
+    try {
+      if (sessionStorage.getItem(TRANSFER_FLAG) !== "1") return;
+    } catch (_) {
+      return;
+    }
+    if (pendingSafe_() > 0 && navigator.onLine) {
+      startTransferMode_();
+    } else if (!pendingSafe_()) {
+      try {
+        sessionStorage.removeItem(TRANSFER_FLAG);
+      } catch (_) {}
+    }
   }
 
   function renderUploadCard(item) {
@@ -888,7 +1128,7 @@ QB.App = (() => {
       if (!all.length) {
         summaryEl.textContent = "Aún no hay registros guardados.";
       } else {
-        summaryEl.textContent = `${all.length} registro${all.length === 1 ? "" : "s"} (últimas 48 h) · ${sentN} enviado${sentN === 1 ? "" : "s"} · ${pendingN} pendiente${pendingN === 1 ? "" : "s"}`;
+        summaryEl.textContent = `${all.length} registro${all.length === 1 ? "" : "s"} (últimas 12 h) · ${sentN} enviado${sentN === 1 ? "" : "s"} · ${pendingN} pendiente${pendingN === 1 ? "" : "s"}`;
       }
     }
 
@@ -896,7 +1136,7 @@ QB.App = (() => {
       listEl.innerHTML = `
         <div class="uploads-empty">
           <p>Completa una evaluación y pulsa <strong>GUARDAR</strong>.</p>
-          <p class="uploads-empty-sub">Aquí verás lo de las últimas 48 h (enviados y pendientes).</p>
+          <p class="uploads-empty-sub">Aquí verás lo de las últimas 12 h (enviados y pendientes).</p>
         </div>`;
       if (pagerEl) pagerEl.hidden = true;
       return;
@@ -943,23 +1183,64 @@ QB.App = (() => {
       updateStatusUI();
       return;
     }
+    if (QB.API.isSyncing && QB.API.isSyncing()) {
+      if (manual) toast("Ya hay una sincronización en curso…", "info");
+      return;
+    }
+
+    await (QB.API.whenReady ? QB.API.whenReady() : Promise.resolve());
     const before = QB.API.pendingCount();
     if (!before) {
       if (manual) toast("Sin pendientes", "ok");
       updateStatusUI();
       return;
     }
-    // Sync en silencio — sin modal (no interrumpe formularios)
+
+    // Auto (boot/online/visibility): no bloquear UI ni deshabilitar chips
+    if (!manual) {
+      QB.API.flushQueue({ soft: true, includeOld: false }).catch(() => {});
+      return;
+    }
+
+    document.querySelectorAll("#chip-pending, [data-chip-pending]").forEach((btn) => {
+      btn.disabled = true;
+      btn.setAttribute("aria-busy", "true");
+    });
+
     try {
-      const r = await QB.API.flushQueue();
-      if (manual) {
-        if (r.sent) toast(`Sincronizados ${r.sent} registros`, "ok");
-        else toast("No se pudo sincronizar", "error");
-      }
-    } finally {
+      const r = await QB.API.flushQueue({
+        manual: true,
+        includeOld: true,
+        onProgress: () => {
+          /* progreso vía qb:sync (throttle) */
+        },
+      });
       updateStatusUI();
       renderOpsPanel();
       if (state.screen === "uploads") renderUploadsHistory();
+
+      if (r.busy) {
+        toast("Ya hay una sincronización en curso…", "info");
+      } else if (r.stale) {
+        toast(
+          `Sincronización interrumpida · ${r.sent || 0} enviados · ${r.remain || 0} pendientes.`,
+          "warn"
+        );
+      } else if (r.sent && r.remain) {
+        toast(`${r.sent} enviados · ${r.remain} pendientes de reintento.`, "warn");
+      } else if (r.sent) {
+        toast(`${r.sent} registros sincronizados correctamente.`, "ok");
+      } else if (r.remain) {
+        toast(`No se pudo sincronizar — ${r.remain} pendientes de reintento.`, "error");
+      } else {
+        toast("Sin pendientes", "ok");
+      }
+    } finally {
+      document.querySelectorAll("#chip-pending, [data-chip-pending]").forEach((btn) => {
+        btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+      });
+      updateStatusUI();
     }
   }
 
@@ -1005,7 +1286,7 @@ QB.App = (() => {
     }
     if (type === "date") {
       const hoy = todayISO();
-      const shown = QB.DatePicker ? QB.DatePicker.formatDisplay(hoy) : hoy;
+      const shown = formatFechaDisplay_(hoy);
       return `
         <div class="field field-locked" data-field="${name}">
           <label>${label}${req}</label>
@@ -1298,12 +1579,8 @@ QB.App = (() => {
     `;
 
     bindPreciseFields();
-    // Fecha del día: bloqueada, no se abre calendario
+    // Fecha del día: bloqueada (siempre hoy)
     bindLiveValidation();
-  }
-
-  function bindDateField() {
-    // Fecha siempre = hoy (campo bloqueado). No bind de DatePicker.
   }
 
   function accentColor(type) {
@@ -1317,12 +1594,12 @@ QB.App = (() => {
     );
   }
 
-  function setLockedField(name, value) {
+  function setLockedField(name, value, { silent = false } = {}) {
     const hidden = $(`#field-${name}`);
     const trig = $(`#trig-${name}`);
     if (hidden) {
       hidden.value = value || "";
-      hidden.dispatchEvent(new Event("change", { bubbles: true }));
+      if (!silent) hidden.dispatchEvent(new Event("change", { bubbles: true }));
     }
     if (trig) {
       const span = trig.querySelector(".value, .placeholder");
@@ -1337,29 +1614,76 @@ QB.App = (() => {
     }
   }
 
+  /** Resuelve cualquier input de lote → entrada de catálogo (nunca dejar módulo vacío si existe) */
+  function resolveLoteEntry_(opt) {
+    if (!QB.Data?.findLote) return (opt && opt.raw) || null;
+    const keys = [
+      opt?.raw?.codLote,
+      opt?.raw?.lote,
+      opt?.id,
+      opt?.codLote,
+      opt?.lote,
+      opt?.label,
+      typeof opt === "string" || typeof opt === "number" ? opt : null,
+    ];
+    for (const k of keys) {
+      if (k == null || k === "") continue;
+      const hit = QB.Data.findLote(k);
+      if (hit) return hit;
+    }
+    return (opt && opt.raw) || null;
+  }
+
+  function syncLoteTrigger_(lote) {
+    const loteHidden = $("#field-lote");
+    const loteTrig = $("#trig-lote");
+    if (loteHidden && lote) {
+      loteHidden.value = String(lote.codLote || lote.lote || "");
+    }
+    if (loteTrig && lote && QB.Data?.loteLabel) {
+      const span = loteTrig.querySelector(".value, .placeholder");
+      if (span) {
+        span.className = "value";
+        span.textContent = QB.Data.loteLabel(lote);
+      }
+    }
+  }
+
   function applyLote(opt) {
-    const lote = (opt && opt.raw) || (QB.Data && QB.Data.findLote(opt?.id || opt));
-    if (!lote) return;
-    setLockedField("modulo", lote.modulo || "");
-    setLockedField("turno", lote.turno != null && lote.turno !== "" ? String(lote.turno) : "");
-    refreshFieldError("modulo");
-    refreshFieldError("turno");
-    refreshFieldError("lote");
+    const lote = resolveLoteEntry_(opt);
+    if (!lote) {
+      // Solo limpiar si no hay valor de lote en el hidden (evita borrar en carrera de carga)
+      const cur = $("#field-lote")?.value;
+      if (!cur) {
+        setLockedField("modulo", "", { silent: true });
+        setLockedField("turno", "", { silent: true });
+      }
+      refreshFieldError("modulo");
+      refreshFieldError("turno");
+      refreshFieldError("lote");
+      return false;
+    }
+    const mod = lote.modulo || "";
+    const tur = lote.turno != null && lote.turno !== "" ? String(lote.turno) : "";
+    setLockedField("modulo", mod, { silent: true });
+    setLockedField("turno", tur, { silent: true });
+    syncLoteTrigger_(lote);
     if (state.data) {
-      state.data.modulo = lote.modulo || "";
-      state.data.turno = lote.turno != null && lote.turno !== "" ? String(lote.turno) : "";
+      state.data.modulo = mod;
+      state.data.turno = tur;
       state.data.lote = String(lote.lote);
       state.data.etapa = lote.etapa || "";
       state.data.codLote = lote.codLote || "";
+      if (lote.variedad) {
+        const varId = QB.Data.mapVariedad(lote.variedad);
+        if (varId) state.data.variedad = varId;
+      }
     }
     const varId = QB.Data.mapVariedad(lote.variedad);
     if (varId) {
       const vHidden = $("#field-variedad");
       const vTrig = $("#trig-variedad");
-      if (vHidden) {
-        vHidden.value = varId;
-        vHidden.dispatchEvent(new Event("change", { bubbles: true }));
-      }
+      if (vHidden) vHidden.value = varId;
       if (vTrig) {
         const span = vTrig.querySelector(".value, .placeholder");
         if (span) {
@@ -1368,6 +1692,11 @@ QB.App = (() => {
         }
       }
     }
+    refreshFieldError("modulo");
+    refreshFieldError("turno");
+    refreshFieldError("lote");
+    refreshFieldError("variedad");
+    return true;
   }
 
   function personStore(opt) {
@@ -1457,12 +1786,30 @@ QB.App = (() => {
         minHint: "Sin lotes cargados",
         allowCustom: "text",
         customKind: "lote",
-        getOptions: (q) =>
-          mergeOpts(
-            QB.API?.customValueOptions?.("lote", q) || [],
-            QB.Data ? QB.Data.loteOptions(q) : []
-          ),
-        storeValue: (opt) => String(opt?.raw?.codLote || opt?.id || ""),
+        // Solo permitir “Agregar” si NO existe en catálogo
+        canAddCustom: (q) => !(QB.Data && QB.Data.findLote(q)),
+        resolveCustomText: (q) => {
+          const l = QB.Data && QB.Data.findLote(q);
+          if (!l) return null;
+          return {
+            id: String(l.codLote || l.lote),
+            label: QB.Data.loteLabel(l),
+            meta: `${l.modulo || "—"} · Turno ${l.turno ?? "—"}`,
+            raw: l,
+          };
+        },
+        getOptions: (q) => {
+          const catalog = QB.Data ? QB.Data.loteOptions(q) : [];
+          // Customs solo si no están en catálogo; catálogo siempre primero
+          const custom = (QB.API?.customValueOptions?.("lote", q) || []).filter(
+            (o) => !(QB.Data && QB.Data.findLote(o.id || o.label))
+          );
+          return mergeOpts(catalog, custom);
+        },
+        storeValue: (opt) => {
+          const L = resolveLoteEntry_(opt);
+          return String(L?.codLote || opt?.raw?.codLote || opt?.id || "");
+        },
         resolveOption: (val) => {
           const l = QB.Data && QB.Data.findLote(val);
           if (!l) return val ? { id: val, label: `Lote ${val}` } : null;
@@ -1489,18 +1836,6 @@ QB.App = (() => {
           mergeOpts(
             QB.API?.customValueOptions?.("variedad", q) || [],
             filterCatalog(QB.CATALOG.variedades, q)
-          ),
-      },
-      momento: {
-        title: "Elegir evaluación",
-        searchPlaceholder: "Buscar...",
-        dynamic: true,
-        allowCustom: "text",
-        customKind: "momento",
-        getOptions: (q) =>
-          mergeOpts(
-            QB.API?.customValueOptions?.("momento", q) || [],
-            filterCatalog(QB.CATALOG.evaluacionCaida, q)
           ),
       },
       evaluador: {
@@ -1658,23 +1993,32 @@ QB.App = (() => {
     if (el.value !== digits) el.value = digits;
   }
 
+  function onFormLiveUpdate_(e) {
+    const el = e.target;
+    if (!el || !el.name) return;
+    clampDigitsInput_(el);
+    if (el.name === "lote") {
+      // Red de seguridad: rellena módulo/turno desde catálogo aunque el select no traiga raw
+      applyLote({ id: el.value });
+    }
+    refreshFieldError(el.name);
+    if (el.name === "lote") {
+      refreshFieldError("modulo");
+      refreshFieldError("turno");
+    }
+    refreshDefectLiveRatings();
+    saveDraft_();
+  }
+
   function bindLiveValidation() {
     const root = $("#form-root");
     if (!root) return;
-    const onUpdate = (e) => {
-      const el = e.target;
-      if (!el || !el.name) return;
-      clampDigitsInput_(el);
-      refreshFieldError(el.name);
-      if (el.name === "lote") {
-        refreshFieldError("modulo");
-        refreshFieldError("turno");
-      }
-      refreshDefectLiveRatings();
-      saveDraft_();
-    };
-    root.addEventListener("input", onUpdate);
-    root.addEventListener("change", onUpdate);
+    // #form-root persiste: no re-registrar listeners en cada renderForm
+    if (!root.dataset.qbLiveBound) {
+      root.dataset.qbLiveBound = "1";
+      root.addEventListener("input", onFormLiveUpdate_);
+      root.addEventListener("change", onFormLiveUpdate_);
+    }
     refreshDefectLiveRatings();
   }
 
@@ -1698,32 +2042,36 @@ QB.App = (() => {
       }
     }
 
+    // Solo toast (no modal encima): evita “cerrar dos veces” y falsa sensación de doble toque
     if (!ok && showFeedback) {
       toast("Completa los campos obligatorios", "error");
-      feedback({
-        title: "Campos incompletos",
-        text: "Revisa los campos obligatorios antes de guardar.",
-        type: "error",
-        confirmText: "Entendido",
-      });
     }
     return ok ? applyLoteMetaToData(d) : null;
   }
 
+  let resumenBusy_ = false;
   function goResumen() {
-    syncFechaHoy();
-    const data = validate(readForm(), { feedback: true, markFields: true });
-    if (!data) return;
-    data.fecha = todayISO();
-    state.data = data;
-    state.score = QB.Scoring.compute(state.type, data);
-    // Mismo clientId en editar→resumen: evita duplicar conteo / filas
-    if (!state.clientId) state.clientId = QB.API.newClientId();
-    state.saving = false;
-    $("#progress-fill").style.width = "100%";
-    renderResumen();
-    showScreen("resumen");
-    saveDraft_();
+    if (resumenBusy_ || state.saving) return;
+    resumenBusy_ = true;
+    try {
+      syncFechaHoy();
+      // Última pasada: si hay lote, forzar módulo/turno desde catálogo antes de validar
+      const loteVal = $("#field-lote")?.value || state.data?.codLote || state.data?.lote;
+      if (loteVal) applyLote({ id: loteVal });
+      const data = validate(readForm(), { feedback: true, markFields: true });
+      if (!data) return;
+      data.fecha = todayISO();
+      state.data = data;
+      state.score = QB.Scoring.compute(state.type, data);
+      if (!state.clientId) state.clientId = QB.API.newClientId();
+      state.saving = false;
+      $("#progress-fill").style.width = "100%";
+      renderResumen();
+      showScreen("resumen");
+      saveDraft_();
+    } finally {
+      resumenBusy_ = false;
+    }
   }
 
   function renderResumen() {
@@ -1910,7 +2258,6 @@ QB.App = (() => {
     setLoading(true, "Guardando evaluación...");
 
     function exitToHome() {
-      setLoading(false);
       clearEvalSession();
       goHome();
       renderHome();
@@ -1940,15 +2287,30 @@ QB.App = (() => {
       const res = await QB.API.submit(payload);
       exitToHome();
       if (res.mode === "demo") {
-        toast("Guardado solo en el celular", "warn");
+        toast("Guardado correctamente (modo local)", "ok");
+      } else if (res.synced || res.created || res.duplicate) {
+        toast("Guardado correctamente", "ok");
+      } else if (res.offline || (res.queued && !navigator.onLine)) {
+        toast(
+          "Guardado sin conexión. Se enviará automáticamente cuando vuelva Internet.",
+          "info"
+        );
       } else {
-        toast("Evaluación enviada ✓", "ok");
+        toast("Guardado correctamente", "ok");
       }
     } catch (err) {
       exitToHome();
-      toast("Sin red — quedó en cola", "info");
+      toast(
+        "Guardado sin conexión. Se enviará automáticamente cuando vuelva Internet.",
+        "info"
+      );
     } finally {
-      if (saveBtn) saveBtn.disabled = false;
+      state.saving = false;
+      setLoading(false);
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.removeAttribute("aria-busy");
+      }
     }
   }
 
@@ -1965,6 +2327,7 @@ QB.App = (() => {
 
   function bindChrome() {
     const goHomeSafe = async () => {
+      if (state.saving) return;
       if (state.screen === "form" || state.screen === "resumen") {
         saveDraft_();
         const ok = await confirmCancel();
@@ -1989,6 +2352,8 @@ QB.App = (() => {
     $("#qb-sync-close")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-done")?.addEventListener("click", closeSyncModal);
     $("#qb-sync-update")?.addEventListener("click", updateApp);
+    $("#qb-sync-transfer")?.addEventListener("click", promptTransferMode_);
+    $("#qb-transfer-done")?.addEventListener("click", closeTransferUi_);
     $("#qb-sync-clear")?.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -2032,19 +2397,62 @@ QB.App = (() => {
       btn.addEventListener("click", () => syncPending(true));
     });
 
-    window.addEventListener("online", async () => {
+    window.addEventListener("online", () => {
       updateStatusUI();
-      await syncPending(false);
+      // Con Internet: enviar pendientes recientes de inmediato (no espera 12 h)
+      syncPending(false);
     });
     window.addEventListener("offline", () => {
       updateStatusUI();
     });
-    window.addEventListener("qb:queue", () => {
-      updateStatusUI();
-      renderOpsPanel();
-      if (state.screen === "uploads") renderUploadsHistory();
+    let queueUiTimer = null;
+    window.addEventListener("qb:queue", (ev) => {
+      // Chip: usar count del evento si viene (O(1)); no recorrer cola
+      const n = ev?.detail?.count;
+      if (typeof n === "number") {
+        document.querySelectorAll("[data-chip-pending], #chip-pending").forEach((chip) => {
+          chip.classList.toggle("has-items", n > 0);
+          const text =
+            chip.querySelector("[data-pending-text]") ||
+            chip.querySelector("#chip-pending-text") ||
+            chip.querySelector(".chip-text");
+          if (text && !(QB.API.isSyncing && QB.API.isSyncing())) {
+            text.textContent = n > 0 ? `${n} pend.` : "0 pend.";
+          }
+        });
+      } else {
+        updateStatusUI();
+      }
+      // No re-renderizar paneles en cada ítem; agrupar actualizaciones
+      if (queueUiTimer) return;
+      queueUiTimer = setTimeout(() => {
+        queueUiTimer = null;
+        if (QB.API.isSyncing && QB.API.isSyncing()) return;
+        renderOpsPanel();
+        if (state.screen === "uploads") renderUploadsHistory();
+      }, 500);
+    });
+    let syncUiTimer = null;
+    window.addEventListener("qb:sync", (ev) => {
+      const d = ev.detail || {};
+      if (d.phase === "progress" && d.total) {
+        // Solo chip — sin re-render de paneles
+        document.querySelectorAll("[data-pending-text], #chip-pending-text").forEach((el) => {
+          el.textContent = `${d.sent || 0}/${d.total}`;
+        });
+      }
+      if (d.phase === "done") {
+        if (syncUiTimer) clearTimeout(syncUiTimer);
+        syncUiTimer = setTimeout(() => {
+          updateStatusUI();
+          renderOpsPanel();
+          if (state.screen === "uploads") renderUploadsHistory();
+        }, 200);
+      }
     });
     window.addEventListener("qb:activity", () => {
+      // Durante sync no re-renderizar (activity llega en ráfaga)
+      if (QB.API.isSyncing && QB.API.isSyncing()) return;
       renderOpsPanel();
       if (state.screen === "uploads") renderUploadsHistory();
     });
@@ -2068,12 +2476,14 @@ QB.App = (() => {
       window.visualViewport.addEventListener("resize", resetViewportLayout);
       window.visualViewport.addEventListener("scroll", resetViewportLayout);
     }
-    window.addEventListener("resize", resetViewportLayout);
+    window.addEventListener("resize", () => {
+      resetViewportLayout();
+      if (isKeyboardOpen_()) setTimeout(resetViewportLayout, 30);
+    });
     window.addEventListener("orientationchange", () => setTimeout(resetViewportLayout, 120));
     document.addEventListener("focusin", (e) => {
       if (!isTypingField_(e.target)) return;
       setKeyboardUi_(true);
-      // iOS y Android abren el teclado a ritmos distintos
       [50, 150, 350].forEach((ms) => setTimeout(resetViewportLayout, ms));
     });
     document.addEventListener("focusout", () => {
@@ -2086,10 +2496,7 @@ QB.App = (() => {
         resetViewportLayout();
       }, 150);
     });
-    // Android Chrome a veces dispara resize de window al abrir teclado
-    window.addEventListener("resize", () => {
-      if (isKeyboardOpen_()) setTimeout(resetViewportLayout, 30);
-    });
+    // Un solo handler de resize (evita doble reset / jank con teclado)
 
     // Si la app queda abierta y cambia el día → refrescar fecha
     const refreshFechaIfNeeded = () => {
@@ -2099,8 +2506,36 @@ QB.App = (() => {
     };
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") saveDraft_();
-      if (document.visibilityState === "visible") refreshFechaIfNeeded();
+      if (document.visibilityState === "visible") {
+        refreshFechaIfNeeded();
+        // Reabrir app con Internet → enviar pendientes
+        if (navigator.onLine) syncPending(false);
+        // Si modo transferencia estaba activo, re-pedir wake lock / reanudar
+        try {
+          if (sessionStorage.getItem(TRANSFER_FLAG) === "1") {
+            if (transferRunning_) acquireWakeLock_();
+            else if (pendingSafe_() > 0) maybeResumeTransfer_();
+          }
+        } catch (_) {}
+      }
     });
+
+    window.addEventListener("beforeunload", (e) => {
+      try {
+        if (sessionStorage.getItem(TRANSFER_FLAG) === "1" && pendingSafe_() > 0) {
+          e.preventDefault();
+          e.returnValue = "";
+        }
+      } catch (_) {}
+    });
+
+    if (navigator.serviceWorker) {
+      navigator.serviceWorker.addEventListener("message", (ev) => {
+        if (ev?.data?.type === "QB_FLUSH" && pendingSafe_() > 0) {
+          if (!transferRunning_) startTransferMode_();
+        }
+      });
+    }
     window.addEventListener("pagehide", saveDraft_);
     window.addEventListener("focus", refreshFechaIfNeeded);
     window.addEventListener("pageshow", refreshFechaIfNeeded);
@@ -2112,13 +2547,26 @@ QB.App = (() => {
     if (QB.Data) {
       QB.Data.load().then((ok) => {
         if (!ok) toast("No se cargaron lotes / DNI", "error");
-        // Re-pintar con módulo/turno ya disponibles
+        // Si el formulario ya tenía lote elegido antes de cargar el JSON → rellenar módulo/turno
+        if (state.screen === "form") {
+          const loteVal = $("#field-lote")?.value || state.data?.codLote || state.data?.lote;
+          if (loteVal) applyLote({ id: loteVal });
+        }
         renderOpsPanel();
       });
     } else {
       renderOpsPanel();
     }
-    if (navigator.onLine) syncPending(false).catch(() => {});
+    const boot = async () => {
+      if (QB.API.whenReady) await QB.API.whenReady();
+      updateStatusUI();
+      renderOpsPanel();
+      // Al abrir con Internet: enviar pendientes ≤12 h en segundo plano
+      if (navigator.onLine) syncPending(false);
+      // Si el cierre de día quedó a medias, reanudar modo transferencia
+      setTimeout(() => maybeResumeTransfer_(), 600);
+    };
+    boot().catch(() => {});
   }
 
   /** Celular / tablet sí · PC de escritorio no */

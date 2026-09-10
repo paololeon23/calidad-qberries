@@ -104,11 +104,13 @@
           Actualizar app
           <small>Descarga la última versión</small>
         </button>
+        <button type="button" class="qb-sync-btn primary" id="qb-sync-transfer">
+          Modo transferencia
+          <small>Cierra el día · envía todos los pendientes</small>
+        </button>
       </div>
       <p class="qb-sync-tips-label">Recomendaciones de uso</p>
       <div class="qb-sync-tips" id="qb-sync-tips">
-        <button type="button" class="qb-sync-tip" data-tip="instalar">Instalar en Android — escanea el QR oficial (HTTPS)</button>
-        <button type="button" class="qb-sync-tip" data-tip="lote">Usa el lote primero — módulo y turno se llenan solos</button>
         <button type="button" class="qb-sync-tip" data-tip="offline">Sin red: guarda igual; se sincroniza al volver la señal</button>
         <button type="button" class="qb-sync-tip" data-tip="resumen">Revisa «Resumen» para ver enviados y pendientes</button>
         <button type="button" class="qb-sync-tip" data-tip="una">Una evaluación a la vez: GUARDAR y sigue con la siguiente</button>
@@ -117,6 +119,24 @@
       <button type="button" class="qb-sync-done" id="qb-sync-done">Cerrar</button>
     </div>
   </div>
+
+  <!-- Modo transferencia: sync hasta 0 pendientes -->
+  <div class="qb-transfer" id="qb-transfer" hidden aria-live="polite">
+    <div class="qb-transfer-sheet" role="dialog" aria-modal="true" aria-labelledby="qb-transfer-title">
+      <div class="qb-transfer-spinner" aria-hidden="true"></div>
+      <h2 id="qb-transfer-title">Modo transferencia</h2>
+      <p class="qb-transfer-sub" id="qb-transfer-sub">Enviando pendientes… Deja la app abierta.</p>
+      <div class="qb-transfer-progress">
+        <div class="qb-transfer-bar"><span id="qb-transfer-fill"></span></div>
+        <p class="qb-transfer-count" id="qb-transfer-count">0 / 0</p>
+      </div>
+      <p class="qb-transfer-hint" id="qb-transfer-hint">No cierres ni bloquees el teléfono hasta terminar.</p>
+      <div class="qb-transfer-actions" id="qb-transfer-actions" hidden>
+        <button type="button" class="qb-fb-primary" id="qb-transfer-done">Listo</button>
+      </div>
+    </div>
+  </div>
+
   <div class="app">
     <!-- HOME -->
     <section class="screen active" id="screen-home">
@@ -321,7 +341,6 @@
   <script src="js/data.js"></script>
   <script src="js/scoring.js"></script>
   <script src="js/select.js"></script>
-  <script src="js/datepicker.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
   <script>
