@@ -98,7 +98,7 @@
       <div class="qb-sync-actions">
         <button type="button" class="qb-sync-btn primary" id="qb-sync-clear">
           Eliminar caché
-          <small>Limpia formularios, borradores y errores pegados</small>
+          <small>Borra todo lo local · pendientes · borradores · deja la app limpia</small>
         </button>
         <button type="button" class="qb-sync-btn primary" id="qb-sync-update">
           Actualizar app
@@ -185,7 +185,7 @@
         <h2>Elige tu evaluación</h2>
         <p>Protocolos listos para capturar calidad en segundos</p>
         <div class="hero-pills">
-          <span>4 protocolos</span>
+          <span>7 protocolos</span>
           <button type="button" class="hero-pill-btn" id="btn-uploads">Resumen</button>
           <button type="button" class="hero-pill-btn" id="btn-sync-info">Sync seguro</button>
         </div>
@@ -231,6 +231,21 @@
             <span class="ops-type-code">QC-04</span>
             <span class="ops-type-val" id="kpi-tipo-planta">0</span>
             <span class="ops-type-label">En planta</span>
+          </div>
+          <div class="ops-type" data-type="bpa">
+            <span class="ops-type-code">VF-01</span>
+            <span class="ops-type-val" id="kpi-tipo-bpa">0</span>
+            <span class="ops-type-label">BPAS</span>
+          </div>
+          <div class="ops-type" data-type="inocuidad">
+            <span class="ops-type-code">VF-02</span>
+            <span class="ops-type-val" id="kpi-tipo-inocuidad">0</span>
+            <span class="ops-type-label">Inocuidad</span>
+          </div>
+          <div class="ops-type" data-type="incidencias">
+            <span class="ops-type-code">VF-03</span>
+            <span class="ops-type-val" id="kpi-tipo-incidencias">0</span>
+            <span class="ops-type-label">Incidencias</span>
           </div>
         </div>
         <div class="ops-last" id="ops-last"></div>
@@ -294,6 +309,7 @@
       </header>
       <div class="panel-scroll resumen-wrap">
         <div class="meta-list" id="resumen-meta"></div>
+        <div class="resumen-acciones" id="resumen-acciones" hidden></div>
         <div class="table-card" id="resumen-table"></div>
       </div>
       <div class="form-actions dual">

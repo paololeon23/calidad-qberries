@@ -451,6 +451,9 @@ QB.App = (() => {
     descarte: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V5h6v2M6 7l1 12h10l1-12"/><path d="M10 11v5M14 11v5"/></svg>`,
     caida: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v10"/><path d="M8 9l4 4 4-4"/><path d="M5 19h14"/><circle cx="12" cy="16" r="1.5" fill="currentColor"/></svg>`,
     planta: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V11"/><path d="M12 11c-4-1-6-4-6-7 4 0 6 2 6 5"/><path d="M12 11c4-1 6-4 6-7-4 0-6 2-6 5"/><path d="M9 21h6"/></svg>`,
+    bpa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
+    inocuidad: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>`,
+    incidencias: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`,
     chevron: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>`,
     back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>`,
     caret: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`,
@@ -461,7 +464,14 @@ QB.App = (() => {
     descarte: "QC-02 · Descarte",
     caida: "QC-03 · Caída",
     planta: "QC-04 · Planta",
+    bpa: "VF-01 · BPAS",
+    inocuidad: "VF-02 · Inocuidad",
+    incidencias: "VF-03 · Incidencias",
   };
+
+  function isChecklistType_(type) {
+    return type === "bpa" || type === "inocuidad" || type === "incidencias";
+  }
 
   function renderHome() {
     const drafts = readAllDrafts_();
@@ -520,7 +530,7 @@ QB.App = (() => {
     if (pendEl) pendEl.textContent = String(pend);
     $("#kpi-pend-wrap")?.classList.toggle("warn", pend > 0);
 
-    ["calidad", "descarte", "caida", "planta"].forEach((t) => {
+    ["calidad", "descarte", "caida", "planta", "bpa", "inocuidad", "incidencias"].forEach((t) => {
       const n = Number(byType[t]) || 0;
       const el = $(`#kpi-tipo-${t}`);
       if (el) el.textContent = String(n);
@@ -760,28 +770,25 @@ QB.App = (() => {
     await new Promise((r) => setTimeout(r, 240));
 
     const ok = await feedback({
-      title: "¿Eliminar caché?",
-      text: "Limpia borradores, formularios abiertos, caché del navegador y datos temporales. Conserva la cola pendiente y el historial de envíos.",
+      title: "¿Reiniciar app limpia?",
+      text: "Borra TODO lo local: pendientes, borradores, historial, caché y errores. Queda como recién instalada. Lo ya enviado al Sheet no se toca.",
       type: "warn",
-      confirmText: "Eliminar",
+      confirmText: "Borrar todo",
       cancelText: "Cancelar",
     });
     if (!ok) return;
 
-    setLoading(true, "Limpiando…");
+    setLoading(true, "Limpiando todo…");
     try {
-      const keep = new Set([
-        "qb_pending_queue",
-        "qb_activity",
-        "qb_day_stats",
-        "qb_last_sync_at",
-      ]);
-      const toRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && !keep.has(k) && (k.startsWith("qb_") || k.startsWith("QB_"))) toRemove.push(k);
+      if (QB.API?.wipeAllLocalData) await QB.API.wipeAllLocalData();
+      else {
+        const toRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && (k.startsWith("qb_") || k.startsWith("QB_"))) toRemove.push(k);
+        }
+        toRemove.forEach((k) => localStorage.removeItem(k));
       }
-      toRemove.forEach((k) => localStorage.removeItem(k));
       try {
         sessionStorage.clear();
       } catch (_) {}
@@ -801,7 +808,7 @@ QB.App = (() => {
       setLoading(false);
     }
     closeSyncModal();
-    toast("Caché eliminada ✓", "ok");
+    toast("App limpia — recargando…", "ok");
     setTimeout(() => {
       const url = new URL(window.location.href);
       url.searchParams.set("_v", String(Date.now()));
@@ -820,8 +827,8 @@ QB.App = (() => {
         text: "En el inicio pulsa Resumen para ver enviados y pendientes, 10 por página.",
       },
       una: {
-        title: "Una a la vez",
-        text: "Completa, Ver resumen, GUARDAR. El borrador se borra solo al enviar; si sales antes, al volver lo recuperas.",
+        title: "Una evaluación a la vez",
+        text: "Completa una, ve a Resumen, pulsa GUARDAR y recién ahí sigue con la siguiente. Así no se mezclan formularios ni borradores.",
       },
       soporte: {
         title: "Soporte",
@@ -840,6 +847,7 @@ QB.App = (() => {
   let transferAbort_ = null;
   let transferWake_ = null;
   let transferRunning_ = false;
+  let transferUiDone_ = false; // true cuando ya se puede pulsar Listo
 
   function setTransferUi_(opts = {}) {
     const root = $("#qb-transfer");
@@ -852,31 +860,38 @@ QB.App = (() => {
     if (!root) return;
 
     if (opts.open) {
+      transferUiDone_ = false;
       root.hidden = false;
       requestAnimationFrame(() => root.classList.add("open"));
     }
     if (opts.close) {
+      transferUiDone_ = false;
       root.classList.remove("open");
-      setTimeout(() => {
-        root.hidden = true;
-      }, 220);
+      root.hidden = true;
+      if (actions) actions.hidden = true;
+      if (spin) spin.hidden = false;
+      root.classList.remove("is-done");
     }
     if (sub && opts.message != null) sub.textContent = opts.message;
     if (hint && opts.hint != null) hint.textContent = opts.hint;
     const sent = Number(opts.sent) || 0;
-    const remain = Number(opts.remain);
-    const total = Math.max(Number(opts.total) || 0, sent + (Number.isFinite(remain) ? remain : 0), 1);
-    const done = Number.isFinite(remain) ? remain : pendingSafe_();
+    const remain = Number.isFinite(Number(opts.remain)) ? Number(opts.remain) : pendingSafe_();
+    const total = Math.max(Number(opts.total) || 0, sent + remain, 1);
     if (count) {
-      count.textContent =
-        opts.doneState
-          ? "0 pendientes"
-          : `${Math.min(sent, total)} / ${total} · quedan ${done}`;
+      if (opts.doneState) {
+        count.textContent = remain > 0 ? `${remain} pendientes` : "0 pendientes";
+      } else {
+        count.textContent = `${Math.min(sent, total)} / ${total} · quedan ${remain}`;
+      }
     }
     if (fill) {
-      const pct = opts.doneState ? 100 : Math.min(100, Math.round((sent / total) * 100));
+      const pct =
+        opts.doneState && remain === 0
+          ? 100
+          : Math.min(100, Math.round((sent / total) * 100));
       fill.style.width = `${pct}%`;
     }
+    if (opts.doneState) transferUiDone_ = true;
     if (spin) spin.hidden = !!opts.doneState;
     if (actions) actions.hidden = !opts.doneState;
     root.classList.toggle("is-done", !!opts.doneState);
@@ -1028,21 +1043,20 @@ QB.App = (() => {
   }
 
   function closeTransferUi_() {
-    if (transferRunning_ && pendingSafe_() > 0) {
-      feedback({
-        title: "Aún hay pendientes",
-        text: "Si cierras ahora, pueden quedar para mañana. Mejor espera a 0 pendientes.",
-        type: "warn",
-        confirmText: "Seguir enviando",
-      });
-      return;
-    }
-    transferAbort_?.abort?.();
+    // Listo siempre cierra (no se atasca). Cancela envío en curso y no reabre solo.
+    try {
+      transferAbort_?.abort?.();
+    } catch (_) {}
+    transferAbort_ = null;
+    transferRunning_ = false;
+    transferUiDone_ = false;
     releaseWakeLock_();
     try {
-      if (!pendingSafe_()) sessionStorage.removeItem(TRANSFER_FLAG);
+      sessionStorage.removeItem(TRANSFER_FLAG);
     } catch (_) {}
     setTransferUi_({ close: true });
+    updateStatusUI();
+    renderOpsPanel();
   }
 
   function maybeResumeTransfer_() {
@@ -1301,11 +1315,15 @@ QB.App = (() => {
         </div>`;
     }
     if (type === "textarea") {
+      const rows = opts.rows || (name.startsWith("accion_") ? 4 : 3);
+      const hint = opts.required ? "Campo obligatorio" : "Opcional";
       return `
-        <div class="field comment-field" data-field="${name}">
+        <div class="field comment-field${opts.required ? "" : " is-optional"}" data-field="${name}">
           <label>${label}${req}</label>
-          <textarea name="${name}" id="field-${name}" rows="3" placeholder="${opts.placeholder || ""}">${escapeHtml(val)}</textarea>
-          <span class="field-hint">Campo obligatorio</span>
+          <textarea name="${name}" id="field-${name}" rows="${rows}"
+            placeholder="${opts.placeholder || (opts.required ? "" : "Opcional...")}"
+            ${opts.required ? "required" : ""}>${escapeHtml(val)}</textarea>
+          <span class="field-hint">${hint}</span>
         </div>`;
     }
     if (name === "tamano_muestra" || opts.maxDigits) {
@@ -1541,14 +1559,47 @@ QB.App = (() => {
         </div>
       `;
       comentario = fieldHtml("comentario", "Comentar", { type: "textarea", placeholder: "Opcional..." });
+    } else if (state.type === "bpa") {
+      detalle = `
+        ${fieldHtml("cosechador", "Cosechador", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("area", "Área", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("descripcion_incidencia", "Descripción de incidencia", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("accion_correctiva", "Acción correctiva", { type: "textarea", placeholder: "Opcional..." })}
+        ${fieldHtml("accion_preventiva", "Acción preventiva", { type: "textarea", placeholder: "Opcional..." })}
+      `;
+    } else if (state.type === "inocuidad") {
+      detalle = `
+        ${fieldHtml("zona", "Zona", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("verificacion", "Verificación", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("estado", "Estado", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("accion_correctiva", "Acción correctiva", { type: "textarea", placeholder: "Opcional..." })}
+        ${fieldHtml("accion_preventiva", "Acción preventiva", { type: "textarea", placeholder: "Opcional..." })}
+      `;
+    } else if (state.type === "incidencias") {
+      detalle = `
+        ${fieldHtml("area", "Área", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("implicacion", "Implicación", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("contexto", "Contexto", { type: "textarea", placeholder: "Opcional..." })}
+        ${fieldHtml("accion_correctiva", "Acción correctiva", { type: "textarea", placeholder: "Opcional..." })}
+        ${fieldHtml("accion_preventiva", "Acción preventiva", { type: "textarea", placeholder: "Opcional..." })}
+      `;
     }
 
-    form.innerHTML = `
-      <div class="section-card">
-        <div class="section-head">
-          <div class="section-title">Datos generales</div>
-          <p class="section-sub">Información base de la evaluación.</p>
-        </div>
+    const checklist = isChecklistType_(state.type);
+    const generales = checklist
+      ? state.type === "bpa"
+        ? `
+        ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
+        ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("supervisor", "Supervisor", { precise: true, required: true, placeholder: "Seleccionar..." })}
+      `
+        : state.type === "inocuidad" || state.type === "incidencias"
+          ? `
+        ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
+        ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
+      `
+          : ""
+      : `
         ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
         ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
         ${fieldHtml("supervisor", "Supervisor", { precise: true, required: true, placeholder: "Seleccionar..." })}
@@ -1560,6 +1611,15 @@ QB.App = (() => {
             ${fieldHtml("turno", "Turno", { readonly: true, required: true, placeholder: "Según lote" })}
           </div>
         </div>
+      `;
+
+    form.innerHTML = `
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-title">Datos generales</div>
+          <p class="section-sub">${checklist ? "Datos de la cartilla." : "Información base de la evaluación."}</p>
+        </div>
+        ${generales}
       </div>
       <div class="section-card">
         <div class="section-head">
@@ -1569,13 +1629,17 @@ QB.App = (() => {
         ${detalle}
       </div>
       ${defects}
-      <div class="section-card compact">
+      ${
+        comentario
+          ? `<div class="section-card compact">
         <div class="section-head">
           <div class="section-title">Comentario</div>
           <p class="section-sub">Opcional — observaciones de campo.</p>
         </div>
         ${comentario}
-      </div>
+      </div>`
+          : ""
+      }
     `;
 
     bindPreciseFields();
@@ -1590,6 +1654,9 @@ QB.App = (() => {
         descarte: "var(--qb-green)",
         caida: "var(--qb-orange)",
         planta: "var(--qb-lime)",
+        bpa: "#2F6B8A",
+        inocuidad: "#6B4C9A",
+        incidencias: "#B45309",
       }[type] || "var(--qb-green)"
     );
   }
@@ -1838,6 +1905,50 @@ QB.App = (() => {
             filterCatalog(QB.CATALOG.variedades, q)
           ),
       },
+      area: {
+        title: "Elegir área",
+        searchPlaceholder: "Buscar área...",
+        dynamic: true,
+        getOptions: (q) => {
+          const list =
+            state.type === "bpa"
+              ? QB.CHECKLISTS?.bpa?.areas || []
+              : state.type === "incidencias"
+                ? QB.CHECKLISTS?.incidencias?.areas || []
+                : [];
+          return filterCatalog(list, q);
+        },
+      },
+      descripcion_incidencia: {
+        title: "Descripción de incidencia",
+        searchPlaceholder: "Buscar incidencia...",
+        dynamic: true,
+        getOptions: (q) => filterCatalog(QB.CHECKLISTS?.bpa?.incidencias || [], q),
+      },
+      zona: {
+        title: "Elegir zona",
+        searchPlaceholder: "Buscar zona...",
+        dynamic: true,
+        getOptions: (q) => filterCatalog(QB.CHECKLISTS?.inocuidad?.zonas || [], q),
+      },
+      verificacion: {
+        title: "Elegir verificación",
+        searchPlaceholder: "Buscar...",
+        dynamic: true,
+        getOptions: (q) => filterCatalog(QB.CHECKLISTS?.inocuidad?.verificaciones || [], q),
+      },
+      estado: {
+        title: "Elegir estado",
+        searchPlaceholder: "Buscar...",
+        dynamic: true,
+        getOptions: (q) => filterCatalog(QB.CHECKLISTS?.inocuidad?.estados || [], q),
+      },
+      implicacion: {
+        title: "Elegir implicación",
+        searchPlaceholder: "Buscar...",
+        dynamic: true,
+        getOptions: (q) => filterCatalog(QB.CHECKLISTS?.incidencias?.implicaciones || [], q),
+      },
       evaluador: {
         title: "Elegir evaluador",
         searchPlaceholder: "Buscar nombre o código…",
@@ -1937,6 +2048,33 @@ QB.App = (() => {
   }
 
   function requiredNames() {
+    if (state.type === "bpa") {
+      return [
+        "fecha",
+        "evaluador",
+        "supervisor",
+        "cosechador",
+        "area",
+        "descripcion_incidencia",
+      ];
+    }
+    if (state.type === "inocuidad") {
+      return [
+        "fecha",
+        "evaluador",
+        "zona",
+        "verificacion",
+        "estado",
+      ];
+    }
+    if (state.type === "incidencias") {
+      return [
+        "fecha",
+        "evaluador",
+        "area",
+        "implicacion",
+      ];
+    }
     const required = ["fecha", "evaluador", "supervisor", "variedad", "lote", "modulo", "turno"];
     if (state.type === "calidad") required.push("cosechador", "tamano_muestra");
     else if (state.type === "descarte") required.push("tamano_muestra");
@@ -1993,9 +2131,29 @@ QB.App = (() => {
     if (el.value !== digits) el.value = digits;
   }
 
+  function autoGrowTextarea_(el) {
+    if (!el || el.tagName !== "TEXTAREA") return;
+    const cs = window.getComputedStyle(el);
+    const maxH = parseFloat(cs.maxHeight);
+    el.style.height = "auto";
+    const next = el.scrollHeight;
+    if (Number.isFinite(maxH) && maxH > 0 && next > maxH) {
+      el.style.height = `${maxH}px`;
+      el.style.overflowY = "auto";
+    } else {
+      el.style.height = `${next}px`;
+      el.style.overflowY = "hidden";
+    }
+  }
+
+  function syncTextareasHeight_() {
+    $$("#form-root textarea").forEach(autoGrowTextarea_);
+  }
+
   function onFormLiveUpdate_(e) {
     const el = e.target;
     if (!el || !el.name) return;
+    if (el.tagName === "TEXTAREA") autoGrowTextarea_(el);
     clampDigitsInput_(el);
     if (el.name === "lote") {
       // Red de seguridad: rellena módulo/turno desde catálogo aunque el select no traiga raw
@@ -2020,6 +2178,7 @@ QB.App = (() => {
       root.addEventListener("change", onFormLiveUpdate_);
     }
     refreshDefectLiveRatings();
+    syncTextareasHeight_();
   }
 
   function validate(data, { feedback: showFeedback = true, markFields = true } = {}) {
@@ -2056,8 +2215,10 @@ QB.App = (() => {
     try {
       syncFechaHoy();
       // Última pasada: si hay lote, forzar módulo/turno desde catálogo antes de validar
-      const loteVal = $("#field-lote")?.value || state.data?.codLote || state.data?.lote;
-      if (loteVal) applyLote({ id: loteVal });
+      if (!isChecklistType_(state.type)) {
+        const loteVal = $("#field-lote")?.value || state.data?.codLote || state.data?.lote;
+        if (loteVal) applyLote({ id: loteVal });
+      }
       const data = validate(readForm(), { feedback: true, markFields: true });
       if (!data) return;
       data.fecha = todayISO();
@@ -2106,6 +2267,12 @@ QB.App = (() => {
       d.tamano_muestra != null && d.tamano_muestra !== ""
         ? ["Tamaño muestra", d.tamano_muestra]
         : null,
+      d.area ? ["Área", d.area] : null,
+      d.descripcion_incidencia ? ["Incidencia", d.descripcion_incidencia] : null,
+      d.zona ? ["Zona", d.zona] : null,
+      d.verificacion ? ["Verificación", d.verificacion] : null,
+      d.estado ? ["Estado", d.estado] : null,
+      d.implicacion ? ["Implicación", d.implicacion] : null,
     ].filter(Boolean);
 
     $("#resumen-meta").innerHTML = metaRows
@@ -2114,6 +2281,31 @@ QB.App = (() => {
       <div class="meta-row"><span class="k">${k}</span><span class="v">${escapeHtml(v)}</span></div>`
       )
       .join("");
+
+    // Textos largos (textarea): bloque apilado, no meta-row
+    const accionesEl = $("#resumen-acciones");
+    if (accionesEl) {
+      const longBlocks = [
+        d.contexto ? ["Contexto", d.contexto] : null,
+        d.accion_correctiva ? ["Acción correctiva", d.accion_correctiva] : null,
+        d.accion_preventiva ? ["Acción preventiva", d.accion_preventiva] : null,
+      ].filter(Boolean);
+      if (longBlocks.length) {
+        accionesEl.hidden = false;
+        accionesEl.innerHTML = longBlocks
+          .map(
+            ([k, v]) => `
+          <div class="resumen-accion">
+            <div class="resumen-accion-label">${escapeHtml(k)}</div>
+            <div class="resumen-accion-text">${escapeHtml(v)}</div>
+          </div>`
+          )
+          .join("");
+      } else {
+        accionesEl.hidden = true;
+        accionesEl.innerHTML = "";
+      }
+    }
 
     const box = $("#formula-box");
     if (box) {
@@ -2165,6 +2357,19 @@ QB.App = (() => {
     };
 
     const displayRows = mergeSumaDeshidratado_(filtered);
+
+    const tableEl = $("#resumen-table");
+    const hideTable =
+      state.type === "bpa" ||
+      state.type === "inocuidad" ||
+      state.type === "incidencias";
+
+    if (hideTable) {
+      tableEl.hidden = true;
+      tableEl.innerHTML = "";
+      return;
+    }
+    tableEl.hidden = false;
 
     const rowHtml = (r) => {
       const calc =

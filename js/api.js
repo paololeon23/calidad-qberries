@@ -14,7 +14,15 @@ QB.API = (() => {
   const HISTORY_TTL_MS = 12 * 60 * 60 * 1000; // 12 h — historial UI + cola crítica (antiguos no se borran)
   const SYNC_INTERVAL_MS = 12 * 60 * 60 * 1000; // sync automática de antiguos
   const LAST_SYNC_KEY = "qb_last_sync_at";
-  const EVAL_TYPES = ["calidad", "descarte", "caida", "planta"];
+  const EVAL_TYPES = [
+    "calidad",
+    "descarte",
+    "caida",
+    "planta",
+    "bpa",
+    "inocuidad",
+    "incidencias",
+  ];
   const TZ_OPS = "America/Lima";
   const BATCH_SIZE = 10; // 10–12: 10 más estable con GAS/Sheets sin saturar
   const FETCH_TIMEOUT_MS = 15000;
@@ -78,7 +86,18 @@ QB.API = (() => {
   }
 
   function emptyByType_() {
-    return { calidad: 0, descarte: 0, caida: 0, planta: 0 };
+    const o = {};
+    for (let i = 0; i < EVAL_TYPES.length; i++) o[EVAL_TYPES[i]] = 0;
+    return o;
+  }
+
+  function sumByType_(byType) {
+    let total = 0;
+    const src = byType || {};
+    for (let i = 0; i < EVAL_TYPES.length; i++) {
+      total += Number(src[EVAL_TYPES[i]]) || 0;
+    }
+    return total;
   }
 
   /** Día operativo: data.fecha (YYYY-MM-DD) o submittedAt en Lima */
@@ -106,11 +125,7 @@ QB.API = (() => {
         raw.ids && typeof raw.ids === "object" && !Array.isArray(raw.ids)
           ? raw.ids
           : {};
-      let total = 0;
-      EVAL_TYPES.forEach((t) => {
-        total += byType[t];
-      });
-      return { day, total, byType, ids };
+      return { day, total: sumByType_(byType), byType, ids };
     } catch {
       return { day, total: 0, byType: emptyByType_(), ids: {} };
     }
@@ -138,11 +153,7 @@ QB.API = (() => {
     if (stats.ids[id]) return false;
     stats.ids[id] = type;
     stats.byType[type] = (Number(stats.byType[type]) || 0) + 1;
-    stats.total =
-      (Number(stats.byType.calidad) || 0) +
-      (Number(stats.byType.descarte) || 0) +
-      (Number(stats.byType.caida) || 0) +
-      (Number(stats.byType.planta) || 0);
+    stats.total = sumByType_(stats.byType);
     saveDayStats_(stats);
     return true;
   }
@@ -186,8 +197,7 @@ QB.API = (() => {
       }
     } catch (_) {}
 
-    const total =
-      byType.calidad + byType.descarte + byType.caida + byType.planta;
+    const total = sumByType_(byType);
     saveDayStats_({ day, total, byType, ids });
     return { day, total, byType, ids };
   }
@@ -1501,6 +1511,55 @@ QB.API = (() => {
     return { ok: false, timeout: true, sent: totalSent, remain: pendingCount() };
   }
 
+  /** Reset total: cola, IDB, historial, stats — app como recién instalada */
+  async function wipeAllLocalData() {
+    memQueue = [];
+    try {
+      if (dbPromise_) {
+        const db = await dbPromise_.catch(() => null);
+        if (db) {
+          try {
+            db.close();
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+    dbPromise_ = null;
+    try {
+      if (window.indexedDB) {
+        await new Promise((resolve) => {
+          const req = indexedDB.deleteDatabase(IDB_NAME);
+          req.onsuccess = () => resolve();
+          req.onerror = () => resolve();
+          req.onblocked = () => resolve();
+        });
+      }
+    } catch (_) {}
+
+    const known = [
+      QUEUE_KEY,
+      HISTORY_KEY,
+      CUSTOM_PEOPLE_KEY,
+      CUSTOM_VALUES_KEY,
+      ACTIVITY_KEY,
+      DAY_STATS_KEY,
+      LAST_SYNC_KEY,
+    ];
+    known.forEach((k) => {
+      try {
+        localStorage.removeItem(k);
+      } catch (_) {}
+    });
+    try {
+      const toRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith("qb_") || k.startsWith("QB_"))) toRemove.push(k);
+      }
+      toRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (_) {}
+  }
+
   return {
     submit,
     flushQueue,
@@ -1524,5 +1583,6 @@ QB.API = (() => {
     getTodayOpsStats,
     todayKey,
     localDayKey,
+    wipeAllLocalData,
   };
 })();

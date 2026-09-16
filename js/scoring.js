@@ -488,7 +488,59 @@ QB.Scoring = (() => {
     if (type === "calidad" || type === "descarte") return scoreDefectForm(type, data);
     if (type === "caida") return scoreCaida(data);
     if (type === "planta") return scorePlanta(data);
+    if (type === "bpa" || type === "inocuidad" || type === "incidencias") {
+      return scoreChecklist(type, data);
+    }
     return { rows: [], nota: 0, calidadGlobal: "Malo", explain: null };
+  }
+
+  /** Cartillas: sin defectos % — solo registro / conforme */
+  function scoreChecklist(type, data) {
+    const rows = [];
+    let cal = "Registrado";
+    let nota = "";
+    if (type === "inocuidad") {
+      const est = String(data.estado || "").trim();
+      if (est === "Conforme") {
+        cal = "Bueno";
+        nota = 20;
+      } else if (est === "No conforme") {
+        cal = "Malo";
+        nota = 4;
+      }
+      rows.push({
+        id: "estado",
+        label: "Estado",
+        grupo: "CHK",
+        count: null,
+        pct: null,
+        calificacion: cal === "Registrado" ? "—" : cal,
+      });
+    } else if (type === "bpa") {
+      rows.push({
+        id: "incidencia",
+        label: "Incidencia",
+        grupo: "CHK",
+        count: null,
+        pct: null,
+        calificacion: data.descripcion_incidencia ? "Registrado" : "—",
+      });
+    } else if (type === "incidencias") {
+      rows.push({
+        id: "contexto",
+        label: "Contexto",
+        grupo: "CHK",
+        count: null,
+        pct: null,
+        calificacion: data.contexto ? "Registrado" : "—",
+      });
+    }
+    return {
+      rows,
+      nota,
+      calidadGlobal: cal,
+      explain: null,
+    };
   }
 
   return { pct, rate, rateByUnits, pillClass, compute, round2, gradeLabel, formulaPct, defectRating };

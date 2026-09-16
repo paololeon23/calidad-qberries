@@ -85,6 +85,33 @@ var SHEETS = {
     headers: COL.meta.concat(COL.cosechador, COL.ubicacion, [
       'Plantas evaluadas', 'N° frutos en planta', 'Promedio frutos/planta'
     ], COL.resultado, COL.cierre)
+  },
+  bpa: {
+    name: 'BPAS',
+    headers: [
+      'Fecha', 'Evaluador', 'Supervisor', 'Cosechador',
+      'Área', 'Descripción de incidencia',
+      'Acción correctiva', 'Acción preventiva',
+      'Calificación global', 'Hora registro'
+    ]
+  },
+  inocuidad: {
+    name: 'Inocuidad',
+    headers: [
+      'Fecha', 'Evaluador',
+      'Zona', 'Verificación', 'Estado',
+      'Acción correctiva', 'Acción preventiva',
+      'Calificación global', 'Nota', 'Hora registro'
+    ]
+  },
+  incidencias: {
+    name: 'Incidencias',
+    headers: [
+      'Fecha', 'Evaluador',
+      'Área', 'Implicación', 'Contexto',
+      'Acción correctiva', 'Acción preventiva',
+      'Calificación global', 'Hora registro'
+    ]
   }
 };
 
@@ -125,7 +152,7 @@ function doGet(e) {
 
   try {
     if (action === 'ping') {
-      return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.31' });
+      return json_({ ok: true, api: 'calidad', ts: nowIso_(), version: '1.1.32' });
     }
     if (action === 'help') {
       return json_({
@@ -144,7 +171,7 @@ function doGet(e) {
     if (action === 'summary') {
       return json_(getSummary_(p));
     }
-    return json_({ ok: true, api: 'calidad', version: '1.1.31', sheets: Object.keys(SHEETS) });
+    return json_({ ok: true, api: 'calidad', version: '1.1.32', sheets: Object.keys(SHEETS) });
   } catch (err) {
     var msg = String(err && err.message ? err.message : err).replace(/^Error:\s*/i, '');
     return json_({ ok: false, error: msg });
@@ -293,7 +320,7 @@ function roleColumn_(role) {
 function getFilters_(p) {
   p = p || {};
   var fecha = fechaKey_(p.fecha) || fechaKey_(new Date());
-  var types = ['calidad', 'descarte', 'caida', 'planta'];
+  var types = ['calidad', 'descarte', 'caida', 'planta', 'bpa', 'inocuidad', 'incidencias'];
   var evaluadores = [];
   var supervisores = [];
   var cosechadores = [];
@@ -350,13 +377,21 @@ function getSummary_(p) {
   var nameKey = normName_(name);
 
   var typeFilter = String(p.type || 'all').trim().toLowerCase();
-  var types = ['calidad', 'descarte', 'caida', 'planta'];
+  var types = ['calidad', 'descarte', 'caida', 'planta', 'bpa', 'inocuidad', 'incidencias'];
   if (typeFilter !== 'all') {
     if (SHEETS[typeFilter]) types = [typeFilter];
     else throw new Error('type inválido');
   }
 
-  var porTipo = { calidad: 0, descarte: 0, caida: 0, planta: 0 };
+  var porTipo = {
+    calidad: 0,
+    descarte: 0,
+    caida: 0,
+    planta: 0,
+    bpa: 0,
+    inocuidad: 0,
+    incidencias: 0
+  };
   var notas = [];
   var pctCalidad = [];
   var pctDefectos = [];
@@ -447,7 +482,8 @@ function getSummary_(p) {
   topDefectos.sort(function (a, b) { return b.promedio - a.promedio; });
   if (topDefectos.length > 8) topDefectos = topDefectos.slice(0, 8);
 
-  var total = porTipo.calidad + porTipo.descarte + porTipo.caida + porTipo.planta;
+  var total = porTipo.calidad + porTipo.descarte + porTipo.caida + porTipo.planta +
+    porTipo.bpa + porTipo.inocuidad + porTipo.incidencias;
 
   return {
     ok: true,
@@ -874,6 +910,50 @@ function buildRow_(type, data, score, stamp, submittedAt) {
       'N° frutos en planta': data.frutos_planta || '',
       'Promedio frutos/planta': score.promedio != null ? score.promedio : ''
     });
+  }
+
+  if (type === 'bpa') {
+    return {
+      'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
+      'Evaluador': data.evaluador || '',
+      'Supervisor': data.supervisor || '',
+      'Cosechador': data.cosechador || '',
+      'Área': data.area || '',
+      'Descripción de incidencia': data.descripcion_incidencia || '',
+      'Acción correctiva': data.accion_correctiva || '',
+      'Acción preventiva': data.accion_preventiva || '',
+      'Calificación global': score.calidadGlobal || '',
+      'Hora registro': formatHora_(submittedAt || stamp)
+    };
+  }
+
+  if (type === 'inocuidad') {
+    return {
+      'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
+      'Evaluador': data.evaluador || '',
+      'Zona': data.zona || '',
+      'Verificación': data.verificacion || '',
+      'Estado': data.estado || '',
+      'Acción correctiva': data.accion_correctiva || '',
+      'Acción preventiva': data.accion_preventiva || '',
+      'Calificación global': score.calidadGlobal || '',
+      'Nota': score.nota != null ? score.nota : '',
+      'Hora registro': formatHora_(submittedAt || stamp)
+    };
+  }
+
+  if (type === 'incidencias') {
+    return {
+      'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
+      'Evaluador': data.evaluador || '',
+      'Área': data.area || '',
+      'Implicación': data.implicacion || '',
+      'Contexto': data.contexto || '',
+      'Acción correctiva': data.accion_correctiva || '',
+      'Acción preventiva': data.accion_preventiva || '',
+      'Calificación global': score.calidadGlobal || '',
+      'Hora registro': formatHora_(submittedAt || stamp)
+    };
   }
 
   return base;

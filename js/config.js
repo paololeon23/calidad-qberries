@@ -5,7 +5,7 @@ QB.CONFIG = {
   /** Endpoint codificado (uso interno) */
   _ep: "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4cnI3NGV4a2RnNUtQLURkR3FXWEpWMFNYUFdGOFlac3BDUXdIam4zX2NCQjJGTWk0eURPNTR6Ykk4bElmWS1qajkvZXhlYw==",
   APP_NAME: "Q Berries · Calidad",
-  VERSION: "1.2.1",
+  VERSION: "1.3.13",
   /** URL pública HTTPS para QR / instalación Android */
   PUBLIC_URL: "https://calidad-qberries.netlify.app/install.html",
 };
@@ -291,5 +291,113 @@ QB.EVALS = {
     desc: "Fruta dejada en la planta",
     sheet: "Fruta Planta",
     accent: "planta",
+  },
+  bpa: {
+    id: "bpa",
+    title: "Verificación de BPAS",
+    short: "BPAS",
+    desc: "Buenas prácticas agrícolas",
+    sheet: "BPAS",
+    accent: "bpa",
+    kind: "checklist",
+  },
+  inocuidad: {
+    id: "inocuidad",
+    title: "Verificación de inocuidad",
+    short: "Inocuidad",
+    desc: "Ambientes y transporte",
+    sheet: "Inocuidad",
+    accent: "inocuidad",
+    kind: "checklist",
+  },
+  incidencias: {
+    id: "incidencias",
+    title: "Incidencias y eventualidades",
+    short: "Incidencias",
+    desc: "Registro de incidencias de campo",
+    sheet: "Incidencias",
+    accent: "incidencias",
+    kind: "checklist",
+  },
+};
+
+/** Listas fijas de cartillas (no mezclar entre evaluaciones) */
+QB.CHECKLISTS = {
+  bpa: {
+    areas: [
+      { id: "Cosecha", label: "Cosecha" },
+      { id: "Riego", label: "Riego" },
+      { id: "Proyecciones", label: "Proyecciones" },
+      { id: "Sanidad", label: "Sanidad" },
+    ],
+    incidencias: [
+      { id: "Uñas largas", label: "Uñas largas" },
+      { id: "Uñas pintadas", label: "Uñas pintadas" },
+      { id: "Presencia barbilla", label: "Presencia barbilla" },
+      { id: "Presencia de maquillaje", label: "Presencia de maquillaje" },
+      {
+        id: "Presencia de joyas: Aretes, pulseras y anillos",
+        label: "Presencia de joyas: Aretes, pulseras y anillos",
+      },
+      {
+        id: "Consumir alimentos dentro del cultivo",
+        label: "Consumir alimentos dentro del cultivo",
+      },
+      {
+        id: "Consumir golosinas dentro del cultivo",
+        label: "Consumir golosinas dentro del cultivo",
+      },
+      {
+        id: "Orinar ni defecar en los campos de cultivo",
+        label: "Orinar ni defecar en los campos de cultivo",
+      },
+      {
+        id: "Consumir frutas dentro del cultivo",
+        label: "Consumir frutas dentro del cultivo",
+      },
+      {
+        id: "Consumir bebidas azucaradas dentro del cultivo",
+        label: "Consumir bebidas azucaradas dentro del cultivo",
+      },
+      { id: "Ausencia de gorro", label: "Ausencia de gorro" },
+      { id: "Ausencia de polo manga larga", label: "Ausencia de polo manga larga" },
+      { id: "Usa pantalones inapropiados", label: "Usa pantalones inapropiados" },
+      { id: "Calzado inapropiado", label: "Calzado inapropiado" },
+      {
+        id: "Contaminación cruzada: Herida expuestas o fluidos corporales",
+        label: "Contaminación cruzada: Herida expuestas o fluidos corporales",
+      },
+    ],
+  },
+  inocuidad: {
+    zonas: [
+      { id: "Mini acopio", label: "Mini acopio" },
+      { id: "Zona de limpieza de jarras", label: "Zona de limpieza de jarras" },
+      { id: "Transportes (Kias)", label: "Transportes (Kias)" },
+    ],
+    verificaciones: [
+      { id: "Jarras", label: "Jarras" },
+      { id: "Jabas", label: "Jabas" },
+      { id: "Pisos", label: "Pisos" },
+      { id: "Parihuelas", label: "Parihuelas" },
+      { id: "Ambientes", label: "Ambientes" },
+      { id: "No aplica", label: "No aplica" },
+    ],
+    estados: [
+      { id: "Conforme", label: "Conforme" },
+      { id: "No conforme", label: "No conforme" },
+    ],
+  },
+  incidencias: {
+    areas: [
+      { id: "Cosecha", label: "Cosecha" },
+      { id: "Riego", label: "Riego" },
+      { id: "Sanidad", label: "Sanidad" },
+    ],
+    implicaciones: [
+      { id: "Materia Prima", label: "Materia Prima" },
+      { id: "Plantas", label: "Plantas" },
+      { id: "Personal", label: "Personal" },
+    ],
   },
 };

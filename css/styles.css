@@ -805,9 +805,11 @@ body.is-desktop .qb-toast-stack {
 .eval-card::before {
   content: "";
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 4px;
-  background: var(--accent);
+  /* background: var(--accent); */
   border-radius: 0 3px 3px 0;
 }
 .eval-card:active {
@@ -825,6 +827,9 @@ body.is-desktop .qb-toast-stack {
 .eval-card[data-type="descarte"] { --accent: var(--qb-green-bright); }
 .eval-card[data-type="caida"] { --accent: var(--qb-orange); }
 .eval-card[data-type="planta"] { --accent: #7BA82F; }
+.eval-card[data-type="bpa"] { --accent: #2F6B8A; }
+.eval-card[data-type="inocuidad"] { --accent: #6B4C9A; }
+.eval-card[data-type="incidencias"] { --accent: #B45309; }
 
 .eval-top { display: none; }
 .eval-icon {
@@ -846,9 +851,9 @@ body.is-desktop .qb-toast-stack {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid var(--qb-line);
-  color: #7A8780;
+  background: var(--accent);
+  border: 1px solid #ffffff;
+  color: #ffffff;
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -1056,6 +1061,18 @@ body.is-desktop .qb-toast-stack {
   --ops-accent: #7BA82F;
   --ops-tint: #F7FAF0;
 }
+.ops-type[data-type="bpa"] {
+  --ops-accent: #2F6B8A;
+  --ops-tint: #F0F7FB;
+}
+.ops-type[data-type="inocuidad"] {
+  --ops-accent: #6B4C9A;
+  --ops-tint: #F6F2FB;
+}
+.ops-type[data-type="incidencias"] {
+  --ops-accent: #B45309;
+  --ops-tint: #FFF7ED;
+}
 .ops-type.has-count {
   box-shadow: 0 8px 22px rgba(31, 61, 42, 0.1);
   transform: translateY(-1px);
@@ -1071,6 +1088,15 @@ body.is-desktop .qb-toast-stack {
 }
 .ops-type[data-type="planta"].has-count {
   background: linear-gradient(155deg, #F0F6E4 0%, #FFFFFF 72%);
+}
+.ops-type[data-type="bpa"].has-count {
+  background: linear-gradient(155deg, #E8F3F8 0%, #FFFFFF 72%);
+}
+.ops-type[data-type="inocuidad"].has-count {
+  background: linear-gradient(155deg, #F3ECF9 0%, #FFFFFF 72%);
+}
+.ops-type[data-type="incidencias"].has-count {
+  background: linear-gradient(155deg, #FFF0E0 0%, #FFFFFF 72%);
 }
 .ops-type-code {
   display: inline-block;
@@ -1505,10 +1531,23 @@ body.is-desktop .qb-toast-stack {
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .field textarea {
-  min-height: 64px;
-  max-height: 96px;
+  min-height: 72px;
+  height: auto;
+  max-height: 220px;
   resize: none;
-  line-height: 1.35;
+  overflow-y: auto;
+  overflow-x: hidden;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  field-sizing: content;
+  -webkit-overflow-scrolling: touch;
+}
+.field[data-field="accion_correctiva"] textarea,
+.field[data-field="accion_preventiva"] textarea,
+.field[data-field="contexto"] textarea {
+  min-height: 100px;
+  max-height: 280px;
 }
 .field.comment-field {
   gap: 10px;
@@ -2180,6 +2219,34 @@ html.precise-open body {
   font-weight: 700;
   color: var(--qb-slate);
   word-break: break-word;
+}
+
+.resumen-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.resumen-accion {
+  background: #fff;
+  border: 1px solid var(--qb-line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.resumen-accion-label {
+  color: var(--qb-green);
+  font-weight: 800;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.resumen-accion-text {
+  color: var(--qb-slate);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .table-card {
