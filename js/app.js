@@ -1597,6 +1597,7 @@ QB.App = (() => {
           ? `
         ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
         ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("identificacion", "Identificación", { type: "text", required: true, placeholder: "Escribir...", maxlength: 80 })}
       `
           : ""
       : `
@@ -2062,6 +2063,7 @@ QB.App = (() => {
       return [
         "fecha",
         "evaluador",
+        "identificacion",
         "zona",
         "verificacion",
         "estado",
@@ -2071,6 +2073,7 @@ QB.App = (() => {
       return [
         "fecha",
         "evaluador",
+        "identificacion",
         "area",
         "implicacion",
       ];
@@ -2246,6 +2249,7 @@ QB.App = (() => {
 
     const metaRows = [
       d.evaluador ? ["Evaluador", personDisplay(d.evaluador)] : null,
+      d.identificacion ? ["Identificación", d.identificacion] : null,
       d.supervisor ? ["Supervisor", personDisplay(d.supervisor)] : null,
       d.cosechador ? ["Cosechador", personDisplay(d.cosechador)] : null,
       ["Fecha y hora", nowStamp()],

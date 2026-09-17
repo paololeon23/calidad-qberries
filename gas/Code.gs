@@ -98,7 +98,7 @@ var SHEETS = {
   inocuidad: {
     name: 'Inocuidad',
     headers: [
-      'Fecha', 'Evaluador',
+      'Fecha', 'Evaluador', 'Identificación',
       'Zona', 'Verificación', 'Estado',
       'Acción correctiva', 'Acción preventiva',
       'Calificación global', 'Nota', 'Hora registro'
@@ -107,7 +107,7 @@ var SHEETS = {
   incidencias: {
     name: 'Incidencias',
     headers: [
-      'Fecha', 'Evaluador',
+      'Fecha', 'Evaluador', 'Identificación',
       'Área', 'Implicación', 'Contexto',
       'Acción correctiva', 'Acción preventiva',
       'Calificación global', 'Hora registro'
@@ -931,6 +931,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
     return {
       'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
       'Evaluador': data.evaluador || '',
+      'Identificación': data.identificacion || '',
       'Zona': data.zona || '',
       'Verificación': data.verificacion || '',
       'Estado': data.estado || '',
@@ -946,6 +947,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
     return {
       'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
       'Evaluador': data.evaluador || '',
+      'Identificación': data.identificacion || '',
       'Área': data.area || '',
       'Implicación': data.implicacion || '',
       'Contexto': data.contexto || '',
