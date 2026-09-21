@@ -409,6 +409,7 @@ QB.App = (() => {
       if (type === "caida") {
         state.data.momento = "Después de cosecha";
       }
+      if (!usesIdentificacion_(type)) delete state.data.identificacion;
       state.saving = false;
       if (QB.Data && !QB.Data.isReady()) {
         setLoading(true, "Cargando catálogos...");
@@ -471,6 +472,11 @@ QB.App = (() => {
 
   function isChecklistType_(type) {
     return type === "bpa" || type === "inocuidad" || type === "incidencias";
+  }
+
+  /** Identificación solo VF-02 Inocuidad y VF-03 Incidencias */
+  function usesIdentificacion_(type) {
+    return type === "inocuidad" || type === "incidencias";
   }
 
   function renderHome() {
@@ -1593,11 +1599,11 @@ QB.App = (() => {
         ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
         ${fieldHtml("supervisor", "Supervisor", { precise: true, required: true, placeholder: "Seleccionar..." })}
       `
-        : state.type === "inocuidad" || state.type === "incidencias"
+        : usesIdentificacion_(state.type)
           ? `
         ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
         ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
-        ${fieldHtml("identificacion", "Identificación", { type: "text", required: true, placeholder: "Escribir...", maxlength: 80 })}
+        ${fieldHtml("identificacion", "Identificación", { type: "text", required: true, placeholder: "Escribir...", autocomplete: "off" })}
       `
           : ""
       : `
@@ -2024,6 +2030,8 @@ QB.App = (() => {
     $$("#form-root [name]").forEach((el) => {
       if (el.type === "number") {
         data[el.name] = el.value === "" ? "" : Number(el.value);
+      } else if (el.name === "identificacion") {
+        data[el.name] = String(el.value || "");
       } else {
         data[el.name] = el.value.trim();
       }
@@ -2045,6 +2053,7 @@ QB.App = (() => {
       }
     }
     if (state.type === "caida") data.momento = "Después de cosecha";
+    if (!usesIdentificacion_(state.type)) delete data.identificacion;
     return data;
   }
 
@@ -2126,10 +2135,10 @@ QB.App = (() => {
 
   function clampDigitsInput_(el) {
     if (!el || el.tagName !== "INPUT") return;
-    const maxDigits = Number(el.dataset.maxDigits || el.getAttribute("maxlength") || 0);
+    if (el.name === "identificacion") return;
+    const maxDigits = Number(el.dataset.maxDigits || 0);
     if (!maxDigits && el.name !== "tamano_muestra") return;
-    const limit = maxDigits || (el.name === "tamano_muestra" ? 3 : 0);
-    if (!limit) return;
+    const limit = maxDigits || 3;
     const digits = String(el.value || "").replace(/\D/g, "").slice(0, limit);
     if (el.value !== digits) el.value = digits;
   }
@@ -2249,7 +2258,9 @@ QB.App = (() => {
 
     const metaRows = [
       d.evaluador ? ["Evaluador", personDisplay(d.evaluador)] : null,
-      d.identificacion ? ["Identificación", d.identificacion] : null,
+      usesIdentificacion_(state.type) && d.identificacion
+        ? ["Identificación", d.identificacion]
+        : null,
       d.supervisor ? ["Supervisor", personDisplay(d.supervisor)] : null,
       d.cosechador ? ["Cosechador", personDisplay(d.cosechador)] : null,
       ["Fecha y hora", nowStamp()],
