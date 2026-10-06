@@ -588,6 +588,40 @@ QB.API = (() => {
     return pendingCountCache;
   }
 
+  /**
+   * Quita pendientes de otros días. Conserva los de hoy.
+   * No vacía la cola completa.
+   */
+  async function dropPendingOtherDays_() {
+    await ensureReady_();
+    const today = todayKey();
+    const dropIds = [];
+    const keep = [];
+    for (let i = 0; i < memQueue.length; i++) {
+      const q = memQueue[i];
+      if (!q) continue;
+      if (q.status === "sent") {
+        keep.push(q);
+        continue;
+      }
+      const day = opsDayKey_(q);
+      if (day && day !== today) dropIds.push(String(q.clientId || ""));
+      else keep.push(q);
+    }
+    const ids = dropIds.filter(Boolean);
+    if (!ids.length) return 0;
+    memQueue = keep;
+    refreshPendingCount_();
+    try {
+      await idbMutateBatch_([], ids);
+    } catch (_) {}
+    try {
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(memQueue));
+    } catch (_) {}
+    emitQueue_();
+    return ids.length;
+  }
+
   /** Pendientes >12h siguen en IDB; no se borran */
   function pendingOldCount() {
     let n = 0;
@@ -875,14 +909,16 @@ QB.API = (() => {
     );
   }
 
-  /** KPIs del día — ledger O(1); rebuild solo si el día cambió */
+  /** KPIs del día: se reconstruye en cada lectura para no quedar desfasado */
   function getTodayOpsStats() {
     flushActivityBuf_();
     const day = todayKey();
-    let stats = loadDayStats_();
-    if (stats.day !== day) {
-      stats = rebuildDayStats_();
-    }
+    const stats = rebuildDayStats_();
+    const byType = emptyByType_();
+    EVAL_TYPES.forEach((t) => {
+      byType[t] = Number(stats.byType && stats.byType[t]) || 0;
+    });
+    const total = sumByType_(byType);
 
     let last = null;
     let pendingToday = 0;
@@ -914,8 +950,8 @@ QB.API = (() => {
 
     return {
       day,
-      total: stats.total,
-      byType: { ...emptyByType_(), ...stats.byType },
+      total,
+      byType,
       pending: pendingCountCache,
       pendingToday,
       pendingOld: pendingOldCount(),
@@ -1408,6 +1444,7 @@ QB.API = (() => {
    */
   async function flushUntilEmpty(opts = {}) {
     await ensureReady_();
+    if (opts.dropStale) await dropPendingOtherDays_();
     const onProgress = typeof opts.onProgress === "function" ? opts.onProgress : null;
     const signal = opts.signal || null;
     let totalSent = 0;
@@ -1574,6 +1611,7 @@ QB.API = (() => {
     getQueue,
     pendingCount,
     pendingOldCount,
+    dropPendingOtherDays: dropPendingOtherDays_,
     isSyncing,
     whenReady,
     getLastSyncAt: getLastSyncAt_,

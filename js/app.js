@@ -527,23 +527,23 @@ QB.App = (() => {
       month: "long",
     });
 
-    const byType = stats?.byType || { calidad: 0, descarte: 0, caida: 0, planta: 0 };
-    const total = Number(stats?.total) || 0;
-    const pend = Number(stats?.pending ?? QB.API.pendingCount()) || 0;
-    const last = stats?.last || null;
-
-    const hoyEl = $("#kpi-hoy");
-    const pendEl = $("#kpi-pend");
-    if (hoyEl) hoyEl.textContent = String(total);
-    if (pendEl) pendEl.textContent = String(pend);
-    $("#kpi-pend-wrap")?.classList.toggle("warn", pend > 0);
-
+    const byType = stats?.byType || {};
+    let total = 0;
     ["calidad", "descarte", "caida", "planta", "bpa", "inocuidad", "incidencias", "calibres"].forEach((t) => {
       const n = Number(byType[t]) || 0;
+      total += n;
       const el = $(`#kpi-tipo-${t}`);
       if (el) el.textContent = String(n);
       $(`.ops-type[data-type="${t}"]`)?.classList.toggle("has-count", n > 0);
     });
+
+    const hoyEl = $("#kpi-hoy");
+    const pendEl = $("#kpi-pend");
+    const pend = Number(stats?.pending ?? QB.API.pendingCount()) || 0;
+    const last = stats?.last || null;
+    if (hoyEl) hoyEl.textContent = String(total);
+    if (pendEl) pendEl.textContent = String(pend);
+    $("#kpi-pend-wrap")?.classList.toggle("warn", pend > 0);
 
     const lastWrap = $("#ops-last");
     if (!lastWrap) return;
@@ -969,6 +969,12 @@ QB.App = (() => {
     transferAbort_?.abort?.();
     transferAbort_ = new AbortController();
 
+    let dropStale = false;
+    try {
+      dropStale = sessionStorage.getItem("qb_transfer_retry") === "1";
+      sessionStorage.removeItem("qb_transfer_retry");
+    } catch (_) {}
+
     closeSyncModal();
     setTransferUi_({
       open: true,
@@ -986,6 +992,7 @@ QB.App = (() => {
       if (QB.API.whenReady) await QB.API.whenReady();
       const result = await QB.API.flushUntilEmpty({
         signal: transferAbort_.signal,
+        dropStale,
         onProgress: (p) => {
           setTransferUi_({
             sent: p.sent || 0,
@@ -1018,7 +1025,11 @@ QB.App = (() => {
           hint: "0 pendientes. Ya puedes cerrar la app.",
         });
         toast("Transferencia completa · 0 pendientes", "ok");
-      } else if (result.aborted) {
+      } else {
+        try {
+          sessionStorage.setItem("qb_transfer_retry", "1");
+        } catch (_) {}
+        if (result.aborted) {
         setTransferUi_({
           doneState: true,
           sent: result.sent || 0,
@@ -1036,8 +1047,12 @@ QB.App = (() => {
           hint: `Quedan ${pendingSafe_()}. Mantén internet y pulsa de nuevo Modo transferencia.`,
         });
         toast(`Quedan ${pendingSafe_()} pendientes`, "warn");
+        }
       }
     } catch (_) {
+      try {
+        sessionStorage.setItem("qb_transfer_retry", "1");
+      } catch (_) {}
       setTransferUi_({
         doneState: true,
         remain: pendingSafe_(),
