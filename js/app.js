@@ -455,6 +455,7 @@ QB.App = (() => {
     bpa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>`,
     inocuidad: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V7l8-4z"/></svg>`,
     incidencias: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>`,
+    calibres: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="14" r="3"/><circle cx="15" cy="11" r="4"/><circle cx="16" cy="17" r="2.2"/></svg>`,
     chevron: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg>`,
     back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>`,
     caret: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9l6 6 6-6"/></svg>`,
@@ -468,6 +469,7 @@ QB.App = (() => {
     bpa: "VF-01 · BPAS",
     inocuidad: "VF-02 · Inocuidad",
     incidencias: "VF-03 · Incidencias",
+    calibres: "QC-05 · Calibres",
   };
 
   function isChecklistType_(type) {
@@ -536,7 +538,7 @@ QB.App = (() => {
     if (pendEl) pendEl.textContent = String(pend);
     $("#kpi-pend-wrap")?.classList.toggle("warn", pend > 0);
 
-    ["calidad", "descarte", "caida", "planta", "bpa", "inocuidad", "incidencias"].forEach((t) => {
+    ["calidad", "descarte", "caida", "planta", "bpa", "inocuidad", "incidencias", "calibres"].forEach((t) => {
       const n = Number(byType[t]) || 0;
       const el = $(`#kpi-tipo-${t}`);
       if (el) el.textContent = String(n);
@@ -1485,6 +1487,25 @@ QB.App = (() => {
       }
       live.hidden = false;
     }
+
+    if (state.type === "calibres") {
+      const ranges = QB.CALIBRES || [];
+      let total = 0;
+      for (const r of ranges) {
+        const n = Number(root.querySelector(`[name="${r.id}"]`)?.value);
+        if (Number.isFinite(n) && n > 0) total += n;
+      }
+      const totalEl = root.querySelector("[data-cal-total]");
+      if (totalEl) totalEl.textContent = `N° bayas totales: ${total}`;
+      const peso = Number(root.querySelector('[name="peso_muestra"]')?.value);
+      const pesoEl = root.querySelector("[data-peso-baya]");
+      if (pesoEl) {
+        const baya = total > 0 && Number.isFinite(peso) && peso > 0 ? peso / total : 0;
+        pesoEl.textContent = total > 0 && peso > 0
+          ? `Peso baya: ${baya.toFixed(4)}`
+          : "Peso baya: —";
+      }
+    }
   }
 
   function renderForm() {
@@ -1589,6 +1610,35 @@ QB.App = (() => {
         ${fieldHtml("accion_correctiva", "Acción correctiva", { type: "textarea", placeholder: "Opcional..." })}
         ${fieldHtml("accion_preventiva", "Acción preventiva", { type: "textarea", placeholder: "Opcional..." })}
       `;
+    } else if (state.type === "calibres") {
+      const ranges = QB.CALIBRES || [];
+      detalle = `
+        <div class="defect-grid calibres-counts">
+          ${ranges
+            .map((r) => {
+              const raw = state.data[r.id];
+              const hasVal = raw !== undefined && raw !== null && raw !== "";
+              const v = hasVal ? raw : "";
+              return `
+              <div class="defect-item">
+                <label for="field-${r.id}">${escapeHtml(r.label)}</label>
+                <input type="number" min="0" step="1" inputmode="numeric"
+                  name="${r.id}" id="field-${r.id}" value="${escapeAttr(v)}"
+                  placeholder="00" />
+              </div>`;
+            })
+            .join("")}
+        </div>
+        <div class="calibres-summary">
+          <div class="defect-live metric-live" data-live="calibres">
+            <span class="defect-live-pct" data-cal-total>N° bayas totales: 0</span>
+          </div>
+          ${fieldHtml("peso_muestra", "Peso de muestra", { type: "number", min: 0, step: "0.01", inputmode: "decimal", required: true, placeholder: "0.00" })}
+          <div class="defect-live metric-live" data-live="peso-baya">
+            <span class="defect-live-pct" data-peso-baya>Peso baya: —</span>
+          </div>
+        </div>
+      `;
     }
 
     const checklist = isChecklistType_(state.type);
@@ -1606,6 +1656,19 @@ QB.App = (() => {
         ${fieldHtml("identificacion", "Identificación", { type: "text", required: true, placeholder: "Escribir...", autocomplete: "off" })}
       `
           : ""
+      : state.type === "calibres"
+        ? `
+        ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
+        ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
+        ${fieldHtml("variedad", "Variedad", { precise: true, required: true, placeholder: "Elegir..." })}
+        <div class="lote-block">
+          ${fieldHtml("lote", "Lote", { precise: true, required: true, placeholder: "Seleccionar lote..." })}
+          <div class="field-row field-row-auto">
+            ${fieldHtml("modulo", "Módulo", { readonly: true, required: true, placeholder: "Según lote" })}
+            ${fieldHtml("turno", "Turno", { readonly: true, required: true, placeholder: "Según lote" })}
+          </div>
+        </div>
+      `
       : `
         ${fieldHtml("fecha", "Fecha", { type: "date", required: true })}
         ${fieldHtml("evaluador", "Evaluador", { precise: true, required: true, placeholder: "Seleccionar..." })}
@@ -1664,6 +1727,7 @@ QB.App = (() => {
         bpa: "#2F6B8A",
         inocuidad: "#6B4C9A",
         incidencias: "#B45309",
+        calibres: "#1565C0",
       }[type] || "var(--qb-green)"
     );
   }
@@ -2087,6 +2151,9 @@ QB.App = (() => {
         "implicacion",
       ];
     }
+    if (state.type === "calibres") {
+      return ["fecha", "evaluador", "variedad", "lote", "modulo", "turno", "peso_muestra"];
+    }
     const required = ["fecha", "evaluador", "supervisor", "variedad", "lote", "modulo", "turno"];
     if (state.type === "calidad") required.push("cosechador", "tamano_muestra");
     else if (state.type === "descarte") required.push("tamano_muestra");
@@ -2116,7 +2183,8 @@ QB.App = (() => {
   function isEmptyRequired(name, val) {
     const empty = val === "" || val == null || (typeof val === "number" && Number.isNaN(val));
     const zeroBad =
-      (name === "tamano_muestra" || name === "plantas_evaluadas") && Number(val) <= 0;
+      (name === "tamano_muestra" || name === "plantas_evaluadas" || name === "peso_muestra") &&
+      Number(val) <= 0;
     return empty || zeroBad;
   }
 
@@ -2374,6 +2442,43 @@ QB.App = (() => {
     const displayRows = mergeSumaDeshidratado_(filtered);
 
     const tableEl = $("#resumen-table");
+    if (state.type === "calibres") {
+      const ranges = (s.rows || []).filter((r) => r.id && String(r.id).indexOf("cal_") === 0);
+      const total = (s.rows || []).find((r) => r.id === "bayas_totales");
+      const peso = (s.rows || []).find((r) => r.id === "peso_muestra");
+      const baya = (s.rows || []).find((r) => r.id === "peso_baya");
+      tableEl.hidden = false;
+      tableEl.innerHTML = `
+        <table>
+          <thead><tr><th>Calibre</th><th>N°</th><th>%</th></tr></thead>
+          <tbody>
+            ${ranges
+              .map(
+                (r) => `<tr>
+                  <td>${escapeHtml(r.item)}</td>
+                  <td>${r.count}</td>
+                  <td>${Number(r.pct || 0).toFixed(2)}</td>
+                </tr>`
+              )
+              .join("")}
+            <tr>
+              <td>N° Bayas totales</td>
+              <td>${total ? total.count : 0}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Peso de muestra</td>
+              <td>${peso ? peso.count : 0}</td>
+              <td></td>
+            </tr>
+            <tr>
+              <td>Peso baya</td>
+              <td colspan="2">${baya && baya.pct != null ? Number(baya.pct).toFixed(4) : "—"}</td>
+            </tr>
+          </tbody>
+        </table>`;
+      return;
+    }
     const hideTable =
       state.type === "bpa" ||
       state.type === "inocuidad" ||

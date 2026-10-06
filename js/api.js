@@ -22,6 +22,7 @@ QB.API = (() => {
     "bpa",
     "inocuidad",
     "incidencias",
+    "calibres",
   ];
   const TZ_OPS = "America/Lima";
   const BATCH_SIZE = 10; // 10–12: 10 más estable con GAS/Sheets sin saturar

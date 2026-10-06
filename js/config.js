@@ -319,7 +319,27 @@ QB.EVALS = {
     accent: "incidencias",
     kind: "checklist",
   },
+  calibres: {
+    id: "calibres",
+    title: "Evaluación de calibres",
+    short: "Calibres",
+    desc: "Distribución de calibres de la muestra",
+    sheet: "Calibres",
+    accent: "calibres",
+  },
 };
+
+/** Rangos de calibre. % = N° del rango ÷ N° bayas totales × 100 */
+QB.CALIBRES = [
+  { id: "cal_lt12", label: "<12" },
+  { id: "cal_12_14", label: "12 a 14" },
+  { id: "cal_14_16", label: "14 a 16" },
+  { id: "cal_16_18", label: "16 a 18" },
+  { id: "cal_18_20", label: "18 a 20" },
+  { id: "cal_20_22", label: "20 a 22" },
+  { id: "cal_22_24", label: "22 a 24" },
+  { id: "cal_24mas", label: "24 a más" },
+];
 
 /** Listas fijas de cartillas (no mezclar entre evaluaciones) */
 QB.CHECKLISTS = {

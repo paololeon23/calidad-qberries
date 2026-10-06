@@ -491,6 +491,7 @@ QB.Scoring = (() => {
     if (type === "bpa" || type === "inocuidad" || type === "incidencias") {
       return scoreChecklist(type, data);
     }
+    if (type === "calibres") return scoreCalibres(data);
     return { rows: [], nota: 0, calidadGlobal: "Malo", explain: null };
   }
 
@@ -539,6 +540,60 @@ QB.Scoring = (() => {
       rows,
       nota,
       calidadGlobal: cal,
+      explain: null,
+    };
+  }
+
+  function scoreCalibres(data) {
+    const ranges = QB.CALIBRES || [];
+    let total = 0;
+    const counts = ranges.map((r) => {
+      const n = Number(data[r.id]);
+      const count = Number.isFinite(n) && n > 0 ? n : 0;
+      total += count;
+      return { ...r, count };
+    });
+    const peso = Number(data.peso_muestra);
+    const pesoMuestra = Number.isFinite(peso) && peso > 0 ? peso : 0;
+    const pesoBaya = total > 0 ? Math.round((pesoMuestra / total) * 10000) / 10000 : 0;
+    const rows = counts.map((r) => {
+      const pct = total > 0 ? round2((r.count / total) * 100) : 0;
+      return {
+        id: r.id,
+        item: r.label,
+        count: r.count,
+        pct,
+        calificacion: null,
+      };
+    });
+    rows.push({
+      id: "bayas_totales",
+      item: "N° Bayas totales",
+      count: total,
+      pct: null,
+      calificacion: null,
+    });
+    rows.push({
+      id: "peso_muestra",
+      item: "Peso de muestra",
+      count: pesoMuestra,
+      pct: null,
+      calificacion: null,
+    });
+    rows.push({
+      id: "peso_baya",
+      item: "Peso baya",
+      count: null,
+      pct: pesoBaya,
+      calificacion: null,
+    });
+    return {
+      rows,
+      bayasTotales: total,
+      pesoMuestra,
+      pesoBaya,
+      nota: "",
+      calidadGlobal: "",
       explain: null,
     };
   }

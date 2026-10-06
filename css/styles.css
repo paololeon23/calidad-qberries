@@ -830,6 +830,7 @@ body.is-desktop .qb-toast-stack {
 .eval-card[data-type="bpa"] { --accent: #2F6B8A; }
 .eval-card[data-type="inocuidad"] { --accent: #6B4C9A; }
 .eval-card[data-type="incidencias"] { --accent: #B45309; }
+.eval-card[data-type="calibres"] { --accent: #1565C0; }
 
 .eval-top { display: none; }
 .eval-icon {
@@ -1073,6 +1074,10 @@ body.is-desktop .qb-toast-stack {
   --ops-accent: #B45309;
   --ops-tint: #FFF7ED;
 }
+.ops-type[data-type="calibres"] {
+  --ops-accent: #1565C0;
+  --ops-tint: #F3F7FC;
+}
 .ops-type.has-count {
   box-shadow: 0 8px 22px rgba(31, 61, 42, 0.1);
   transform: translateY(-1px);
@@ -1097,6 +1102,9 @@ body.is-desktop .qb-toast-stack {
 }
 .ops-type[data-type="incidencias"].has-count {
   background: linear-gradient(155deg, #FFF0E0 0%, #FFFFFF 72%);
+}
+.ops-type[data-type="calibres"].has-count {
+  background: linear-gradient(155deg, #E8F1FB 0%, #FFFFFF 72%);
 }
 .ops-type-code {
   display: inline-block;
@@ -1761,6 +1769,68 @@ body.is-desktop .qb-toast-stack {
 .metric-live .pill {
   font-size: 0.7rem;
   padding: 3px 9px;
+}
+.calibres-counts {
+  align-items: start;
+  gap: 16px 12px;
+}
+.calibres-counts > .defect-item {
+  align-content: start;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  gap: 6px;
+}
+.calibres-counts > .defect-item label {
+  min-height: 2.4em;
+  display: flex;
+  align-items: flex-end;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--qb-muted);
+  line-height: 1.25;
+}
+.calibres-counts > .defect-item input {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  padding: 0 10px;
+  border: 1px solid #D5DDD8;
+  border-radius: 12px;
+  background: #F7F9F8;
+  color: var(--qb-forest);
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 48px;
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+.calibres-counts > .defect-item input::placeholder {
+  color: #B7C2BC;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.calibres-counts > .defect-item input:focus {
+  background: #FFFFFF;
+  border-color: var(--qb-forest);
+  box-shadow: 0 0 0 3px rgba(31, 61, 42, 0.1);
+}
+.calibres-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+.calibres-summary > .field {
+  margin-bottom: 0;
+}
+.calibres-summary .metric-live {
+  margin: 0;
 }
 
 .precise-trigger {
