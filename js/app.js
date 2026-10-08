@@ -279,7 +279,7 @@ QB.App = (() => {
   function showScreen(id) {
     state.screen = id;
     $$(".screen").forEach((s) => s.classList.toggle("active", s.id === `screen-${id}`));
-    resetViewportLayout();
+    releaseKeyboardNow_();
     const scroller = document.querySelector(`#screen-${id} .panel-scroll`);
     if (scroller) scroller.scrollTop = 0;
   }
@@ -324,49 +324,84 @@ QB.App = (() => {
   }
 
   let viewportTimer_ = 0;
+  let kbLockH_ = 0;
+  let kbReleaseTimer_ = 0;
 
-  function queueViewportLayout_(delay) {
-    if (viewportTimer_) clearTimeout(viewportTimer_);
-    viewportTimer_ = setTimeout(() => {
-      viewportTimer_ = 0;
-      resetViewportLayout();
-    }, delay == null ? 180 : delay);
-  }
-
-  /** Un solo ajuste de altura. Sin transform: eso hacía parpadear Cancelar / Ver resumen. */
-  function resetViewportLayout() {
-    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) {
-      return;
-    }
-
+  function applyAppHeight_(px) {
     const app = document.querySelector(".app");
     if (!app) return;
-    const vv = window.visualViewport;
-    const layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
-    const vvH = vv ? Math.round(vv.height) : layoutH;
-    const gap = layoutH - vvH;
-    const kb = gap > 120;
-
     if (app.style.transform) app.style.transform = "";
-
-    if (!kb) {
-      setKeyboardUi_(false);
-      if (app.style.height || app.style.maxHeight) {
-        app.style.height = "";
-        app.style.maxHeight = "";
-        document.documentElement.style.removeProperty("--app-h");
+    if (!px) {
+      if (!app.style.height && !app.style.maxHeight) {
+        setKeyboardUi_(false);
+        return;
       }
+      app.style.height = "";
+      app.style.maxHeight = "";
+      document.documentElement.style.removeProperty("--app-h");
+      setKeyboardUi_(false);
       return;
     }
-
-    const h = Math.max(180, vvH);
-    const next = `${h}px`;
+    const next = `${px}px`;
     if (app.style.height !== next) {
       document.documentElement.style.setProperty("--app-h", next);
       app.style.height = next;
       app.style.maxHeight = next;
     }
     setKeyboardUi_(true);
+  }
+
+  /** Mientras hay un campo activo, la altura no vuelve a crecer. Así la barra no salta de input a input. */
+  function noteKeyboard_() {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
+    const vvH = Math.round(vv.height);
+    const gap = layoutH - vvH;
+    if (gap > 100 && vvH > 180) {
+      if (!kbLockH_ || vvH + 24 < kbLockH_) kbLockH_ = vvH;
+      applyAppHeight_(kbLockH_);
+    }
+  }
+
+  function releaseKeyboardNow_() {
+    if (kbReleaseTimer_) {
+      clearTimeout(kbReleaseTimer_);
+      kbReleaseTimer_ = 0;
+    }
+    kbLockH_ = 0;
+    applyAppHeight_(0);
+  }
+
+  function releaseKeyboardSoon_() {
+    if (kbReleaseTimer_) clearTimeout(kbReleaseTimer_);
+    kbReleaseTimer_ = setTimeout(() => {
+      kbReleaseTimer_ = 0;
+      if (isTypingField_(document.activeElement)) return;
+      kbLockH_ = 0;
+      applyAppHeight_(0);
+    }, 480);
+  }
+
+  function queueViewportLayout_(delay) {
+    if (viewportTimer_) clearTimeout(viewportTimer_);
+    viewportTimer_ = setTimeout(() => {
+      viewportTimer_ = 0;
+      if (isTypingField_(document.activeElement) || kbLockH_) {
+        noteKeyboard_();
+        return;
+      }
+      releaseKeyboardNow_();
+    }, delay == null ? 200 : delay);
+  }
+
+  function resetViewportLayout() {
+    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) return;
+    if (isTypingField_(document.activeElement) || kbLockH_) {
+      noteKeyboard_();
+      return;
+    }
+    releaseKeyboardNow_();
   }
 
   function goHome() {
@@ -2985,23 +3020,34 @@ QB.App = (() => {
     setupInstallPrompt_();
     lockDrag();
     resetViewportLayout();
+    const onViewport_ = () => {
+      if (isTypingField_(document.activeElement) || kbLockH_) {
+        noteKeyboard_();
+        return;
+      }
+      queueViewportLayout_(200);
+    };
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", () => queueViewportLayout_(180));
+      window.visualViewport.addEventListener("resize", onViewport_);
     }
-    window.addEventListener("resize", () => queueViewportLayout_(180));
-    window.addEventListener("orientationchange", () => queueViewportLayout_(200));
+    window.addEventListener("resize", onViewport_);
+    window.addEventListener("orientationchange", () => {
+      kbLockH_ = 0;
+      queueViewportLayout_(200);
+    });
     document.addEventListener("focusin", (e) => {
       if (!isTypingField_(e.target)) return;
+      if (kbReleaseTimer_) {
+        clearTimeout(kbReleaseTimer_);
+        kbReleaseTimer_ = 0;
+      }
       const field = e.target;
       setTimeout(() => {
         if (document.activeElement === field) scrollFieldIntoView_(field);
-      }, 320);
+      }, 280);
     });
     document.addEventListener("focusout", () => {
-      setTimeout(() => {
-        if (isTypingField_(document.activeElement)) return;
-        queueViewportLayout_(180);
-      }, 200);
+      releaseKeyboardSoon_();
     });
     // Un solo handler de resize (evita doble reset / jank con teclado)
 
