@@ -279,6 +279,7 @@ QB.App = (() => {
   function showScreen(id) {
     state.screen = id;
     document.body.dataset.qbScreen = id;
+    if (id !== "form") document.documentElement.style.setProperty("--kb", "0px");
     $$(".screen").forEach((s) => s.classList.toggle("active", s.id === `screen-${id}`));
     const scroller = document.querySelector(`#screen-${id} .panel-scroll`);
     if (scroller) scroller.scrollTop = 0;

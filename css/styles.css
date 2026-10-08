@@ -1974,11 +1974,16 @@ body.is-desktop .qb-toast-stack {
 body > .form-actions { display: none; }
 body[data-qb-screen="form"] > .form-actions:not(.dual) { display: grid; }
 body[data-qb-screen="resumen"] > .form-actions.dual { display: grid; }
-#screen-form .form-body,
-#screen-resumen .resumen-wrap {
+#screen-form .form-body {
   padding-bottom: calc(120px + var(--kb, 0px) + var(--safe-bottom));
 }
-.form-actions.dual { grid-template-columns: 1fr 1.25fr; }
+#screen-resumen .resumen-wrap {
+  padding-bottom: calc(120px + var(--safe-bottom));
+}
+.form-actions.dual {
+  grid-template-columns: 1fr 1.25fr;
+  bottom: 0;
+}
 .form-actions .btn {
   transition: none;
   animation: none;
