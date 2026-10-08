@@ -2026,7 +2026,7 @@ body.kb-open .field textarea:focus {
   position: fixed;
   inset: 0;
   background: rgba(18, 24, 20, 0.48);
-  z-index: 100;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;

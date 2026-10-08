@@ -293,51 +293,51 @@ QB.App = (() => {
 
   function bindKeyboardBar_() {
     const root = document.documentElement;
-    let held = 0;
-    let dropTimer = 0;
+    let held = -1;
+    let raf = 0;
 
-    function readInset_() {
-      const vk = navigator.virtualKeyboard;
-      if (vk && vk.boundingRect && vk.boundingRect.height > 40) {
-        return Math.round(vk.boundingRect.height);
-      }
-      const vv = window.visualViewport;
-      if (!vv) return 0;
-      const gap = Math.round(window.innerHeight - vv.height - (vv.offsetTop || 0));
-      return gap > 80 ? gap : 0;
+    function formInputFocused_() {
+      if (document.querySelector(".overlay.open")) return false;
+      const el = document.activeElement;
+      if (!el || !el.matches) return false;
+      if (el.closest("#precise-overlay, .overlay")) return false;
+      return el.matches(
+        "input:not([type=hidden]):not([type=button]):not([type=checkbox]):not([type=radio]), textarea"
+      );
     }
 
-    function apply_(px) {
+    function liveInset_() {
+      if (!formInputFocused_()) return 0;
+      const vv = window.visualViewport;
+      if (!vv) return 0;
+      const gap = Math.round(window.innerHeight - (vv.offsetTop || 0) - vv.height);
+      return gap > 48 ? gap : 0;
+    }
+
+    function paint_() {
+      raf = 0;
+      const px = liveInset_();
       if (px === held) return;
       held = px;
       root.style.setProperty("--kb", px + "px");
     }
 
-    function sync_() {
-      const h = readInset_();
-      if (dropTimer) {
-        clearTimeout(dropTimer);
-        dropTimer = 0;
-      }
-      if (h > 40) {
-        apply_(h);
-        return;
-      }
-      dropTimer = setTimeout(() => {
-        dropTimer = 0;
-        if (readInset_() > 40) return;
-        apply_(0);
-      }, 280);
+    function queue_() {
+      if (raf) return;
+      raf = requestAnimationFrame(paint_);
     }
 
     const vk = navigator.virtualKeyboard;
     if (vk && vk.addEventListener) {
       try { vk.overlaysContent = true; } catch (_) {}
-      vk.addEventListener("geometrychange", sync_);
+      vk.addEventListener("geometrychange", queue_);
     }
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", sync_);
+      window.visualViewport.addEventListener("resize", queue_);
+      window.visualViewport.addEventListener("scroll", queue_);
     }
+    document.addEventListener("focusin", queue_);
+    document.addEventListener("focusout", queue_);
   }
 
   function goHome() {
