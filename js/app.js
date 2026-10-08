@@ -283,34 +283,6 @@ QB.App = (() => {
     if (scroller) scroller.scrollTop = 0;
   }
 
-  function isTypingField_(el) {
-    return !!(
-      el &&
-      el.matches &&
-      (el.matches("input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea") ||
-        el.isContentEditable)
-    );
-  }
-
-  function scrollFieldIntoView_(el) {
-    if (!el) return;
-    try {
-      const scroller = el.closest(".panel-scroll");
-      if (!scroller) return;
-      requestAnimationFrame(() => {
-        const er = el.getBoundingClientRect();
-        const sr = scroller.getBoundingClientRect();
-        const pad = 16;
-        const limit = sr.bottom - 96 - pad;
-        if (er.bottom > limit) {
-          scroller.scrollTop += er.bottom - limit + 12;
-        } else if (er.top < sr.top + pad) {
-          scroller.scrollTop -= sr.top - er.top + pad;
-        }
-      });
-    } catch (_) {}
-  }
-
   function goHome() {
     state.type = null;
     state.data = {};
@@ -2926,14 +2898,6 @@ QB.App = (() => {
     bindChrome();
     setupInstallPrompt_();
     lockDrag();
-    document.addEventListener("focusin", (e) => {
-      if (!isTypingField_(e.target)) return;
-      const field = e.target;
-      setTimeout(() => {
-        if (document.activeElement === field) scrollFieldIntoView_(field);
-      }, 280);
-    });
-    // Un solo handler de resize (evita doble reset / jank con teclado)
 
     // Si la app queda abierta y cambia el día → refrescar fecha
     const refreshFechaIfNeeded = () => {
