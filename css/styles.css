@@ -1953,8 +1953,10 @@ body.is-desktop .qb-toast-stack {
 }
 
 .form-actions {
-  position: relative;
-  flex: 0 0 auto;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--kb, 0px);
   width: 100%;
   margin: 0;
   padding: 12px 14px calc(14px + var(--safe-bottom));
@@ -1964,7 +1966,16 @@ body.is-desktop .qb-toast-stack {
   display: grid;
   grid-template-columns: 1fr 1.35fr;
   gap: 8px;
-  z-index: 5;
+  z-index: 9999;
+  isolation: isolate;
+  contain: layout paint style;
+}
+body > .form-actions { display: none; }
+body[data-qb-screen="form"] > .form-actions:not(.dual) { display: grid; }
+body[data-qb-screen="resumen"] > .form-actions.dual { display: grid; }
+#screen-form .form-body,
+#screen-resumen .resumen-wrap {
+  padding-bottom: calc(88px + var(--safe-bottom));
 }
 .form-actions.dual { grid-template-columns: 1fr 1.25fr; }
 .form-actions .btn {
