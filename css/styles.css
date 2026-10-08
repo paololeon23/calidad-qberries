@@ -1975,10 +1975,6 @@ body.is-desktop .qb-toast-stack {
   transition: none;
   animation: none;
   overflow-anchor: none;
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 #screen-form .form-body,
 #screen-resumen .resumen-wrap {

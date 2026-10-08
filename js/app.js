@@ -279,9 +279,6 @@ QB.App = (() => {
   function showScreen(id) {
     state.screen = id;
     $$(".screen").forEach((s) => s.classList.toggle("active", s.id === `screen-${id}`));
-    typingHold_ = false;
-    frozenShift_ = 0;
-    pinFormActions_();
     const scroller = document.querySelector(`#screen-${id} .panel-scroll`);
     if (scroller) scroller.scrollTop = 0;
   }
@@ -295,18 +292,6 @@ QB.App = (() => {
     );
   }
 
-  function isKeyboardOpen_() {
-    const vv = window.visualViewport;
-    if (!vv) return false;
-    const layoutH = window.innerHeight || 0;
-    return layoutH - vv.height > 120;
-  }
-
-  function setKeyboardUi_(open) {
-    document.body.classList.toggle("kb-open", !!open);
-    // form-actions siempre visibles (Cancelar / Ver resumen / Guardar)
-  }
-
   function scrollFieldIntoView_(el) {
     if (!el) return;
     try {
@@ -315,10 +300,8 @@ QB.App = (() => {
       requestAnimationFrame(() => {
         const er = el.getBoundingClientRect();
         const sr = scroller.getBoundingClientRect();
-        const bar = document.querySelector(".screen.active .form-actions");
-        const barH = bar ? bar.offsetHeight : 0;
         const pad = 16;
-        const limit = sr.bottom - barH - pad;
+        const limit = sr.bottom - 96 - pad;
         if (er.bottom > limit) {
           scroller.scrollTop += er.bottom - limit + 12;
         } else if (er.top < sr.top + pad) {
@@ -326,44 +309,6 @@ QB.App = (() => {
         }
       });
     } catch (_) {}
-  }
-
-  let pinRaf_ = 0;
-  let holdTimer_ = 0;
-  let typingHold_ = false;
-  let frozenShift_ = 0;
-
-  /** La barra queda en su propia capa. No se le quita el transform: eso la hacía desaparecer y volver. */
-  function pinFormActions_() {
-    const bars = document.querySelectorAll(".screen.active .form-actions");
-    if (!bars.length) return;
-    const vv = window.visualViewport;
-    const typing = typingHold_ || isTypingField_(document.activeElement);
-    let shift = 0;
-    if (vv) {
-      const layoutH = Math.round(window.innerHeight || 0);
-      const inset = Math.max(0, Math.round(layoutH - (vv.offsetTop || 0) - vv.height));
-      if (typing) {
-        if (!frozenShift_ && inset > 80) frozenShift_ = inset;
-        shift = frozenShift_;
-      } else {
-        frozenShift_ = 0;
-        shift = inset > 80 ? inset : 0;
-      }
-    }
-    const next = `translate3d(0, ${-shift}px, 0)`;
-    bars.forEach((bar) => {
-      if (bar.style.transform !== next) bar.style.transform = next;
-    });
-    setKeyboardUi_(shift > 80 || typing);
-  }
-
-  function queuePin_() {
-    if (pinRaf_) return;
-    pinRaf_ = requestAnimationFrame(() => {
-      pinRaf_ = 0;
-      pinFormActions_();
-    });
   }
 
   function goHome() {
@@ -2981,39 +2926,12 @@ QB.App = (() => {
     bindChrome();
     setupInstallPrompt_();
     lockDrag();
-    pinFormActions_();
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", queuePin_);
-      window.visualViewport.addEventListener("scroll", queuePin_);
-    }
-    window.addEventListener("resize", queuePin_);
-    window.addEventListener("orientationchange", () => {
-      typingHold_ = false;
-      frozenShift_ = 0;
-      queuePin_();
-    });
     document.addEventListener("focusin", (e) => {
       if (!isTypingField_(e.target)) return;
-      typingHold_ = true;
-      if (holdTimer_) {
-        clearTimeout(holdTimer_);
-        holdTimer_ = 0;
-      }
       const field = e.target;
-      queuePin_();
       setTimeout(() => {
         if (document.activeElement === field) scrollFieldIntoView_(field);
       }, 280);
-    });
-    document.addEventListener("focusout", () => {
-      if (holdTimer_) clearTimeout(holdTimer_);
-      holdTimer_ = setTimeout(() => {
-        holdTimer_ = 0;
-        if (isTypingField_(document.activeElement)) return;
-        typingHold_ = false;
-        frozenShift_ = 0;
-        pinFormActions_();
-      }, 420);
     });
     // Un solo handler de resize (evita doble reset / jank con teclado)
 
