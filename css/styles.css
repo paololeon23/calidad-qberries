@@ -1967,6 +1967,8 @@ body.is-desktop .qb-toast-stack {
   grid-template-columns: 1fr 1.35fr;
   gap: 8px;
   z-index: 9999;
+  isolation: isolate;
+  contain: layout paint style;
 }
 body > .form-actions { display: none; }
 body[data-qb-screen="form"] > .form-actions:not(.dual) { display: grid; }
