@@ -291,31 +291,6 @@ QB.App = (() => {
     document.body.dataset.qbScreen = state.screen || "home";
   }
 
-  function bindKeyboardBar_() {
-    const vk = navigator.virtualKeyboard;
-    if (!vk || !vk.addEventListener) return;
-    try { vk.overlaysContent = true; } catch (_) {}
-    let held = 0;
-    let timer = 0;
-    vk.addEventListener("geometrychange", () => {
-      const h = Math.round((vk.boundingRect && vk.boundingRect.height) || 0);
-      const el = document.activeElement;
-      const typing = !!(el && el.matches && el.matches("input, textarea"));
-      if (timer) clearTimeout(timer);
-      if (typing && h + 40 < held) return;
-      const apply = () => {
-        timer = 0;
-        const next = h > 40 ? h : 0;
-        if (typing && next === 0) return;
-        if (next === held) return;
-        held = next;
-        document.documentElement.style.setProperty("--kb", held + "px");
-      };
-      if (h > 40) apply();
-      else timer = setTimeout(apply, 450);
-    });
-  }
-
   function goHome() {
     state.type = null;
     state.data = {};
@@ -2932,7 +2907,6 @@ QB.App = (() => {
     setupInstallPrompt_();
     lockDrag();
     mountActionBars_();
-    bindKeyboardBar_();
 
     // Si la app queda abierta y cambia el día → refrescar fecha
     const refreshFechaIfNeeded = () => {
