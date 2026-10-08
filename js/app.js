@@ -279,7 +279,9 @@ QB.App = (() => {
   function showScreen(id) {
     state.screen = id;
     $$(".screen").forEach((s) => s.classList.toggle("active", s.id === `screen-${id}`));
-    releaseKeyboardNow_();
+    typingHold_ = false;
+    frozenShift_ = 0;
+    pinFormActions_();
     const scroller = document.querySelector(`#screen-${id} .panel-scroll`);
     if (scroller) scroller.scrollTop = 0;
   }
@@ -313,9 +315,12 @@ QB.App = (() => {
       requestAnimationFrame(() => {
         const er = el.getBoundingClientRect();
         const sr = scroller.getBoundingClientRect();
-        const pad = 20;
-        if (er.bottom > sr.bottom - pad) {
-          scroller.scrollTop += er.bottom - sr.bottom + pad + 24;
+        const bar = document.querySelector(".screen.active .form-actions");
+        const barH = bar ? bar.offsetHeight : 0;
+        const pad = 16;
+        const limit = sr.bottom - barH - pad;
+        if (er.bottom > limit) {
+          scroller.scrollTop += er.bottom - limit + 12;
         } else if (er.top < sr.top + pad) {
           scroller.scrollTop -= sr.top - er.top + pad;
         }
@@ -323,85 +328,42 @@ QB.App = (() => {
     } catch (_) {}
   }
 
-  let viewportTimer_ = 0;
-  let kbLockH_ = 0;
-  let kbReleaseTimer_ = 0;
+  let pinRaf_ = 0;
+  let holdTimer_ = 0;
+  let typingHold_ = false;
+  let frozenShift_ = 0;
 
-  function applyAppHeight_(px) {
-    const app = document.querySelector(".app");
-    if (!app) return;
-    if (app.style.transform) app.style.transform = "";
-    if (!px) {
-      if (!app.style.height && !app.style.maxHeight) {
-        setKeyboardUi_(false);
-        return;
-      }
-      app.style.height = "";
-      app.style.maxHeight = "";
-      document.documentElement.style.removeProperty("--app-h");
-      setKeyboardUi_(false);
-      return;
-    }
-    const next = `${px}px`;
-    if (app.style.height !== next) {
-      document.documentElement.style.setProperty("--app-h", next);
-      app.style.height = next;
-      app.style.maxHeight = next;
-    }
-    setKeyboardUi_(true);
-  }
-
-  /** Mientras hay un campo activo, la altura no vuelve a crecer. Así la barra no salta de input a input. */
-  function noteKeyboard_() {
+  /** La barra queda en su propia capa. No se le quita el transform: eso la hacía desaparecer y volver. */
+  function pinFormActions_() {
+    const bars = document.querySelectorAll(".screen.active .form-actions");
+    if (!bars.length) return;
     const vv = window.visualViewport;
-    if (!vv) return;
-    const layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
-    const vvH = Math.round(vv.height);
-    const gap = layoutH - vvH;
-    if (gap > 100 && vvH > 180) {
-      if (!kbLockH_ || vvH + 24 < kbLockH_) kbLockH_ = vvH;
-      applyAppHeight_(kbLockH_);
-    }
-  }
-
-  function releaseKeyboardNow_() {
-    if (kbReleaseTimer_) {
-      clearTimeout(kbReleaseTimer_);
-      kbReleaseTimer_ = 0;
-    }
-    kbLockH_ = 0;
-    applyAppHeight_(0);
-  }
-
-  function releaseKeyboardSoon_() {
-    if (kbReleaseTimer_) clearTimeout(kbReleaseTimer_);
-    kbReleaseTimer_ = setTimeout(() => {
-      kbReleaseTimer_ = 0;
-      if (isTypingField_(document.activeElement)) return;
-      kbLockH_ = 0;
-      applyAppHeight_(0);
-    }, 480);
-  }
-
-  function queueViewportLayout_(delay) {
-    if (viewportTimer_) clearTimeout(viewportTimer_);
-    viewportTimer_ = setTimeout(() => {
-      viewportTimer_ = 0;
-      if (isTypingField_(document.activeElement) || kbLockH_) {
-        noteKeyboard_();
-        return;
+    const typing = typingHold_ || isTypingField_(document.activeElement);
+    let shift = 0;
+    if (vv) {
+      const layoutH = Math.round(window.innerHeight || 0);
+      const inset = Math.max(0, Math.round(layoutH - (vv.offsetTop || 0) - vv.height));
+      if (typing) {
+        if (!frozenShift_ && inset > 80) frozenShift_ = inset;
+        shift = frozenShift_;
+      } else {
+        frozenShift_ = 0;
+        shift = inset > 80 ? inset : 0;
       }
-      releaseKeyboardNow_();
-    }, delay == null ? 200 : delay);
+    }
+    const next = `translate3d(0, ${-shift}px, 0)`;
+    bars.forEach((bar) => {
+      if (bar.style.transform !== next) bar.style.transform = next;
+    });
+    setKeyboardUi_(shift > 80 || typing);
   }
 
-  function resetViewportLayout() {
-    if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) return;
-    if (isTypingField_(document.activeElement) || kbLockH_) {
-      noteKeyboard_();
-      return;
-    }
-    releaseKeyboardNow_();
+  function queuePin_() {
+    if (pinRaf_) return;
+    pinRaf_ = requestAnimationFrame(() => {
+      pinRaf_ = 0;
+      pinFormActions_();
+    });
   }
 
   function goHome() {
@@ -3019,35 +2981,39 @@ QB.App = (() => {
     bindChrome();
     setupInstallPrompt_();
     lockDrag();
-    resetViewportLayout();
-    const onViewport_ = () => {
-      if (isTypingField_(document.activeElement) || kbLockH_) {
-        noteKeyboard_();
-        return;
-      }
-      queueViewportLayout_(200);
-    };
+    pinFormActions_();
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", onViewport_);
+      window.visualViewport.addEventListener("resize", queuePin_);
+      window.visualViewport.addEventListener("scroll", queuePin_);
     }
-    window.addEventListener("resize", onViewport_);
+    window.addEventListener("resize", queuePin_);
     window.addEventListener("orientationchange", () => {
-      kbLockH_ = 0;
-      queueViewportLayout_(200);
+      typingHold_ = false;
+      frozenShift_ = 0;
+      queuePin_();
     });
     document.addEventListener("focusin", (e) => {
       if (!isTypingField_(e.target)) return;
-      if (kbReleaseTimer_) {
-        clearTimeout(kbReleaseTimer_);
-        kbReleaseTimer_ = 0;
+      typingHold_ = true;
+      if (holdTimer_) {
+        clearTimeout(holdTimer_);
+        holdTimer_ = 0;
       }
       const field = e.target;
+      queuePin_();
       setTimeout(() => {
         if (document.activeElement === field) scrollFieldIntoView_(field);
       }, 280);
     });
     document.addEventListener("focusout", () => {
-      releaseKeyboardSoon_();
+      if (holdTimer_) clearTimeout(holdTimer_);
+      holdTimer_ = setTimeout(() => {
+        holdTimer_ = 0;
+        if (isTypingField_(document.activeElement)) return;
+        typingHold_ = false;
+        frozenShift_ = 0;
+        pinFormActions_();
+      }, 420);
     });
     // Un solo handler de resize (evita doble reset / jank con teclado)
 
