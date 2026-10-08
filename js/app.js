@@ -291,6 +291,55 @@ QB.App = (() => {
     document.body.dataset.qbScreen = state.screen || "home";
   }
 
+  function bindKeyboardBar_() {
+    const root = document.documentElement;
+    let held = 0;
+    let dropTimer = 0;
+
+    function readInset_() {
+      const vk = navigator.virtualKeyboard;
+      if (vk && vk.boundingRect && vk.boundingRect.height > 40) {
+        return Math.round(vk.boundingRect.height);
+      }
+      const vv = window.visualViewport;
+      if (!vv) return 0;
+      const gap = Math.round(window.innerHeight - vv.height - (vv.offsetTop || 0));
+      return gap > 80 ? gap : 0;
+    }
+
+    function apply_(px) {
+      if (px === held) return;
+      held = px;
+      root.style.setProperty("--kb", px + "px");
+    }
+
+    function sync_() {
+      const h = readInset_();
+      if (dropTimer) {
+        clearTimeout(dropTimer);
+        dropTimer = 0;
+      }
+      if (h > 40) {
+        apply_(h);
+        return;
+      }
+      dropTimer = setTimeout(() => {
+        dropTimer = 0;
+        if (readInset_() > 40) return;
+        apply_(0);
+      }, 280);
+    }
+
+    const vk = navigator.virtualKeyboard;
+    if (vk && vk.addEventListener) {
+      try { vk.overlaysContent = true; } catch (_) {}
+      vk.addEventListener("geometrychange", sync_);
+    }
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", sync_);
+    }
+  }
+
   function goHome() {
     state.type = null;
     state.data = {};
@@ -2907,6 +2956,7 @@ QB.App = (() => {
     setupInstallPrompt_();
     lockDrag();
     mountActionBars_();
+    bindKeyboardBar_();
 
     // Si la app queda abierta y cambia el día → refrescar fecha
     const refreshFechaIfNeeded = () => {

@@ -1956,7 +1956,7 @@ body.is-desktop .qb-toast-stack {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: var(--kb, 0px);
   width: 100%;
   margin: 0;
   padding: 12px 14px calc(14px + var(--safe-bottom));
@@ -1975,7 +1975,7 @@ body[data-qb-screen="form"] > .form-actions:not(.dual) { display: grid; }
 body[data-qb-screen="resumen"] > .form-actions.dual { display: grid; }
 #screen-form .form-body,
 #screen-resumen .resumen-wrap {
-  padding-bottom: calc(120px + var(--safe-bottom));
+  padding-bottom: calc(120px + var(--kb, 0px) + var(--safe-bottom));
 }
 .form-actions.dual { grid-template-columns: 1fr 1.25fr; }
 .form-actions .btn {
