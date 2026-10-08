@@ -589,12 +589,14 @@ QB.API = (() => {
   }
 
   /**
-   * Quita pendientes de otros días. Conserva los de hoy.
-   * No vacía la cola completa.
+   * Paso 2: quita solo pendientes de más de 8 h que no son de hoy.
+   * Se queda el día en curso y lo iniciado dentro de esas 8 h.
    */
   async function dropPendingOtherDays_() {
     await ensureReady_();
     const today = todayKey();
+    const now = Date.now();
+    const staleMs = 8 * 60 * 60 * 1000;
     const dropIds = [];
     const keep = [];
     for (let i = 0; i < memQueue.length; i++) {
@@ -605,7 +607,13 @@ QB.API = (() => {
         continue;
       }
       const day = opsDayKey_(q);
-      if (day && day !== today) dropIds.push(String(q.clientId || ""));
+      if (day === today) {
+        keep.push(q);
+        continue;
+      }
+      const t = new Date(q.submittedAt || q.at || 0).getTime();
+      const age = t && !Number.isNaN(t) ? now - t : staleMs + 1;
+      if (age > staleMs) dropIds.push(String(q.clientId || ""));
       else keep.push(q);
     }
     const ids = dropIds.filter(Boolean);
@@ -1439,17 +1447,18 @@ QB.API = (() => {
   }
 
   /**
-   * Sync agresivo hasta vaciar la cola (modo transferencia / cierre de día).
-   * Incluye pendientes viejos. Reintenta si hay red; espera si no hay.
+   * Una pasada: envía lo que la señal permita y se detiene.
+   * No espera en bucle si un lote no avanza.
    */
   async function flushUntilEmpty(opts = {}) {
     await ensureReady_();
     if (opts.dropStale) await dropPendingOtherDays_();
     const onProgress = typeof opts.onProgress === "function" ? opts.onProgress : null;
     const signal = opts.signal || null;
+    const single = opts.singlePass !== false;
     let totalSent = 0;
     let rounds = 0;
-    const maxRounds = 800;
+    const maxRounds = single ? 8 : 800;
     const startRemain = pendingCount();
 
     onProgress?.({
@@ -1457,7 +1466,7 @@ QB.API = (() => {
       sent: 0,
       remain: startRemain,
       total: startRemain,
-      message: startRemain ? `Preparando ${startRemain} pendientes…` : "Sin pendientes",
+      message: startRemain ? "Enviando registros con señal…" : "Sin pendientes",
     });
 
     while (rounds++ < maxRounds) {
@@ -1473,18 +1482,21 @@ QB.API = (() => {
           sent: totalSent,
           remain: 0,
           total: Math.max(startRemain, totalSent),
-          message: "Todo enviado · 0 pendientes",
+          message: "Envío completado",
         });
         return { ok: true, sent: totalSent, remain: 0 };
       }
 
       if (!navigator.onLine) {
+        if (single) {
+          return { ok: false, offline: true, sent: totalSent, remain: pendingCount() };
+        }
         onProgress?.({
           phase: "offline",
           sent: totalSent,
           remain,
           total: Math.max(startRemain, totalSent + remain),
-          message: `Sin señal · ${remain} en espera. Reintentará al volver internet.`,
+          message: "Sin señal. El envío sigue al volver internet.",
         });
         try {
           await waitForOnline_(signal);
@@ -1509,7 +1521,7 @@ QB.API = (() => {
             sent: totalSent + (p.sent || 0),
             remain: p.remain != null ? p.remain : pendingCount(),
             total: Math.max(startRemain, totalSent + before),
-            message: p.message || `Enviando… quedan ${pendingCount()}`,
+            message: "Enviando registros con señal…",
           });
         },
       });
@@ -1518,13 +1530,11 @@ QB.API = (() => {
       const after = pendingCount();
 
       onProgress?.({
-        phase: r.offline ? "offline" : after ? "sync" : "done",
+        phase: after ? "sync" : "done",
         sent: totalSent,
         remain: after,
         total: Math.max(startRemain, totalSent + after),
-        message: after
-          ? `Enviados ${totalSent} · quedan ${after}`
-          : "Todo enviado · 0 pendientes",
+        message: after ? "Enviando registros con señal…" : "Envío completado",
       });
 
       if (!after) {
@@ -1532,7 +1542,12 @@ QB.API = (() => {
         return { ok: true, sent: totalSent, remain: 0 };
       }
 
+      if (single && !(r.sent > 0)) {
+        return { ok: false, offline: !!r.offline, sent: totalSent, remain: after };
+      }
+
       if (r.offline) {
+        if (single) return { ok: false, offline: true, sent: totalSent, remain: after };
         try {
           await waitForOnline_(signal);
         } catch {
@@ -1541,7 +1556,6 @@ QB.API = (() => {
         continue;
       }
 
-      // Si no avanzó, pausa corta y reintenta (backoff / red inestable)
       if (!(r.sent > 0)) await sleep_(1200);
       else await yieldToUi_();
     }

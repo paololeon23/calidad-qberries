@@ -217,6 +217,9 @@
       }
 
       async function doInstall() {
+        if (window.Notification && Notification.permission === "default") {
+          try { Notification.requestPermission(); } catch (e) {}
+        }
         if (isInstalled()) {
           setStatus("Ya está instalada — abriendo…");
           openApp();

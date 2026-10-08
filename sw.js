@@ -1,5 +1,5 @@
 /* Q Berries Calidad — Service Worker · todo local en caché */
-const CACHE = "qb-calidad-v210";
+const CACHE = "qb-calidad-v219";
 const ASSETS = [
   "./",
   "./index.html",
@@ -64,6 +64,19 @@ self.addEventListener("fetch", (event) => {
         })
         .catch(() => cached);
       return cached || fetched;
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (let i = 0; i < clients.length; i++) {
+        const c = clients[i];
+        if ("focus" in c) return c.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow("./index.html");
     })
   );
 });

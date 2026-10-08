@@ -587,6 +587,29 @@ QB.Scoring = (() => {
       pct: pesoBaya,
       calificacion: null,
     });
+    for (let i = 1; i <= 10; i++) {
+      const id = `firmeza_${i}`;
+      const raw = data[id];
+      const n = raw === "" || raw == null ? null : Number(raw);
+      rows.push({
+        id,
+        item: `Firmeza ${i}`,
+        count: Number.isFinite(n) ? n : null,
+        pct: null,
+        calificacion: null,
+      });
+    }
+    ["brix", "acidez"].forEach((id) => {
+      const raw = data[id];
+      const n = raw === "" || raw == null ? null : Number(raw);
+      rows.push({
+        id,
+        item: id === "brix" ? "Brix" : "Acidez",
+        count: Number.isFinite(n) ? n : null,
+        pct: null,
+        calificacion: null,
+      });
+    });
     return {
       rows,
       bayasTotales: total,

@@ -123,6 +123,9 @@ var SHEETS = {
             '% <12', '% 12 a 14', '% 14 a 16', '% 16 a 18',
             '% 18 a 20', '% 20 a 22', '% 22 a 24', '% 24 a más',
             'Peso baya',
+            'Firmeza 1', 'Firmeza 2', 'Firmeza 3', 'Firmeza 4', 'Firmeza 5',
+            'Firmeza 6', 'Firmeza 7', 'Firmeza 8', 'Firmeza 9', 'Firmeza 10',
+            'Brix', 'Acidez',
             'Hora registro'
     ]
   }
@@ -595,6 +598,7 @@ function appendOneEvaluation_(ss, body) {
   var def = SHEETS[type];
   var sheet = ss.getSheetByName(def.name);
   if (!sheet) sheet = ensureSheet_(ss, def.name, def.headers);
+  if (type === 'calibres') alignCalibresHeaders_(sheet, def.headers);
 
   var data = body.data || {};
   var score = body.score || {};
@@ -704,6 +708,7 @@ function saveBatch_(body) {
       var def = SHEETS[typeKey];
       var sheet = ss.getSheetByName(def.name);
       if (!sheet) sheet = ensureSheet_(ss, def.name, def.headers);
+      if (typeKey === 'calibres') alignCalibresHeaders_(sheet, def.headers);
             var headers = def.headers;
 
       var group = byType[typeKey];
@@ -970,6 +975,11 @@ function buildRow_(type, data, score, stamp, submittedAt) {
           var pesoRaw = Number(data.peso_muestra);
           var pesoMuestra = isFinite(pesoRaw) && pesoRaw > 0 ? pesoRaw : 0;
           var pesoBaya = totalBayas > 0 ? Math.round((pesoMuestra / totalBayas) * 10000) / 10000 : 0;
+          function labNum_(id) {
+            if (data[id] === '' || data[id] == null) return '';
+            var nLab = Number(data[id]);
+            return isFinite(nLab) ? nLab : '';
+          }
           var outCal = {
             'Fecha': canonFechaSave_(data.fecha, submittedAt || stamp),
             'Evaluador': data.evaluador || '',
@@ -980,8 +990,13 @@ function buildRow_(type, data, score, stamp, submittedAt) {
             'N° Bayas totales': totalBayas,
             'Peso de muestra': pesoMuestra,
             'Peso baya': pesoBaya,
-            'Hora registro': formatHora_(submittedAt || stamp)
+            'Hora registro': formatHora_(submittedAt || stamp),
+            'Brix': labNum_('brix'),
+            'Acidez': labNum_('acidez')
           };
+          for (var fi = 1; fi <= 10; fi++) {
+            outCal['Firmeza ' + fi] = labNum_('firmeza_' + fi);
+          }
           for (var bj = 0; bj < bands.length; bj++) {
             outCal[bands[bj].n] = counts[bj];
             outCal[bands[bj].p] = totalBayas > 0
@@ -1292,6 +1307,41 @@ function pct_(count, sample) {
         sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
         styleHeader_(sheet, headers.length);
         return sheet;
+      }
+
+      /**
+       * Calibres: deja Hora registro al final.
+       * Si la columna ya existe, la mueve con sus datos. Las que faltan se insertan antes de la hora.
+       */
+      function alignCalibresHeaders_(sheet, desired) {
+        var existing = getHeaders_(sheet);
+        if (!existing.length) {
+          sheet.getRange(1, 1, 1, desired.length).setValues([desired]);
+          styleHeader_(sheet, desired.length);
+          return;
+        }
+        var same = existing.length === desired.length;
+        if (same) {
+          for (var s = 0; s < desired.length; s++) {
+            if (existing[s] !== desired[s]) { same = false; break; }
+          }
+        }
+        if (same) return;
+
+        var changed = false;
+        for (var i = 0; i < desired.length; i++) {
+          var current = getHeaders_(sheet);
+          if (current[i] === desired[i]) continue;
+          var at = current.indexOf(desired[i]);
+          if (at === -1) {
+            if (i < current.length) sheet.insertColumnBefore(i + 1);
+            sheet.getRange(1, i + 1).setValue(desired[i]);
+          } else if (at > i) {
+            sheet.moveColumns(sheet.getRange(1, at + 1, sheet.getMaxRows(), 1), i + 1);
+          }
+          changed = true;
+        }
+        if (changed) styleHeader_(sheet, desired.length);
       }
 
       function ensureHeaders_(sheet, headers) {

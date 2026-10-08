@@ -1832,6 +1832,28 @@ body.is-desktop .qb-toast-stack {
 .calibres-summary .metric-live {
   margin: 0;
 }
+.calibres-lab {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
+  align-items: start;
+}
+.calibres-lab > .field {
+  margin-bottom: 0;
+  align-content: start;
+}
+.calibres-lab > .field label {
+  min-height: 1.3em;
+}
+.calibres-lab > .field input[type="number"] {
+  height: 48px;
+  min-height: 48px;
+  max-height: 48px;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-sizing: border-box;
+}
 
 .precise-trigger {
   width: 100%;
@@ -2442,6 +2464,45 @@ html.precise-open body {
   font-weight: 700;
   vertical-align: middle;
 }
+.resumen-acc-title {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: var(--qb-slate);
+}
+.resumen-acc-panel thead th {
+  text-align: left;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--qb-muted);
+  padding: 8px 10px 6px;
+  font-weight: 800;
+}
+.cal-resumen-totals {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.cal-resumen-total td {
+  background: #E7F1FB;
+  color: #0D47A1;
+  font-weight: 800;
+  padding: 11px 14px;
+  border-top: 1px solid #D3E4F6;
+}
+.cal-resumen-total td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.cal-resumen-lab td {
+  background: #FFF6E8;
+  color: #8A4B08;
+  font-weight: 800;
+}
+.cal-resumen-lab td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
 
 .pill {
   display: inline-flex;
@@ -2810,8 +2871,9 @@ html.precise-open body {
 .qb-transfer-count {
   margin: 8px 0 0;
   font-weight: 800;
-  font-size: 0.88rem;
-  color: var(--qb-slate);
+  font-size: 1.35rem;
+  letter-spacing: 0.08em;
+  color: var(--qb-forest);
 }
 .qb-transfer-hint {
   margin: 0 0 14px;

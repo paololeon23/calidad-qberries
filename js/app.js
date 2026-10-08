@@ -671,7 +671,72 @@ QB.App = (() => {
     if (banner) banner.hidden = !showBanner;
   }
 
+  async function enableSyncNotifications_() {
+    if (!("Notification" in window)) return false;
+    try {
+      if (Notification.permission === "granted") return true;
+      if (Notification.permission === "denied") return false;
+      const perm = await Notification.requestPermission();
+      return perm === "granted";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function showSyncNotification_(title, body, renotify) {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    if (!navigator.serviceWorker) return;
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      await reg.showNotification(title, {
+        body: body || "",
+        icon: "./assets/icon-192.png",
+        badge: "./assets/icon-192.png",
+        tag: "qb-sync-upload",
+        renotify: !!renotify,
+        silent: !renotify,
+        data: { url: "./index.html" },
+      });
+    } catch (_) {}
+  }
+
+  function notifyUploadProgress_(d) {
+    const phase = d && d.phase;
+    const sent = Number(d.sent) || 0;
+    const total = Number(d.total) || 0;
+    const remain = Number(d.remain);
+    if (phase === "start") {
+      const n = total || remain || 0;
+      if (!n) return;
+      showSyncNotification_("Subiendo pendientes", `Enviando ${n} registro${n === 1 ? "" : "s"}…`, true);
+      return;
+    }
+    if (phase === "progress") {
+      if (!total) return;
+      showSyncNotification_("Subiendo pendientes", `Enviados ${sent} de ${total}`, false);
+      return;
+    }
+    if (phase === "done") {
+      if (d.stale) {
+        showSyncNotification_(
+          "Envío interrumpido",
+          `Enviados ${sent}. Quedan ${Number.isFinite(remain) ? remain : 0}.`,
+          true
+        );
+        return;
+      }
+      if (remain > 0) {
+        showSyncNotification_("Quedan pendientes", `Enviados ${sent}. Quedan ${remain}.`, true);
+        return;
+      }
+      if (sent > 0) {
+        showSyncNotification_("Pendientes enviados", `Se subieron ${sent} registro${sent === 1 ? "" : "s"}.`, true);
+      }
+    }
+  }
+
   async function promptInstallApp_() {
+    enableSyncNotifications_();
     if (isAppInstalled_()) {
       toast("Ya está instalada", "ok");
       return;
@@ -884,19 +949,24 @@ QB.App = (() => {
     if (hint && opts.hint != null) hint.textContent = opts.hint;
     const sent = Number(opts.sent) || 0;
     const remain = Number.isFinite(Number(opts.remain)) ? Number(opts.remain) : pendingSafe_();
-    const total = Math.max(Number(opts.total) || 0, sent + remain, 1);
+    const pass = opts.pass === 2 ? 2 : opts.pass === 1 ? 1 : 0;
     if (count) {
-      if (opts.doneState) {
-        count.textContent = remain > 0 ? `${remain} pendientes` : "0 pendientes";
-      } else {
-        count.textContent = `${Math.min(sent, total)} / ${total} · quedan ${remain}`;
+      if (pass) count.textContent = `${pass} / 2`;
+      else if (opts.doneState) count.textContent = remain > 0 ? `${remain} pendientes` : "0 pendientes";
+      else {
+        const total = Math.max(Number(opts.total) || 0, sent + remain, 1);
+        count.textContent = `${Math.min(sent, total)} / ${total}`;
       }
     }
     if (fill) {
-      const pct =
-        opts.doneState && remain === 0
-          ? 100
-          : Math.min(100, Math.round((sent / total) * 100));
+      let pct = 0;
+      if (pass === 1) pct = opts.doneState ? (remain > 0 ? 50 : 100) : 46;
+      else if (pass === 2) pct = opts.doneState ? 100 : 78;
+      else if (opts.doneState && remain === 0) pct = 100;
+      else {
+        const total = Math.max(Number(opts.total) || 0, sent + remain, 1);
+        pct = Math.min(100, Math.round((sent / total) * 100));
+      }
       fill.style.width = `${pct}%`;
     }
     if (opts.doneState) transferUiDone_ = true;
@@ -945,14 +1015,20 @@ QB.App = (() => {
   async function promptTransferMode_() {
     closeSyncModal();
     const pend = pendingSafe_();
+    let pass2 = false;
+    try {
+      pass2 = sessionStorage.getItem("qb_transfer_retry") === "1";
+    } catch (_) {}
     const ok = await feedback({
-      title: "Activar modo transferencia",
+      title: pass2 ? "Paso 2 de 2" : "Paso 1 de 2",
       text:
         pend > 0
-          ? `Hay ${pend} pendiente(s). Se enviarán TODOS ahora. Deja la app abierta hasta ver 0 pendientes.`
+          ? pass2
+            ? "Se cierra el envío con la señal disponible."
+            : "Se envía lo que tenga conexión en este momento."
           : "No hay pendientes ahora. Si guardas más hoy, vuelve a activarlo al cerrar el día.",
       type: "info",
-      confirmText: pend > 0 ? "Activar y enviar" : "Entendido",
+      confirmText: pend > 0 ? (pass2 ? "Continuar" : "Iniciar") : "Entendido",
       cancelText: pend > 0 ? "Cancelar" : null,
     });
     if (!ok) return;
@@ -974,16 +1050,18 @@ QB.App = (() => {
       dropStale = sessionStorage.getItem("qb_transfer_retry") === "1";
       sessionStorage.removeItem("qb_transfer_retry");
     } catch (_) {}
+    const pass = dropStale ? 2 : 1;
 
     closeSyncModal();
     setTransferUi_({
       open: true,
       doneState: false,
+      pass,
       sent: 0,
       remain: pendingSafe_(),
       total: pendingSafe_(),
-      message: "Sincronizando pendientes…",
-      hint: "No cierres ni bloquees el teléfono hasta terminar.",
+      message: pass === 2 ? "Paso 2 de 2" : "Paso 1 de 2",
+      hint: pass === 2 ? "Cerrando el envío del día." : "Enviando los registros que tienen señal.",
     });
     await acquireWakeLock_();
     registerBgSync_();
@@ -993,16 +1071,20 @@ QB.App = (() => {
       const result = await QB.API.flushUntilEmpty({
         signal: transferAbort_.signal,
         dropStale,
+        singlePass: true,
         onProgress: (p) => {
           setTransferUi_({
+            pass,
             sent: p.sent || 0,
             remain: p.remain != null ? p.remain : pendingSafe_(),
             total: p.total,
-            message: p.message || "Enviando…",
+            message: pass === 2 ? "Paso 2 de 2" : "Paso 1 de 2",
             hint:
               p.phase === "offline"
-                ? "Sin internet — se reanuda solo al volver la señal."
-                : "No cierres ni bloquees el teléfono hasta terminar.",
+                ? "Sin señal en este momento. Puedes continuar cuando vuelva."
+                : pass === 2
+                  ? "Cerrando el envío del día."
+                  : "Enviando los registros que tienen señal.",
             doneState: false,
           });
           updateStatusUI();
@@ -1015,49 +1097,60 @@ QB.App = (() => {
       if (result.ok && !pendingSafe_()) {
         try {
           sessionStorage.removeItem(TRANSFER_FLAG);
+          sessionStorage.removeItem("qb_transfer_retry");
         } catch (_) {}
         setTransferUi_({
           doneState: true,
+          pass: 2,
           sent: result.sent || 0,
           remain: 0,
-          total: result.sent || 1,
-          message: "Día cerrado · todo enviado",
-          hint: "0 pendientes. Ya puedes cerrar la app.",
+          message: "Envío completado",
+          hint: "El cierre del día quedó registrado.",
         });
-        toast("Transferencia completa · 0 pendientes", "ok");
-      } else {
+        toast("Envío completado", "ok");
+      } else if (result.aborted) {
+        setTransferUi_({
+          doneState: true,
+          pass,
+          sent: result.sent || 0,
+          remain: pendingSafe_(),
+          message: "Envío en pausa",
+          hint: "Puedes retomarlo cuando quieras.",
+        });
+      } else if (pass === 1) {
         try {
           sessionStorage.setItem("qb_transfer_retry", "1");
+          sessionStorage.removeItem(TRANSFER_FLAG);
         } catch (_) {}
-        if (result.aborted) {
         setTransferUi_({
           doneState: true,
+          pass: 1,
           sent: result.sent || 0,
           remain: pendingSafe_(),
-          message: "Transferencia pausada",
-          hint: `Quedan ${pendingSafe_()} pendientes. Vuelve a activar el modo.`,
+          message: "Paso 1 de 2 listo",
+          hint: "Cuando quieras, inicia el paso 2.",
         });
       } else {
-        registerBgSync_();
+        try {
+          sessionStorage.removeItem(TRANSFER_FLAG);
+          sessionStorage.removeItem("qb_transfer_retry");
+        } catch (_) {}
         setTransferUi_({
           doneState: true,
+          pass: 2,
           sent: result.sent || 0,
           remain: pendingSafe_(),
-          message: "Aún hay pendientes",
-          hint: `Quedan ${pendingSafe_()}. Mantén internet y pulsa de nuevo Modo transferencia.`,
+          message: "Paso 2 de 2 listo",
+          hint: "El cierre del día quedó registrado.",
         });
-        toast(`Quedan ${pendingSafe_()} pendientes`, "warn");
-        }
       }
     } catch (_) {
-      try {
-        sessionStorage.setItem("qb_transfer_retry", "1");
-      } catch (_) {}
       setTransferUi_({
         doneState: true,
+        pass,
         remain: pendingSafe_(),
-        message: "Error de sincronización",
-        hint: "Revisa internet y vuelve a activar Modo transferencia.",
+        message: "Envío en pausa",
+        hint: "Revisa la señal y vuelve a iniciar el paso.",
       });
     } finally {
       releaseWakeLock_();
@@ -1536,6 +1629,7 @@ QB.App = (() => {
     let detalle = "";
     let defects = "";
     let comentario = "";
+    let labSection = "";
 
     if (state.type === "calidad") {
       detalle = `
@@ -1654,6 +1748,31 @@ QB.App = (() => {
           </div>
         </div>
       `;
+      const firmas = [];
+      for (let i = 1; i <= 10; i++) {
+        firmas.push(
+          fieldHtml(`firmeza_${i}`, `Firmeza ${i}`, {
+            type: "number",
+            min: 0,
+            step: "0.01",
+            inputmode: "decimal",
+            placeholder: "0.00",
+          })
+        );
+      }
+      labSection = `
+        <div class="section-card">
+          <div class="section-head">
+            <div class="section-title">Firmeza, Brix y acidez</div>
+            <p class="section-sub">Mediciones de la muestra.</p>
+          </div>
+          <div class="calibres-lab">
+            ${firmas.join("")}
+            ${fieldHtml("brix", "Brix", { type: "number", min: 0, step: "0.01", inputmode: "decimal", placeholder: "0.00" })}
+            ${fieldHtml("acidez", "Acidez", { type: "number", min: 0, step: "0.01", inputmode: "decimal", placeholder: "0.00" })}
+          </div>
+        </div>
+      `;
     }
 
     const checklist = isChecklistType_(state.type);
@@ -1713,6 +1832,7 @@ QB.App = (() => {
         </div>
         ${detalle}
       </div>
+      ${labSection}
       ${defects}
       ${
         comentario
@@ -2457,41 +2577,96 @@ QB.App = (() => {
     const displayRows = mergeSumaDeshidratado_(filtered);
 
     const tableEl = $("#resumen-table");
+    const bindResumenAcc_ = () => {
+      tableEl.querySelectorAll(".resumen-acc-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const wrap = btn.closest(".resumen-acc");
+          const panel = wrap?.querySelector(".resumen-acc-panel");
+          if (!panel) return;
+          const open = panel.hidden;
+          panel.hidden = !open;
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+          wrap.classList.toggle("is-open", open);
+        });
+      });
+    };
     if (state.type === "calibres") {
       const ranges = (s.rows || []).filter((r) => r.id && String(r.id).indexOf("cal_") === 0);
       const total = (s.rows || []).find((r) => r.id === "bayas_totales");
       const peso = (s.rows || []).find((r) => r.id === "peso_muestra");
       const baya = (s.rows || []).find((r) => r.id === "peso_baya");
+      const labs = (s.rows || []).filter(
+        (r) => r.id && (String(r.id).indexOf("firmeza_") === 0 || r.id === "brix" || r.id === "acidez")
+      );
       tableEl.hidden = false;
       tableEl.innerHTML = `
-        <table>
-          <thead><tr><th>Calibre</th><th>N°</th><th>%</th></tr></thead>
+        <div class="resumen-acc is-open" data-acc="calibres">
+          <button type="button" class="resumen-acc-btn" aria-expanded="true">
+            <span class="resumen-acc-left">
+              <span class="resumen-acc-title">Calibres</span>
+              <span class="resumen-acc-count">${ranges.length} rangos</span>
+            </span>
+            <span class="resumen-acc-chevron" aria-hidden="true">${ICONS.caret}</span>
+          </button>
+          <div class="resumen-acc-panel">
+            <table>
+              <thead><tr><th>Calibre</th><th>N°</th><th>%</th></tr></thead>
+              <tbody>
+                ${ranges
+                  .map(
+                    (r) => `<tr>
+                      <td>${escapeHtml(r.item)}</td>
+                      <td>${r.count}</td>
+                      <td>${Number(r.pct || 0).toFixed(2)}</td>
+                    </tr>`
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <table class="cal-resumen-totals">
           <tbody>
-            ${ranges
-              .map(
-                (r) => `<tr>
-                  <td>${escapeHtml(r.item)}</td>
-                  <td>${r.count}</td>
-                  <td>${Number(r.pct || 0).toFixed(2)}</td>
-                </tr>`
-              )
-              .join("")}
-            <tr>
-              <td>N° Bayas totales</td>
+            <tr class="cal-resumen-total">
+              <td>N° bayas</td>
               <td>${total ? total.count : 0}</td>
-              <td></td>
             </tr>
-            <tr>
+            <tr class="cal-resumen-total">
               <td>Peso de muestra</td>
               <td>${peso ? peso.count : 0}</td>
-              <td></td>
             </tr>
-            <tr>
+            <tr class="cal-resumen-total">
               <td>Peso baya</td>
-              <td colspan="2">${baya && baya.pct != null ? Number(baya.pct).toFixed(4) : "—"}</td>
+              <td>${baya && baya.pct != null ? Number(baya.pct).toFixed(4) : "—"}</td>
             </tr>
           </tbody>
-        </table>`;
+        </table>
+        <div class="resumen-acc" data-acc="lab">
+          <button type="button" class="resumen-acc-btn" aria-expanded="false">
+            <span class="resumen-acc-left">
+              <span class="resumen-acc-title">Firmeza, Brix y acidez</span>
+              <span class="resumen-acc-count">${labs.length} mediciones</span>
+            </span>
+            <span class="resumen-acc-chevron" aria-hidden="true">${ICONS.caret}</span>
+          </button>
+          <div class="resumen-acc-panel" hidden>
+            <table>
+              <thead><tr><th>Medición</th><th>Valor</th></tr></thead>
+              <tbody>
+                ${labs
+                  .map((r) => {
+                    const mark = r.id === "brix" || r.id === "acidez" ? " cal-resumen-lab" : "";
+                    return `<tr class="${mark.trim()}">
+                      <td>${escapeHtml(r.item)}</td>
+                      <td>${r.count != null ? r.count : "—"}</td>
+                    </tr>`;
+                  })
+                  .join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      bindResumenAcc_();
       return;
     }
     const hideTable =
@@ -2734,7 +2909,10 @@ QB.App = (() => {
     });
 
     document.querySelectorAll("#chip-pending, [data-chip-pending]").forEach((btn) => {
-      btn.addEventListener("click", () => syncPending(true));
+      btn.addEventListener("click", async () => {
+        await enableSyncNotifications_();
+        syncPending(true);
+      });
     });
 
     window.addEventListener("online", () => {
@@ -2756,9 +2934,7 @@ QB.App = (() => {
             chip.querySelector("[data-pending-text]") ||
             chip.querySelector("#chip-pending-text") ||
             chip.querySelector(".chip-text");
-          if (text && !(QB.API.isSyncing && QB.API.isSyncing())) {
-            text.textContent = n > 0 ? `${n} pend.` : "0 pend.";
-          }
+          if (text) text.textContent = n > 0 ? `${n} pend.` : "0 pend.";
         });
       } else {
         updateStatusUI();
@@ -2775,11 +2951,9 @@ QB.App = (() => {
     let syncUiTimer = null;
     window.addEventListener("qb:sync", (ev) => {
       const d = ev.detail || {};
-      if (d.phase === "progress" && d.total) {
-        // Solo chip — sin re-render de paneles
-        document.querySelectorAll("[data-pending-text], #chip-pending-text").forEach((el) => {
-          el.textContent = `${d.sent || 0}/${d.total}`;
-        });
+      notifyUploadProgress_(d);
+      if (d.phase === "progress" || d.phase === "start" || d.phase === "done") {
+        updateStatusUI();
       }
       if (d.phase === "done") {
         if (syncUiTimer) clearTimeout(syncUiTimer);
