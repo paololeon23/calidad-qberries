@@ -309,17 +309,38 @@ QB.App = (() => {
     function liveInset_() {
       if (!formInputFocused_()) return 0;
       const vv = window.visualViewport;
-      if (!vv) return 0;
-      const gap = Math.round(window.innerHeight - (vv.offsetTop || 0) - vv.height);
-      return gap > 48 ? gap : 0;
+      let gap = 0;
+      if (vv) {
+        gap = Math.round(window.innerHeight - (vv.offsetTop || 0) - vv.height);
+        if (gap < 48) gap = 0;
+      }
+      const vk = navigator.virtualKeyboard;
+      const vkH = vk && vk.boundingRect ? Math.round(vk.boundingRect.height) : 0;
+      if (gap > 0) return gap;
+      return vkH > 40 ? vkH : 0;
     }
 
+    let dropTimer = 0;
     function paint_() {
       raf = 0;
       const px = liveInset_();
-      if (px === held) return;
-      held = px;
-      root.style.setProperty("--kb", px + "px");
+      if (px > 0) {
+        if (dropTimer) {
+          clearTimeout(dropTimer);
+          dropTimer = 0;
+        }
+        if (px === held) return;
+        held = px;
+        root.style.setProperty("--kb", px + "px");
+        return;
+      }
+      if (held <= 0 || dropTimer) return;
+      dropTimer = setTimeout(() => {
+        dropTimer = 0;
+        if (liveInset_() > 0) return;
+        held = 0;
+        root.style.setProperty("--kb", "0px");
+      }, 220);
     }
 
     function queue_() {

@@ -1969,6 +1969,7 @@ body.is-desktop .qb-toast-stack {
   z-index: 9999;
   isolation: isolate;
   contain: layout paint style;
+  transition: bottom 0.26s cubic-bezier(0.22, 0.8, 0.28, 1);
 }
 body > .form-actions { display: none; }
 body[data-qb-screen="form"] > .form-actions:not(.dual) { display: grid; }
