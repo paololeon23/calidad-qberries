@@ -1942,14 +1942,11 @@ body.is-desktop .qb-toast-stack {
   grid-template-columns: 1fr 1.35fr;
   gap: 8px;
   z-index: 50;
+  transition: none;
 }
 .form-actions.dual { grid-template-columns: 1fr 1.25fr; }
-body.kb-open .form-body,
-body.kb-open .resumen-wrap {
-  padding-bottom: calc(20px + var(--safe-bottom));
-}
+.form-actions .btn { transition: none; }
 body.kb-open .app {
-  /* el JS fija height al visualViewport — sin saltos blancos */
   overflow: hidden;
 }
 body.kb-open .field textarea:focus {

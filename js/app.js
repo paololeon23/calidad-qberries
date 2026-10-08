@@ -294,15 +294,10 @@ QB.App = (() => {
   }
 
   function isKeyboardOpen_() {
-    if (isTypingField_(document.activeElement)) return true;
     const vv = window.visualViewport;
     if (!vv) return false;
-    // iOS y Android: teclado reduce el viewport visible
-    const gap = Math.max(
-      window.innerHeight - vv.height,
-      (window.outerHeight || window.innerHeight) - vv.height
-    );
-    return gap > 80;
+    const layoutH = window.innerHeight || 0;
+    return layoutH - vv.height > 120;
   }
 
   function setKeyboardUi_(open) {
@@ -328,46 +323,50 @@ QB.App = (() => {
     } catch (_) {}
   }
 
-  /** Viewport real (iOS + Android): siempre seguir visualViewport — sin huecos blancos */
+  let viewportTimer_ = 0;
+
+  function queueViewportLayout_(delay) {
+    if (viewportTimer_) clearTimeout(viewportTimer_);
+    viewportTimer_ = setTimeout(() => {
+      viewportTimer_ = 0;
+      resetViewportLayout();
+    }, delay == null ? 180 : delay);
+  }
+
+  /** Un solo ajuste de altura. Sin transform: eso hacía parpadear Cancelar / Ver resumen. */
   function resetViewportLayout() {
     if (document.querySelector(".overlay.open, #qb-sync.open, #qb-fb.open")) {
       return;
     }
 
-    const kb = isKeyboardOpen_();
-    setKeyboardUi_(kb);
-
     const app = document.querySelector(".app");
+    if (!app) return;
     const vv = window.visualViewport;
     const layoutH = Math.round(window.innerHeight || document.documentElement.clientHeight || 0);
     const vvH = vv ? Math.round(vv.height) : layoutH;
-    const vvTop = vv ? Math.round(vv.offsetTop || 0) : 0;
+    const gap = layoutH - vvH;
+    const kb = gap > 120;
 
-    // Altura visible real (teclado abierto o cerrado)
-    const h = Math.max(180, Math.min(vvH, layoutH));
-    document.documentElement.style.setProperty("--app-h", `${h}px`);
-
-    if (app) {
-      app.style.height = `${h}px`;
-      app.style.maxHeight = `${h}px`;
-      // Android a veces no usa offsetTop; iOS sí — ambos quedan bien
-      if (kb && vvTop > 0) {
-        app.style.transform = `translateY(${vvTop}px)`;
-      } else {
-        app.style.transform = "";
-      }
-    }
-
-    if (kb && isTypingField_(document.activeElement)) {
-      scrollFieldIntoView_(document.activeElement);
-    }
+    if (app.style.transform) app.style.transform = "";
 
     if (!kb) {
-      window.scrollTo(0, 0);
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      if (app) app.style.transform = "";
+      setKeyboardUi_(false);
+      if (app.style.height || app.style.maxHeight) {
+        app.style.height = "";
+        app.style.maxHeight = "";
+        document.documentElement.style.removeProperty("--app-h");
+      }
+      return;
     }
+
+    const h = Math.max(180, vvH);
+    const next = `${h}px`;
+    if (app.style.height !== next) {
+      document.documentElement.style.setProperty("--app-h", next);
+      app.style.height = next;
+      app.style.maxHeight = next;
+    }
+    setKeyboardUi_(true);
   }
 
   function goHome() {
@@ -2987,28 +2986,22 @@ QB.App = (() => {
     lockDrag();
     resetViewportLayout();
     if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", resetViewportLayout);
-      window.visualViewport.addEventListener("scroll", resetViewportLayout);
+      window.visualViewport.addEventListener("resize", () => queueViewportLayout_(180));
     }
-    window.addEventListener("resize", () => {
-      resetViewportLayout();
-      if (isKeyboardOpen_()) setTimeout(resetViewportLayout, 30);
-    });
-    window.addEventListener("orientationchange", () => setTimeout(resetViewportLayout, 120));
+    window.addEventListener("resize", () => queueViewportLayout_(180));
+    window.addEventListener("orientationchange", () => queueViewportLayout_(200));
     document.addEventListener("focusin", (e) => {
       if (!isTypingField_(e.target)) return;
-      setKeyboardUi_(true);
-      [50, 150, 350].forEach((ms) => setTimeout(resetViewportLayout, ms));
+      const field = e.target;
+      setTimeout(() => {
+        if (document.activeElement === field) scrollFieldIntoView_(field);
+      }, 320);
     });
     document.addEventListener("focusout", () => {
       setTimeout(() => {
-        if (!isKeyboardOpen_()) {
-          setKeyboardUi_(false);
-          const app = document.querySelector(".app");
-          if (app) app.style.transform = "";
-        }
-        resetViewportLayout();
-      }, 150);
+        if (isTypingField_(document.activeElement)) return;
+        queueViewportLayout_(180);
+      }, 200);
     });
     // Un solo handler de resize (evita doble reset / jank con teclado)
 
