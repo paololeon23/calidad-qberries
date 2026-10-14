@@ -2608,9 +2608,7 @@ html.precise-open body {
   align-items: flex-end;
   justify-content: center;
   padding: 16px 14px calc(16px + var(--safe-bottom));
-  background: rgba(31, 61, 42, 0.22);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(31, 61, 42, 0.28);
   opacity: 0;
   transition: opacity 0.22s var(--ease);
 }
@@ -2631,7 +2629,14 @@ html.precise-open body {
   transform: translateY(18px);
   transition: transform 0.28s var(--ease);
 }
-.qb-fb.open .qb-fb-sheet { transform: translateY(0); }
+#qb-fb.qb-fb {
+  opacity: 1;
+  transition: none;
+}
+#qb-fb .qb-fb-sheet {
+  transform: none;
+  transition: none;
+}
 .qb-fb-icon {
   grid-area: icon;
   width: 44px;

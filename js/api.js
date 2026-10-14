@@ -25,11 +25,12 @@ QB.API = (() => {
     "calibres",
   ];
   const TZ_OPS = "America/Lima";
-  const BATCH_SIZE = 10; // 10–12: 10 más estable con GAS/Sheets sin saturar
-  const FETCH_TIMEOUT_MS = 15000;
+  const BATCH_SIZE = 4; // 3G: un grupo chico termina y se borra; 10 se queda esperando
+  // Tope si no hay respuesta. Con señal, se borra al confirmar el servidor.
+  const FETCH_TIMEOUT_MS = 45000;
   const MAX_ATTEMPTS = 12;
-  const MAX_BACKOFF_MS = 15 * 60 * 1000;
-  const WATCHDOG_STALE_MS = 45000;
+  const MAX_BACKOFF_MS = 20 * 1000;
+  const WATCHDOG_STALE_MS = 100000;
   const SYNC_PROGRESS_UI_MS = 450;
   const YIELD_BETWEEN_BATCH_MS = 48;
 
@@ -47,6 +48,7 @@ QB.API = (() => {
   let watchdogTimer = null;
   let queueEventTimer = null;
   let softSendTimer = null;
+  let onlineMisses_ = 0;
   let activityBuf_ = [];
   let activityFlushTimer_ = null;
 
@@ -535,14 +537,51 @@ QB.API = (() => {
     return idbReady;
   }
 
-  /** Tras guardar / reabrir: envía pendientes recientes (≤12 h) en 2º plano */
-  function scheduleSoftSend_() {
+  /** Con señal no se abandona la cola: si un grupo falla, se reintenta más seguido. */
+  function nextOnlineDelay_(sentSome) {
+    if (sentSome) {
+      onlineMisses_ = 0;
+      return 400;
+    }
+    onlineMisses_ += 1;
+    if (onlineMisses_ <= 1) return 2000;
+    if (onlineMisses_ <= 3) return 5000;
+    return 12000;
+  }
+
+  function armOnlineRetry_() {
+    if (armOnlineRetry_._on) return;
+    armOnlineRetry_._on = true;
+    window.addEventListener("online", function onUp() {
+      armOnlineRetry_._on = false;
+      window.removeEventListener("online", onUp);
+      onlineMisses_ = 0;
+      scheduleSoftSend_(200, true);
+    });
+  }
+
+  /**
+   * Con internet: manda toda la cola, no solo las de las últimas 12 h.
+   * Si en ese momento no hay señal, queda esperando a que vuelva.
+   */
+  function scheduleSoftSend_(delayMs, revive) {
     if (softSendTimer) clearTimeout(softSendTimer);
     softSendTimer = setTimeout(() => {
       softSendTimer = null;
-      if (!navigator.onLine || syncing) return;
-      flushQueue({ soft: true, includeOld: false }).catch(() => {});
-    }, 600);
+      if (!navigator.onLine) {
+        if (pendingCount() > 0) armOnlineRetry_();
+        return;
+      }
+      if (syncing) {
+        scheduleSoftSend_(300, revive);
+        return;
+      }
+      flushQueue({
+        soft: true,
+        includeOld: true,
+        revive: revive !== false,
+      }).catch(() => {});
+    }, delayMs == null ? 250 : delayMs);
   }
 
   ensureReady_();
@@ -650,8 +689,9 @@ QB.API = (() => {
   }
 
   function backoffMs_(attempts) {
-    const n = Math.max(0, Number(attempts) || 0);
-    return Math.min(MAX_BACKOFF_MS, 1500 * Math.pow(2, Math.min(n, 8)));
+    const n = Math.max(1, Number(attempts) || 1);
+    if (navigator.onLine) return Math.min(5000, 200 * n);
+    return Math.min(MAX_BACKOFF_MS, 1500 * Math.pow(2, Math.min(n, 4)));
   }
 
   /* ——— Personas / actividad (localStorage liviano) ——— */
@@ -1108,18 +1148,16 @@ QB.API = (() => {
   function nextDueBatch_(opts = {}) {
     const now = Date.now();
     const includeOld = !!opts.includeOld;
+    const keepTrying = !!opts.keepTrying;
     const limit = opts.limit || BATCH_SIZE;
     const out = [];
     for (let i = 0; i < memQueue.length; i++) {
       const x = memQueue[i];
       if (!x || !x.clientId) continue;
-      if ((Number(x.attempts) || 0) >= MAX_ATTEMPTS) continue;
+      if (!keepTrying && (Number(x.attempts) || 0) >= MAX_ATTEMPTS) continue;
       if (!includeOld && !isRecent_(x.submittedAt || x.at)) continue;
       const st = x.status || "pending";
-      if (st === "sending") {
-        // No re-encolar mid-flight; recover solo al boot
-        continue;
-      }
+      if (st === "sending") continue;
       if (st === "pending" || st === "error") {
         if (!x.nextRetryAt || Number(x.nextRetryAt) <= now) {
           out.push(x);
@@ -1130,13 +1168,13 @@ QB.API = (() => {
     return out;
   }
 
-  function countDue_(includeOld) {
+  function countDue_(includeOld, keepTrying) {
     const now = Date.now();
     let n = 0;
     for (let i = 0; i < memQueue.length; i++) {
       const x = memQueue[i];
       if (!x || !x.clientId) continue;
-      if ((Number(x.attempts) || 0) >= MAX_ATTEMPTS) continue;
+      if (!keepTrying && (Number(x.attempts) || 0) >= MAX_ATTEMPTS) continue;
       if (!includeOld && !isRecent_(x.submittedAt || x.at)) continue;
       const st = x.status || "pending";
       if (st === "pending" || st === "error") {
@@ -1144,6 +1182,62 @@ QB.API = (() => {
       }
     }
     return n;
+  }
+
+  async function parkBatch_(batch, reason) {
+    const now = Date.now();
+    for (let i = 0; i < batch.length; i++) {
+      const item = batch[i];
+      if (!item) continue;
+      item.attempts = (Number(item.attempts) || 0) + 1;
+      item.status = "error";
+      item.lastError = String(reason || "retry").slice(0, 180);
+      item.nextRetryAt = now + 1000;
+      item.updatedAt = now;
+    }
+    try {
+      await idbMutateBatch_(batch, []);
+    } catch (_) {}
+  }
+
+  /** Los que el lote no confirmó salen de uno en uno. Solo se borran si el servidor dice ok o duplicado. */
+  async function sendUnconfirmed_(url, batch, signal) {
+    let sent = 0;
+    let failed = 0;
+    for (let i = 0; i < batch.length; i++) {
+      const item = batch[i];
+      if (!item || !item.clientId) continue;
+      if (!memQueue.some((x) => x.clientId === item.clientId)) continue;
+      if (!navigator.onLine || watchdogFired) break;
+      touchProgress_();
+      let aborted = false;
+      try {
+        const { res, json } = await fetchJson_(
+          url,
+          toWirePayload_(item),
+          FETCH_TIMEOUT_MS,
+          signal
+        );
+        ok = !!(res.ok && isServerOk(json));
+      } catch (err) {
+        ok = false;
+        aborted = err?.name === "AbortError";
+      }
+      if (ok) {
+        memQueue = memQueue.filter((x) => x.clientId !== item.clientId);
+        refreshPendingCount_();
+        try {
+          await idbDelete_(item.clientId);
+        } catch (_) {}
+        logActivity(item, { buffer: true });
+        sent += 1;
+      } else {
+        await parkBatch_([item], aborted ? "timeout" : "retry");
+        failed += 1;
+        if (aborted || !navigator.onLine) break;
+      }
+    }
+    return { sent, failed };
   }
 
   async function applyBatchOutcome_(batch, resultsById) {
@@ -1193,6 +1287,39 @@ QB.API = (() => {
   }
 
   /**
+   * Toque al chip o modo transferencia: manda ya lo que estaba en espera
+   * o había llegado al tope de intentos. El reintento automático no pasa por aquí.
+   */
+  async function reviveBlockedForManual_() {
+    const now = Date.now();
+    const revived = [];
+    for (let i = 0; i < memQueue.length; i++) {
+      const x = memQueue[i];
+      if (!x || x.status === "sent") continue;
+      if (x.status === "sending") {
+        x.status = "pending";
+        x.nextRetryAt = 0;
+        x.updatedAt = now;
+        revived.push(x);
+        continue;
+      }
+      const attempts = Number(x.attempts) || 0;
+      const waiting = x.nextRetryAt && Number(x.nextRetryAt) > now;
+      if (attempts < MAX_ATTEMPTS && !waiting) continue;
+      if (attempts >= MAX_ATTEMPTS) x.attempts = 0;
+      x.nextRetryAt = 0;
+      if (x.status === "error") x.status = "pending";
+      x.updatedAt = now;
+      revived.push(x);
+    }
+    if (!revived.length) return;
+    refreshPendingCount_();
+    try {
+      await idbMutateBatch_(revived, []);
+    } catch (_) {}
+  }
+
+  /**
    * Un solo proceso de sync (mutex + watchdog).
    * Lotes de 10 → batchSave. Yield al UI entre lotes.
    * "sending" solo en memoria (IDB al confirmar/fallar).
@@ -1208,15 +1335,21 @@ QB.API = (() => {
       return { sent: 0, remain: pendingCount(), busy: true };
     }
     if (!navigator.onLine) {
+      if (pendingCount() > 0) armOnlineRetry_();
       return { sent: 0, remain: pendingCount(), offline: true };
     }
 
     const url = apiUrl_();
     if (!url) return { sent: 0, remain: pendingCount(), noUrl: true };
 
-    const totalStart = countDue_(includeOld);
+    if (manual || opts.revive) await reviveBlockedForManual_();
+
+    const keepTrying = (soft || manual) && navigator.onLine;
+    const totalStart = countDue_(includeOld, keepTrying);
     if (!totalStart) {
-      if (manual || !soft) markLastSync_();
+      if (keepTrying && pendingCount() > 0) {
+        scheduleSoftSend_(nextOnlineDelay_(false), false);
+      } else if (manual || !soft) markLastSync_();
       return { sent: 0, remain: pendingCount(), empty: true };
     }
 
@@ -1245,7 +1378,7 @@ QB.API = (() => {
           break;
         }
 
-        const batch = nextDueBatch_({ includeOld, limit: BATCH_SIZE });
+        const batch = nextDueBatch_({ includeOld, keepTrying, limit: BATCH_SIZE });
         if (!batch.length) break;
 
         for (let i = 0; i < batch.length; i++) {
@@ -1255,6 +1388,7 @@ QB.API = (() => {
 
         let results = null;
         try {
+          touchProgress_();
           const { res, json } = await fetchJson_(
             url,
             {
@@ -1269,28 +1403,16 @@ QB.API = (() => {
           }
         } catch (err) {
           if (err?.name === "AbortError") {
-            for (let i = 0; i < batch.length; i++) {
-              batch[i].status = "error";
-              batch[i].attempts = (Number(batch[i].attempts) || 0) + 1;
-              batch[i].lastError = watchdogFired ? "watchdog" : "timeout";
-              batch[i].nextRetryAt = Date.now() + backoffMs_(batch[i].attempts);
-              batch[i].updatedAt = Date.now();
-            }
-            try {
-              await idbMutateBatch_(batch, []);
-            } catch (_) {}
+            await parkBatch_(batch, watchdogFired ? "watchdog" : "timeout");
             failed += batch.length;
-            if (watchdogFired) {
-              stale = true;
-              break;
-            }
             touchProgress_();
-            await yieldToUi_();
-            continue;
+            if (watchdogFired) stale = true;
+            break;
           }
           results = null;
         }
 
+        let roundSent = 0;
         if (results) {
           const byId = {};
           for (let i = 0; i < results.length; i++) {
@@ -1298,59 +1420,19 @@ QB.API = (() => {
             if (r && r.clientId) byId[String(r.clientId)] = r;
           }
           const out = await applyBatchOutcome_(batch, byId);
-          sent += out.sent;
-          failed += out.failed;
+          roundSent += out.sent;
+          const singles = await sendUnconfirmed_(url, batch, syncAbortCtrl.signal);
+          roundSent += singles.sent;
+          failed += singles.failed;
           touchProgress_();
         } else {
-          for (let i = 0; i < batch.length; i++) {
-            if (!navigator.onLine || watchdogFired) break;
-            const item = batch[i];
-            try {
-              const { res, json } = await fetchJson_(
-                url,
-                toWirePayload_(item),
-                FETCH_TIMEOUT_MS,
-                syncAbortCtrl.signal
-              );
-              if (res.ok && isServerOk(json)) {
-                memQueue = memQueue.filter((x) => x.clientId !== item.clientId);
-                refreshPendingCount_();
-                try {
-                  await idbDelete_(item.clientId);
-                } catch (_) {}
-                logActivity(item, { buffer: true });
-                sent += 1;
-              } else {
-                item.attempts = (Number(item.attempts) || 0) + 1;
-                item.status = "error";
-                item.lastError = String(
-                  (json && (json.error || json.message)) || `HTTP ${res.status}`
-                ).slice(0, 180);
-                item.nextRetryAt = Date.now() + backoffMs_(item.attempts);
-                item.updatedAt = Date.now();
-                try {
-                  await idbPut_(item);
-                } catch (_) {}
-                failed += 1;
-              }
-            } catch (err) {
-              item.status = "error";
-              item.attempts = (Number(item.attempts) || 0) + 1;
-              item.lastError = String(
-                err?.name === "AbortError" ? "timeout" : err?.message || "network"
-              ).slice(0, 180);
-              item.nextRetryAt = Date.now() + backoffMs_(item.attempts);
-              item.updatedAt = Date.now();
-              try {
-                await idbPut_(item);
-              } catch (_) {}
-              failed += 1;
-              if (err?.name === "AbortError" && watchdogFired) break;
-            }
-            touchProgress_();
-            await tick_();
-          }
+          await parkBatch_(batch, "retry");
+          failed += batch.length;
+          touchProgress_();
+          break;
         }
+        sent += roundSent;
+        if (!roundSent) break;
 
         emitSync_({
           phase: "progress",
@@ -1410,6 +1492,10 @@ QB.API = (() => {
         true
       );
       emitQueue_();
+    }
+
+    if ((soft || manual) && navigator.onLine && pendingCount() > 0) {
+      scheduleSoftSend_(nextOnlineDelay_(sent > 0), false);
     }
 
     return { sent, failed, remain: pendingCount(), total: totalStart, stale };

@@ -647,7 +647,7 @@ function saveEvaluation_(body) {
   var lock = LockService.getScriptLock();
   var got = false;
   try {
-    got = lock.tryLock(8000);
+    got = lock.tryLock(20000);
     if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -675,7 +675,7 @@ function saveBatch_(body) {
   var lock = LockService.getScriptLock();
   var got = false;
   try {
-    got = lock.tryLock(25000);
+    got = lock.tryLock(20000);
     if (!got) throw new Error('El servidor está ocupado. Intente de nuevo.');
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1004,7 +1004,7 @@ function buildRow_(type, data, score, stamp, submittedAt) {
               : 0;
           }
           return outCal;
-        }
+  }
 
   if (type === 'bpa') {
     return {
@@ -1318,8 +1318,8 @@ function pct_(count, sample) {
         if (!existing.length) {
           sheet.getRange(1, 1, 1, desired.length).setValues([desired]);
           styleHeader_(sheet, desired.length);
-          return;
-        }
+    return;
+  }
         var same = existing.length === desired.length;
         if (same) {
           for (var s = 0; s < desired.length; s++) {
@@ -1420,7 +1420,7 @@ function styleHeader_(sheet, colCount) {
         var sorts = [{ column: fechaIdx + 1, ascending: true }];
         if (horaIdx !== -1) sorts.push({ column: horaIdx + 1, ascending: true });
         sheet.getRange(2, 1, lastRow - 1, lastCol).sort(sorts);
-      }
+}
 
 function parseBody_(e) {
   var raw = '';

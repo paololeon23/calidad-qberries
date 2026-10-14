@@ -126,6 +126,9 @@ QB.App = (() => {
 
   function toast(msg, type = "ok") {
     const stack = ensureToastStack();
+    stack.querySelectorAll(".qb-toast-item").forEach((el) => {
+      if (el.textContent === msg || (type === "error" && el.classList.contains("error"))) el.remove();
+    });
     const el = document.createElement("div");
     el.className = `qb-toast-item ${type === "warn" ? "warn" : type}`;
     el.textContent = msg;
@@ -137,15 +140,17 @@ QB.App = (() => {
     }, 2800);
   }
 
+  let fbHideTimer = 0;
+
   function closeFeedback(result) {
     const root = $("#qb-fb");
     if (!root) return;
-    root.classList.remove("open");
     clearTimeout(fbTimer);
+    clearTimeout(fbHideTimer);
     fbTimer = null;
-    setTimeout(() => {
-      root.hidden = true;
-    }, 220);
+    fbHideTimer = 0;
+    root.classList.remove("open");
+    root.hidden = true;
     if (fbResolve) {
       const r = fbResolve;
       fbResolve = null;
@@ -168,6 +173,8 @@ QB.App = (() => {
       if (fbResolve) fbResolve(false);
       fbResolve = resolve;
       clearTimeout(fbTimer);
+      clearTimeout(fbHideTimer);
+      fbHideTimer = 0;
 
       icon.className = `qb-fb-icon ${type}`;
       icon.innerHTML = FB_ICONS[type] || FB_ICONS.info;
@@ -191,8 +198,8 @@ QB.App = (() => {
       okBtn.addEventListener("click", () => closeFeedback(true));
       actions.appendChild(okBtn);
 
+      root.classList.add("open");
       root.hidden = false;
-      requestAnimationFrame(() => root.classList.add("open"));
 
       if (autoClose > 0 && !cancelText) {
         fbTimer = setTimeout(() => closeFeedback(true), autoClose);
@@ -795,12 +802,16 @@ QB.App = (() => {
     refreshInstallUi_();
   }
 
-  function closeSyncModal() {
+  function closeSyncModal(immediate) {
     const root = $("#qb-sync");
     if (!root) return;
     root.classList.remove("open");
-    setTimeout(() => {
+    if (immediate) {
       root.hidden = true;
+      return;
+    }
+    setTimeout(() => {
+      if (!root.classList.contains("open")) root.hidden = true;
     }, 220);
   }
 
@@ -1005,7 +1016,7 @@ QB.App = (() => {
   }
 
   async function promptTransferMode_() {
-    closeSyncModal();
+    closeSyncModal(true);
     const pend = pendingSafe_();
     let pass2 = false;
     try {
@@ -1320,7 +1331,7 @@ QB.App = (() => {
 
     // Auto (boot/online/visibility): no bloquear UI ni deshabilitar chips
     if (!manual) {
-      QB.API.flushQueue({ soft: true, includeOld: false }).catch(() => {});
+      QB.API.flushQueue({ soft: true, includeOld: true, revive: true }).catch(() => {});
       return;
     }
 
@@ -1343,18 +1354,11 @@ QB.App = (() => {
 
       if (r.busy) {
         toast("Ya hay una sincronización en curso…", "info");
-      } else if (r.stale) {
-        toast(
-          `Sincronización interrumpida · ${r.sent || 0} enviados · ${r.remain || 0} pendientes.`,
-          "warn"
-        );
-      } else if (r.sent && r.remain) {
-        toast(`${r.sent} enviados · ${r.remain} pendientes de reintento.`, "warn");
-      } else if (r.sent) {
+      } else if (r.sent && !r.remain) {
         toast(`${r.sent} registros sincronizados correctamente.`, "ok");
-      } else if (r.remain) {
-        toast(`No se pudo sincronizar — ${r.remain} pendientes de reintento.`, "error");
-      } else {
+      } else if (!navigator.onLine && r.remain) {
+        toast(`Sin conexión — ${r.remain} pendientes guardados en el celular.`, "error");
+      } else if (!r.remain) {
         toast("Sin pendientes", "ok");
       }
     } finally {
@@ -2901,9 +2905,17 @@ QB.App = (() => {
     });
 
     document.querySelectorAll("#chip-pending, [data-chip-pending]").forEach((btn) => {
+      if (btn.dataset.syncBound) return;
+      btn.dataset.syncBound = "1";
       btn.addEventListener("click", async () => {
-        await enableSyncNotifications_();
-        syncPending(true);
+        if (btn.dataset.syncing === "1") return;
+        btn.dataset.syncing = "1";
+        try {
+          await enableSyncNotifications_();
+          await syncPending(true);
+        } finally {
+          btn.dataset.syncing = "";
+        }
       });
     });
 
